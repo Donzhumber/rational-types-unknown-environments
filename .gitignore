@@ -1,0 +1,57 @@
+# =============================================================================
+# Gitignore for Econometrica Submission and Replication Package
+# =============================================================================
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# LaTeX auxiliary files (compile artifacts)
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.brf
+*.run.xml
+*.bcf
+
+# LaTeX output directories
+**/out/
+**/texmf/
+
+# Lean 4 / Lake build artifacts and packages
+**/.lake/
+**/lake-packages/
+**/build/
+*.olean
+*.trace
+
+# Python cache & environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# MATLAB temporary files
+*.asv
+*.m~

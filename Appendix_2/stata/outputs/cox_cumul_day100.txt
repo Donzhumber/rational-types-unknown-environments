@@ -1,0 +1,5 @@
+day 98
+FARC 0.2716
+ELN 0.2847
+Paramilitaries 0.3296
+CommonDel 0.2565

@@ -1,0 +1,666 @@
+% !TEX root = Appendix_1.tex
+% =========================================================================
+% APPENDIX 1 -- MACRO DYNAMICS: COINTEGRATION AND THE VEC FOUNDATION
+% Econometrica / Econometric Society supplement format.
+% Detailed presentation of Section~2.2 results. Replication: Appendix_1/
+% =========================================================================
+\documentclass[ecta,nameyear,final,supplement]{econsocart}
+
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\RequirePackage[colorlinks,citecolor=blue,linkcolor=blue,urlcolor=blue,pagebackref]{hyperref}
+\urlstyle{same}
+
+\startlocaldefs
+\numberwithin{equation}{section}
+\numberwithin{table}{section}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\KE}{K^{E}}
+\newcommand{\KNE}{K^{NE}}
+
+\renewcommand{\thesection}{S\arabic{section}}
+% Compact AMS-style labels: S{sec}.{sub}.{subsub}.{para}; 0 if level unused
+\makeatletter
+\newcommand{\@appzero}[1]{\ifnum\value{#1}=0 0\else\arabic{#1}\fi}
+\newcommand{\@appsec}{S\arabic{section}}
+\newcommand{\@appsub}{\@appzero{subsection}}
+\newcommand{\@appsubsub}{\@appzero{subsubsection}}
+\renewcommand{\thesubsection}{\@appsec.\@appsub.0.0}
+\renewcommand{\thesubsubsection}{\@appsec.\@appsub.\@appsubsub.0}
+\renewcommand{\theparagraph}{\@appsec.\@appsub.\@appsubsub.\arabic{paragraph}}
+\setcounter{secnumdepth}{4}
+\@addtoreset{subsection}{section}
+\@addtoreset{subsubsection}{subsection}
+\@addtoreset{paragraph}{section}
+\makeatother
+
+% APA 7-style table notes (Publication Manual, \S7.21)
+\newcommand{\tabnote}{\par\addvspace{0.4em}\noindent\emph{Note.}}
+\newcommand{\tabsource}{\ \textit{Source:} Authors' own calculations based on
+the monthly sample in Section~\ref{sec:data} ($T=858$). Software: MATLAB
+R2025b (The MathWorks, 2025); Econometrics Toolbox.}
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Supplement to ``Identifying Rational Types in Unknown Environments''\\
+Appendix 1: Macro Dynamics --- Cointegration and the VEC Foundation}
+\runtitle{Macro Dynamics Supplement}
+
+\begin{aug}
+\author[add1,add2]{\fnms{Humberto}~\snm{Bernal}}
+\address[add1]{%
+\orgdiv{Economics Program},
+\orgname{Universidad Colegio Mayor de Cundinamarca}}
+\address[add2]{%
+\orgdiv{Ph.D. in Economics},
+\orgname{Universidad de los Andes}}
+\ead[label=e1]{hbernal@uniandes.edu.co}
+\ead[label=e2]{hbernalc@universidadmayor.edu.co}
+\end{aug}
+
+\begin{funding}
+Economist, professor of the Economics Program at the Universidad Colegio
+Mayor de Cundinamarca and graduate of the Ph.D.\ in Economics from the
+Universidad de los Andes, Colombia.
+\end{funding}
+
+\end{frontmatter}
+
+\noindent
+This supplement presents in full detail the macroeconometric results
+summarized in Section~2.2 of the main paper (``Macro dynamics: cointegration
+and the VEC foundation''). It documents the data, the
+integration-order tests, the Johansen cointegration analysis, the estimated
+Vector Error Correction (VEC) model with its adjustment dynamics and residual
+diagnostics, the Gonzalo--Granger permanent--transitory decomposition, the
+univariate Local Linear Trend (LLT) state-space model, and the empirical
+verification of the stochastic-trend equivalence corollary. All estimates
+were reproduced from the MATLAB scripts in the \texttt{Appendix\_1/}
+replication package (Section~\ref{sec:repro}).
+
+% ============================================================================
+\section{Data and sample}
+\label{sec:data}
+% ============================================================================
+
+The vector of interest is the monthly triple
+\begin{equation}
+Y_t = \bigl(\KE_t,\; \KNE_t,\; r_t\bigr)',
+\label{eq:vector}
+\end{equation}
+where $\KE_t$ is the number of kidnappings for ransom (extortive kidnapping),
+$\KNE_t$ is the number of non-extortive kidnappings, and $r_t$ is the
+commercial lending interest rate. Kidnapping counts come from the National
+Center of Historical Memory \citep{CNMH2013,cnmh_datos} and official
+statistics of the Colombian State \citep{mindefensa_stats}; the interest rate
+is the active commercial rate used as the indicator of macro-financial
+conditions \citep{Masih1995,Suarez_2025}.
+
+The estimation sample is the continuous monthly series from July~1954 to
+December~2025 ($T=858$ observations). All macroeconometric models in this
+supplement---unit-root tests, Johansen analysis, the VEC, the LLT, the
+Gonzalo--Granger trends, and the trend-equivalence validation of
+$d_t$---use this same sample, as implemented in \path{VEC\_2T.m},
+\path{LLT\_Extorsivo.m}, and \path{check_trend_equivalence.m}. Macro trend
+figures in the main paper (Section~2.2) plot the same July~1954--December~2025
+window. Descriptive institutional figures elsewhere in the main text display
+1964--2025. Isolated missing values were imputed with a centered moving median
+of order three before estimation.
+
+Economically, $r_t$ proxies the macroeconomic environment that fixes the
+opportunity cost and the continuation value of crime, while $\KNE_t$ marks
+the phase in which the criminal organization accumulates logistic capacity,
+operational experience, and territorial control, lowering its marginal cost
+of operation and enabling the more systematic organization of extortive
+kidnapping.
+
+% ============================================================================
+\section{Integration order}
+\label{sec:unitroot}
+% ============================================================================
+
+Table~\ref{tab:unitroot} reports the Augmented Dickey--Fuller test of
+\citet{DickeyFuller1979} and the KPSS test of \citet{Kwiatkowski1992}, in
+levels and in first differences, with twelve augmentation lags and a
+constant. At the 5\% level, the ADF test does not reject the unit-root null in
+levels for any series ($p>0.05$), while the KPSS test rejects stationarity
+in levels at the 1\% level ($p\le 0.01$). In first differences, the ADF test
+rejects the unit-root null at the 1\% level ($p=0.001$) and the KPSS test
+does not reject stationarity at the 10\% level ($p\ge 0.10$). These four
+criteria jointly classify $\KE_t$, $\KNE_t$, and $r_t$ as $I(1)$ at the 5\%
+level.
+
+\begin{table}[t]
+\centering
+\caption{Augmented Dickey--Fuller and KPSS Unit-Root Test $p$-Values}
+\label{tab:unitroot}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Levels} & \multicolumn{2}{c}{First differences} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Series & ADF $p$ & KPSS $p$ & ADF $p$ & KPSS $p$ \\
+\midrule
+$\KE_t$  & $0.28$ & $<0.01$ & $<0.01$ & $>0.10$ \\
+$\KNE_t$ & $0.41$ & $<0.01$ & $<0.01$ & $>0.10$ \\
+$r_t$    & $0.44$ & $<0.01$ & $<0.01$ & $>0.10$ \\
+\bottomrule
+\end{tabular}
+\tabnote\ ADF: constant and 12 augmentation lags (\texttt{model = ARD}).
+KPSS: level-stationarity test, 12 lags, no trend. MATLAB truncates
+$p$-values at $[0.01,\,0.10]$ (KPSS) and $[0.001,\,0.999]$ (ADF). In levels,
+ADF does not reject the unit-root null at 5\%; KPSS rejects stationarity at
+1\%. In first differences, ADF rejects the unit-root null at 1\%; KPSS does
+not reject stationarity at 10\%.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Johansen cointegration analysis}
+\label{sec:johansen}
+% ============================================================================
+
+The cointegration rank is determined with the Johansen trace test
+\citep{Johansen1988} on the levels VAR with $p=36$ lags and an unrestricted
+constant (MATLAB deterministic specification \texttt{H1}). The lag order was
+selected so that the implied VEC$(35)$ exhibits no residual autocorrelation
+(Section~\ref{sec:diagnostics}) while remaining parsimonious under the AIC
+among admissible specifications. Table~\ref{tab:johansen} reports the
+results: the null $r=0$ is rejected at the 1\% level ($p<0.01$), whereas
+$r\le 1$ is not rejected at the 5\% level ($p=0.11$) and $r\le 2$ is not
+rejected at the 5\% level ($p=0.08$) although it would be rejected at the
+10\% level. The evidence therefore supports exactly one cointegrating vector,
+$r=1$, with $k-r=2$ common stochastic trends.
+
+\begin{table}[H]
+\centering
+\caption{Johansen Trace Test for Cointegration Rank}
+\label{tab:johansen}
+\begin{tabular}{lcccl}
+\toprule
+Null hypothesis & Trace statistic & 95\% critical value & $p$-value &
+Decision \\
+\midrule
+$r=0$     & $40.32$ & $29.80$ & $<0.01$ & Reject at 1\% \\
+$r\le 1$  & $13.17$ & $15.49$ & $0.11$  & Not reject at 5\% \\
+$r\le 2$  & $3.02$  & $3.84$  & $0.08$  & Not reject at 5\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ VAR in levels with $p=36$ lags and unrestricted constant
+(MATLAB specification \texttt{H1}). Decisions follow the asymptotic
+$p$-value at the stated significance level. The null $r\le 2$ would be
+rejected at 10\% ($p=0.08$); rank $r=1$ is selected using the 5\%
+criterion.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{The VEC model}
+\label{sec:vec}
+% ============================================================================
+
+\subsection{Long-run equilibrium}
+
+With $r=1$ and $q=p-1=35$ short-run lag matrices, the estimated VEC is
+\begin{equation}
+\Delta Y_t = \alpha\,\beta' Y_{t-1}
+ + \sum_{j=1}^{35}\Gamma_j\,\Delta Y_{t-j} + c + \varepsilon_t ,
+\label{eq:vec-general}
+\end{equation}
+estimated by maximum likelihood (Johansen reduced-rank regression). The fit
+statistics are $\log L = -7{,}667.23$, $\mathrm{AIC} = 15{,}980.45$, and
+$\mathrm{BIC} = 17{,}516.19$. The unnormalized cointegrating vector is
+\begin{equation}
+0.04\,\KE_t \;-\; 0.07\,\KNE_t \;-\; 0.05\,r_t
+ \;=\; \tilde\varepsilon_t ,
+\qquad \tilde\varepsilon_t \sim I(0),
+\label{eq:coint-raw}
+\end{equation}
+and an ADF test on the error-correction term
+$\tilde\varepsilon_t = \beta' Y_t$ rejects the unit-root null at the 1\%
+level ($p<0.01$), confirming the stationarity of the long-run relation.
+Normalizing \eqref{eq:coint-raw} on $\KE_t$ yields the structural long-run
+equation
+\begin{equation}
+\KE_t \;=\; 1.93\,\KNE_t \;+\; 1.31\,r_t \;+\; \varepsilon_t ,
+\qquad \varepsilon_t \sim I(0).
+\label{eq:coint-normalized}
+\end{equation}
+
+The coefficient on $\KNE_t$ indicates that non-extortive kidnapping operates
+as a signal of accumulated coercive and organizational capacity: in the long
+run, a unit increase in this modality is associated with an increase of
+approximately $1.93$ units in extortive kidnapping, as the expansion of
+logistic infrastructure, territorial control, and intimidation lowers the
+marginal cost of moving toward higher-rent activities. The coefficient on
+the interest rate reflects a liquidity-constraint mechanism: periods of
+monetary contraction raise the financing cost of criminal organizations and
+push them toward extortive kidnapping as a source of immediate rent.
+
+\subsection{Adjustment dynamics}
+
+Table~\ref{tab:alpha} reports the estimated adjustment (loading) vector
+$\alpha$ with standard errors. Written equation by equation, the
+error-correction system is
+\begin{align}
+\Delta \KE_t  &= -2.94\,\tilde\varepsilon_{t-1}
+ + \textstyle\sum_{j=1}^{35}\Gamma_{1,j}\,\Delta Y_{t-j} + \varepsilon_{1,t},
+\label{eq:vec1}\\
+\Delta \KNE_t &= \phantom{-}0.36\,\tilde\varepsilon_{t-1}
+ + \textstyle\sum_{j=1}^{35}\Gamma_{2,j}\,\Delta Y_{t-j} + \varepsilon_{2,t},
+\label{eq:vec2}\\
+\Delta r_t    &= -0.06\,\tilde\varepsilon_{t-1}
+ + \textstyle\sum_{j=1}^{35}\Gamma_{3,j}\,\Delta Y_{t-j} + \varepsilon_{3,t}.
+\label{eq:vec3}
+\end{align}
+Only the loading in the $\KE$ equation is statistically significant at the
+1\% level ($p<0.01$). The loading in the $\KNE$ equation is not significant
+at the 5\% or 10\% level ($p=0.17$). The loading in the $r$ equation is not
+significant at the 5\% level ($p=0.10$) but is marginally significant at the
+10\% level (exact $p=0.098$). Extortive kidnapping is therefore the variable
+that absorbs disequilibria at conventional levels, while $\KNE_t$ and $r_t$
+are weakly exogenous with respect to the long-run relation at the 5\% level.
+Because $\beta_{\KE} = 0.04$, the effective
+adjustment speed is
+\begin{equation}
+\bigl|\alpha_{\KE}\cdot\beta_{\KE}\bigr| \;=\;
+\lvert -2.94 \times 0.04\rvert \;\approx\; 0.11 :
+\label{eq:speed}
+\end{equation}
+approximately $11\%$ of any deviation from the long-run equilibrium is
+corrected each month through adjustments in extortive kidnapping.
+
+\begin{table}[t]
+\centering
+\caption{Vector Error Correction Loading Coefficients}
+\label{tab:alpha}
+\begin{tabular}{lcccl}
+\toprule
+Equation & $\hat\alpha$ & Std.\ error & $p$-value & Significance \\
+\midrule
+$\Delta \KE_t$  & $-2.94$ & $0.67$ & $<0.01$ & 1\% \\
+$\Delta \KNE_t$ & $0.36$  & $0.26$ & $0.17$  & --- \\
+$\Delta r_t$    & $-0.06$ & $0.04$ & $0.10$  & 10\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ VEC($p=36$, $r=1$), unrestricted constant, maximum-likelihood
+estimation ($T=858$). Two-sided $p$-values. The Significance column reports
+the highest conventional level at which the coefficient differs from zero
+(1\%, 5\%, 10\%); ``---'' denotes not significant at 10\%. The exact
+$p$-value for $\Delta r_t$ is $0.098$.
+\tabsource
+\end{table}
+
+\subsection{Residual diagnostics}
+\label{sec:diagnostics}
+
+Table~\ref{tab:diagnostics} summarizes the residual diagnostics of the
+estimated system. Ljung--Box tests at twenty lags do not reject the absence
+of autocorrelation at any conventional level ($p\ge 0.99$), validating the
+dynamic specification with $p=36$. Engle ARCH tests at five lags reject
+homoskedasticity at the 1\% level in the $\KE$ and $r$ equations
+($p<0.01$) and do not reject it at the 5\% level in the $\KNE$ equation
+($p=0.95$). This pattern is expected in long monthly series spanning regimes
+of very different volatility (armed-conflict escalation and de-escalation,
+interest-rate liberalization) and does not bias the point estimates of
+$\beta$ and $\alpha$, although inference on short-run coefficients should be
+read with heteroskedasticity-robust caution.
+
+\begin{table}[t]
+\centering
+\caption{Residual Diagnostic Tests for the Estimated VEC System}
+\label{tab:diagnostics}
+\begin{tabular}{lccc}
+\toprule
+Equation & Ljung--Box$(20)$ $p$ & ARCH$(5)$ $p$ & ARCH decision \\
+\midrule
+$\Delta \KE_t$  & $1.00$ & $<0.01$ & Reject at 1\% \\
+$\Delta \KNE_t$ & $0.99$ & $0.95$  & Not reject at 5\% \\
+$\Delta r_t$    & $1.00$ & $<0.01$ & Reject at 1\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ VEC($p=36$, $r=1$), 35 short-run lags. Ljung--Box test on VEC
+residuals at 20 lags; Engle ARCH LM test at 5 lags. ARCH decision: reject
+homoskedasticity at 1\% or do not reject at 5\%, as indicated.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Gonzalo--Granger permanent--transitory decomposition}
+\label{sec:gg}
+% ============================================================================
+
+With $k=3$ variables and $r=1$ cointegrating vector, the decomposition of
+\citet{GonzaloGranger1995} identifies $k-r=2$ common stochastic trends,
+$f_t = \alpha_\perp' Y_t$, where $\alpha_\perp$ spans the orthogonal
+complement of the adjustment vector. With the rational normalization that
+assigns unit weight to $\KNE_t$ and $r_t$ respectively, the estimated
+factors are
+\begin{align}
+f_{1,t} &= 0.12\,\KE_t + 1.00\,\KNE_t ,
+\label{eq:gg-f1}\\
+f_{2,t} &= -0.02\,\KE_t + 1.00\,r_t .
+\label{eq:gg-f2}
+\end{align}
+The long-run representation of the system,
+$Y_t = A\,f_t + \mu_t$ with $A = \beta_\perp(\alpha_\perp'\beta_\perp)^{-1}$
+and $\mu_t \sim I(0)$, has estimated loading matrix
+\begin{equation}
+\begin{pmatrix} \KE_t \\[2pt] \KNE_t \\[2pt] r_t \end{pmatrix}
+=
+\begin{pmatrix}
+1.60 & 1.09 \\
+0.81 & -0.13 \\
+0.04 & 1.02
+\end{pmatrix}
+\begin{pmatrix} f_{1,t} \\[2pt] f_{2,t} \end{pmatrix}
++
+\begin{pmatrix} \mu_{1,t} \\[2pt] \mu_{2,t} \\[2pt] \mu_{3,t} \end{pmatrix},
+\qquad \mu_t \sim I(0).
+\label{eq:gg-loading}
+\end{equation}
+
+The factor $f_{1,t}$ captures persistent coercive capacity (dominated by
+non-extortive kidnapping), while $f_{2,t}$ reflects permanent macro-financial
+conditions (dominated by the interest rate). The loadings of $\KE_t$
+($1.60$ on $f_1$ and $1.09$ on $f_2$) exceed unity, indicating that
+extortive kidnapping amplifies both permanent forces. The long-run trend of
+extortive kidnapping implied by the decomposition,
+$\tau^{\mathrm{VEC}}_{\KE,t} = 1.60\,f_{1,t} + 1.09\,f_{2,t}$, is the
+VEC--GG trend used in the equivalence exercise of
+Section~\ref{sec:equivalence}.
+
+% ============================================================================
+\section{The Local Linear Trend model}
+\label{sec:llt}
+% ============================================================================
+
+As an independent univariate contrast, extortive kidnapping is decomposed in
+state-space form \citep{Harvey1989} into a stochastic level, a persistent
+slope, and a stationary cycle:
+\begin{equation}
+\begin{aligned}
+\text{Measurement:} \quad & y_t = \tau_t + c_t + \xi_t,
+&& \xi_t \sim \mathcal{N}(0,\sigma_\xi^2), \\[4pt]
+\text{Trend:} \quad & \tau_t = \tau_{t-1} + b_{t-1} + \eta_t,
+&& \eta_t \sim \mathcal{N}(0,\sigma_\eta^2), \\[4pt]
+\text{Slope:} \quad & b_t = \textstyle\sum_{j=1}^{8}\phi_j\, b_{t-j} + \zeta_t,
+&& \zeta_t \sim \mathcal{N}(0,\sigma_\zeta^2), \\[4pt]
+\text{Cycle:} \quad & c_t = \textstyle\sum_{k=1}^{5}\rho_k\, c_{t-k} + \kappa_t,
+&& \kappa_t \sim \mathcal{N}(0,\sigma_\kappa^2),
+\end{aligned}
+\label{eq:llt}
+\end{equation}
+estimated by maximum likelihood via the Kalman filter on the same monthly
+sample ($T=858$, $\log L = -3{,}847.34$, $\mathrm{AIC}=7{,}728.68$,
+$\mathrm{BIC}=7{,}809.51$; 17 free parameters). Table~\ref{tab:llt} reports
+the full parameter set of the replication run. All four innovation standard
+deviations are significant at the 1\% level ($p<0.01$ on the log-scale
+parameters):
+\begin{equation}
+\hat\sigma_\eta \approx 7.13, \qquad
+\hat\sigma_\zeta \approx 3.51, \qquad
+\hat\sigma_\kappa \approx 6.77, \qquad
+\hat\sigma_\xi \approx 11.96 .
+\label{eq:llt-sigmas}
+\end{equation}
+
+\begin{remark}
+Quasi-Newton maximum likelihood on this 15-state model can converge to
+slightly different points across MATLAB versions and starting values; the
+innovation standard deviations in \eqref{eq:llt-sigmas} are from the
+replication package run of \path{LLT_Extorsivo.m}. Small numerical
+differences do not affect any qualitative conclusion: in every run the
+permanent-shock variance $\sigma_\eta^2$ is large and highly significant.
+\end{remark}
+
+The significance of $\hat\sigma_\eta$ at the 1\% level confirms that
+permanent shocks dominate the long-run level of extortive kidnapping. Among
+the slope AR coefficients, $\phi_2$, $\phi_3$, $\phi_5$, and $\phi_7$ are
+significant at the 1\% level; $\phi_8$ is significant at the 10\% level
+($p=0.06$) but not at the 5\% level; $\phi_1$, $\phi_4$, and $\phi_6$ are not
+significant at the 10\% level. All five cycle AR coefficients ($\rho_1$
+through $\rho_5$) are significant at the 1\% level. The order-8
+autoregressive structure of the slope captures gradual changes in the growth
+rate, consistent with slow adjustments in criminal capacity rather than
+abrupt breaks. The order-5 stationary cycle absorbs medium-run fluctuations
+without distorting the permanent component.
+
+\begin{table}[t]
+\centering
+\caption{Local Linear Trend State-Space Maximum-Likelihood Estimates}
+\label{tab:llt}
+\begin{tabular}{lcccl}
+\toprule
+Parameter & Estimate & Std.\ error & $p$-value & Sig. \\
+\midrule
+$\log\sigma_\eta$ (level)      & $1.96$  & $0.06$ & $<0.01$ & 1\% \\
+$\log\sigma_\zeta$ (slope)     & $1.26$  & $0.20$ & $<0.01$ & 1\% \\
+$\phi_1$ (slope AR)            & $-0.38$ & $0.33$ & $0.24$  & --- \\
+$\phi_2$                       & $-0.28$ & $0.09$ & $<0.01$ & 1\% \\
+$\phi_3$                       & $-0.51$ & $0.16$ & $<0.01$ & 1\% \\
+$\phi_4$                       & $-0.02$ & $0.07$ & $0.72$  & --- \\
+$\phi_5$                       & $0.50$  & $0.05$ & $<0.01$ & 1\% \\
+$\phi_6$                       & $-0.05$ & $0.15$ & $0.73$  & --- \\
+$\phi_7$                       & $0.67$  & $0.11$ & $<0.01$ & 1\% \\
+$\phi_8$                       & $0.59$  & $0.31$ & $0.06$  & 10\% \\
+$\log\sigma_\kappa$ (cycle)    & $1.91$  & $0.08$ & $<0.01$ & 1\% \\
+$\rho_1$ (cycle AR)            & $-0.76$ & $0.04$ & $<0.01$ & 1\% \\
+$\rho_2$                       & $-0.18$ & $0.02$ & $<0.01$ & 1\% \\
+$\rho_3$                       & $-0.24$ & $0.03$ & $<0.01$ & 1\% \\
+$\rho_4$                       & $-0.82$ & $0.04$ & $<0.01$ & 1\% \\
+$\rho_5$                       & $-0.63$ & $0.04$ & $<0.01$ & 1\% \\
+$\log\sigma_\xi$ (irregular)   & $2.48$  & $0.05$ & $<0.01$ & 1\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ Kidnapping-for-ransom series; slope AR(8), cycle AR(5), stochastic
+level. Variance parameters estimated in logarithms. The Sig.\ column reports
+the highest conventional significance level (1\%, 5\%, 10\%); ``---'' denotes
+not significant at 10\%.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Equivalence of stochastic trends}
+\label{sec:equivalence}
+% ============================================================================
+
+The VEC--GG trend of Section~\ref{sec:gg} and the LLT trend of
+Section~\ref{sec:llt} are built from conceptually independent principles:
+multivariate cointegration restrictions versus univariate state-space
+filtering. Their sustained coherence is the empirical manifestation of the
+following corollary, stated and proved as
+Corollary~A1.2 in the proofs supplement (Appendix~2).
+
+\begin{corollary}[Equivalence of stochastic trends]
+\label{cor:equiv-trend}
+Let $\{y_t\}$ be a time series integrated of order one, $I(1)$. Suppose the
+existence of two valid decompositions defined as
+\begin{equation*}
+y_t = P_t^{(1)} + u_t^{(1)} = P_t^{(2)} + u_t^{(2)},
+\end{equation*}
+where $P_t^{(1)}$ and $P_t^{(2)}$ are processes integrated of order one and
+$u_t^{(1)}, u_t^{(2)}$ are stationary $I(0)$ processes. Then
+\begin{equation*}
+P_t^{(1)} - P_t^{(2)} \sim I(0).
+\end{equation*}
+Consequently, all valid stochastic trends derived from the same observed
+series are equivalent up to a stationary component.
+\end{corollary}
+
+Empirically, the difference
+$d_t = \tau^{\mathrm{VEC}}_{\KE,t} - \tau^{\mathrm{LLT}}_{\KE,t}$ between
+the two estimated trends behaves as the corollary predicts. Trends and
+unit-root tests on $d_t$ use the full estimation sample July~1954--December~2025
+($T=858$), as in \path{check_trend_equivalence.m}. The ADF test rejects a unit
+root in $d_t$ at the
+1\% level ($p<0.01$). The KPSS test with a Newey--West bandwidth of twelve
+lags does not reject level stationarity at the 5\% level ($p=0.07$) but
+would reject it at the 10\% level ($p<0.10$); with MATLAB's short default
+bandwidth the KPSS test rejects stationarity at the 5\% level ($p=0.01$),
+reflecting the persistence of $d_t$ at short horizons rather than a stochastic
+trend. Following the corollary, the ADF result at the 1\% level together
+with the KPSS(12) result at the 5\% level support $d_t\sim I(0)$: the two
+estimates do not diverge systematically in the long run. The VEC through the
+Gonzalo--Granger decomposition and the LLT through agnostic state-space
+filtering independently reveal the same permanent component of the
+phenomenon, which makes the long-run characterization robust to the choice
+of econometric framework.
+
+% ============================================================================
+\section{Relevance for the mechanism}
+\label{sec:relevance}
+% ============================================================================
+
+\paragraph{Scope.}
+This section explains how the macroeconometric results in
+Sections~\ref{sec:data}--\ref{sec:equivalence} feed the mechanism-design model
+of the main paper (Section~2.2, ``Macro dynamics: cointegration and the VEC
+foundation''). It is \emph{interpretive}: it introduces no new estimates. Every
+empirical quantity cited below is reported in Sections~S2--S7 and can be
+verified from the downloaded replication package using
+\path{README.txt} at the package root---without access to the author's
+working directories or any path outside the folder delivered to the reader.
+
+\paragraph{Long-run equilibrium and the interest-rate channel.}
+The long-run equilibrium \eqref{eq:coint-normalized} establishes that the
+interest rate is a structural determinant of extortive kidnapping: monetary
+contraction and credit restriction raise the cost of capital for criminal
+organizations, reshaping their incentives toward extraction strategies with
+faster returns ($\hat\beta_r/\hat\beta_{\KE}\approx 1.31$ in the normalized
+relation). This macroeconomic environment is not neutral with respect to
+kidnapper types: it defines the support of the cost distribution and of the
+ransom valuation faced by heterogeneous agents in each period, feeding the
+parameter space within which the screening mechanism of the main paper
+operates.
+
+\paragraph{Common trends and type heterogeneity.}
+The persistence of the two common trends identified in Section~\ref{sec:gg}
+(coercive capacity $f_{1,t}$ and macro-financial conditions $f_{2,t}$)
+implies that heterogeneity across types is neither transitory nor purely
+idiosyncratic, but structurally conditioned by the long-run macroeconomic
+environment; this property justifies its explicit treatment as a restriction
+on the type support in the mechanism-design model.
+
+\paragraph{Trend equivalence and calibration anchors.}
+The trend-equivalence result of Section~\ref{sec:equivalence} closes the
+model-dependence argument: the permanent component is unique up to stationary
+perturbations (Corollary~\ref{cor:equiv-trend}, proved in Appendix~2), so the
+long-run parameters carried into the calibration are structural anchors rather
+than artifacts of one econometric framework.
+
+\paragraph{Reading guide for replicators.}
+Table~\ref{tab:mechanism-map} maps each mechanism-relevant input to its
+location in this supplement and in the replication package. A reader who
+downloads the package can proceed as follows.
+\begin{enumerate}
+\item Read \path{tex/Appendix_1.pdf} (or this \LaTeX{} source) through
+Section~S7, then Section~S8.
+\item Open \path{README.txt} for folder layout and software requirements.
+\item To \emph{rerun} all estimates: execute Steps~1--3 in \path{README.txt}
+(MATLAB R2025b, Econometrics Toolbox).
+\item To \emph{inspect outputs without rerunning MATLAB}: open the pre-exported
+CSV files listed in the last column of Table~\ref{tab:mechanism-map}; trend
+equivalence can be read from \path{matlab/Trend_Difference/trend_difference.csv}
+(column \texttt{Difference}).
+\end{enumerate}
+Section~\ref{sec:repro} lists every script; the formal mechanism proofs and
+microeconometric priors ($\mu_0$, hazards) are in the main paper and its
+other supplements, not in this package.
+
+\begin{table}[t]
+\centering
+\caption{Mapping of Mechanism Inputs to Replicated Macro Results}
+\label{tab:mechanism-map}
+\begin{tabular}{p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}}
+\toprule
+Mechanism input & Where in this supplement & Replication package \\
+\midrule
+$I(1)$ order of $\KE_t$, $\KNE_t$, $r_t$
+  & Section~\ref{sec:unitroot}, Table~\ref{tab:unitroot}
+  & \path{matlab/VEC/VEC\_2T.m} (Step~1 in \path{README.txt}) \\[4pt]
+Cointegration rank $r=1$
+  & Section~\ref{sec:johansen}, Table~\ref{tab:johansen}
+  & \path{matlab/VEC/VEC\_2T.m} \\[4pt]
+Long-run relation
+  $\KE_t = 1.93\,\KNE_t + 1.31\,r_t + \varepsilon_t$
+  & \eqref{eq:coint-normalized}, Section~\ref{sec:vec}
+  & \path{matlab/VEC/VEC\_2T.m}; $\beta$ in console output \\[4pt]
+Adjustment: only $\KE_t$ loads on the ECT (5\% level)
+  & Section~\ref{sec:vec}, Table~\ref{tab:alpha}
+  & \path{matlab/VEC/VEC\_2T.m} \\[4pt]
+Common trends $f_{1,t}$, $f_{2,t}$ and VEC--GG loadings
+  & Section~\ref{sec:gg}, \eqref{eq:gg-f1}--\eqref{eq:gg-loading}
+  & \path{matlab/VEC/VEC\_2T.m};
+    \path{matlab/VEC/Tendencias\_SE.csv} \\[4pt]
+LLT permanent component of $\KE_t$
+  & Section~\ref{sec:llt}, \eqref{eq:llt-sigmas}, Table~\ref{tab:llt}
+  & \path{matlab/SE\_Kalman/LLT\_Extorsivo.m};
+    \path{matlab/SE\_Kalman/LLT\_decomposition.csv} \\[4pt]
+Trend equivalence: $d_t=\tau^{\mathrm{VEC}}_{\KE}-\tau^{\mathrm{LLT}}_{\KE}
+  \sim I(0)$
+  & Section~\ref{sec:equivalence}, Corollary~\ref{cor:equiv-trend}
+  & \path{matlab/Trend\_Difference/check\_trend\_equivalence.m};
+    \path{matlab/Trend\_Difference/trend\_difference.csv} \\[4pt]
+Full numeric check vs.\ all tables
+  & Sections~S2--S7
+  & \path{matlab/Trend\_Difference/verify\_appendix1.m} (optional) \\
+\bottomrule
+\end{tabular}
+\tabnote\ This table is a reading guide only; it does not report new
+statistics. CSV files allow inspection of trends and differences without
+rerunning MATLAB. The mechanism model, calibration, and microeconometric
+priors are documented in the main paper.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Reproducibility}
+\label{sec:repro}
+% ============================================================================
+
+\begin{sloppypar}
+All results in this supplement are reproduced by MATLAB scripts in the
+\texttt{Appendix\_1/} replication package. No script references paths outside
+that folder. See \path{README.txt} at the package root for step-by-step
+instructions. Requirements: MATLAB R2025b (or later) with the Econometrics
+Toolbox.
+\end{sloppypar}
+
+\begin{enumerate}
+\item \path{matlab/VEC/VEC_2T.m} --- unit roots, Johansen test, VEC
+  estimation, Gonzalo--Granger decomposition, diagnostics, IRFs, and
+  forecasts; exports \path{matlab/VEC/Tendencias_SE.csv}.
+\item \path{matlab/SE_Kalman/LLT_Extorsivo.m} --- LLT state-space model;
+  exports \path{matlab/SE_Kalman/LLT_decomposition.csv}.
+\item \path{matlab/Trend_Difference/check_trend_equivalence.m} --- trend
+  equivalence (Section~\ref{sec:equivalence}); exports
+  \path{matlab/Trend_Difference/trend_difference.csv}.
+\item (Optional) \path{matlab/Trend_Difference/verify_appendix1.m} --- full
+  numeric check against all tables in this supplement.
+\item (Optional) Compile \path{tex/Appendix_1.pdf} from \path{tex/} with
+  \texttt{pdflatex} and \texttt{bibtex}.
+\end{enumerate}
+
+\begin{sloppypar}
+Section~\ref{sec:relevance} (Table~\ref{tab:mechanism-map}) maps macro outputs
+to mechanism inputs. Input data: \path{matlab/VEC/Data.csv} ($T=858$).
+\end{sloppypar}
+
+\bibliographystyle{econsoc}
+\bibliography{references}
+
+\end{document}

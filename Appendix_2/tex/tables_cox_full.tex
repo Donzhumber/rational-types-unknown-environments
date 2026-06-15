@@ -1,0 +1,95 @@
+% Cause-specific Cox: four equations (N=461). Stata 19, cox_only.do.
+{\footnotesize
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{lcccc}
+\caption{Cause-Specific Cox Proportional Hazards Results (Four Equations)}
+\label{tab:cox-full} \\
+\toprule
+& \textbf{Payment} & \textbf{Rescue} & \textbf{Death} & \textbf{Escape} \\
+\textbf{Predictors} & (HR) & (HR) & (HR) & (HR) \\
+\midrule
+\endfirsthead
+\multicolumn{5}{c}{\textbf{Table~\thetable{} --- continued from previous page}} \\
+\toprule
+& \textbf{Payment} & \textbf{Rescue} & \textbf{Death} & \textbf{Escape} \\
+\textbf{Predictors} & (HR) & (HR) & (HR) & (HR) \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{Continued on next page}} \\
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+
+\multicolumn{5}{l}{\textbf{\textit{Perpetrator group (ref.\ FARC)}}} \\
+ELN & 1.186 & 1.057 & 3.039 & 0.569 \\
+    & {\scriptsize (0.317)} & {\scriptsize (0.837)} & {\scriptsize (0.404)} & {\scriptsize (0.225)} \\
+Paramilitaries & 4.284*** & 1.262 & 12.211* & 7.547*** \\
+               & {\scriptsize (0.000)} & {\scriptsize (0.530)} & {\scriptsize (0.049)} & {\scriptsize (0.000)} \\
+Common delinquency & 1.713* & 0.935 & 49.988** & 1.157 \\
+                   & {\scriptsize (0.021)} & {\scriptsize (0.862)} & {\scriptsize (0.004)} & {\scriptsize (0.812)} \\
+\midrule
+
+\multicolumn{5}{l}{\textbf{\textit{Victim profile (ref.\ upper class)}}} \\
+Middle class & 0.780 & 1.071 & 0.000*** & 0.680 \\
+             & {\scriptsize (0.274)} & {\scriptsize (0.823)} & {\scriptsize (0.000)} & {\scriptsize (0.467)} \\
+Vulnerable population & 1.542* & 0.512 & 13.108* & 0.676 \\
+                      & {\scriptsize (0.046)} & {\scriptsize (0.053)} & {\scriptsize (0.030)} & {\scriptsize (0.512)} \\
+Public sector & 0.199*** & 0.237*** & 0.000*** & 2.133 \\
+              & {\scriptsize (0.000)} & {\scriptsize (0.001)} & {\scriptsize (0.000)} & {\scriptsize (0.218)} \\
+\midrule
+
+\multicolumn{5}{l}{\textbf{\textit{Geographic zone (ref.\ metropolis)}}} \\
+Andean & 1.290 & 1.709 & 0.126 & 0.445 \\
+       & {\scriptsize (0.450)} & {\scriptsize (0.465)} & {\scriptsize (0.052)} & {\scriptsize (0.209)} \\
+Caribbean & 1.170 & 1.024 & 0.000*** & 0.523 \\
+          & {\scriptsize (0.649)} & {\scriptsize (0.975)} & {\scriptsize (0.000)} & {\scriptsize (0.304)} \\
+East/jungle & 0.815 & 0.625 & 0.231 & 0.674 \\
+            & {\scriptsize (0.644)} & {\scriptsize (0.530)} & {\scriptsize (0.117)} & {\scriptsize (0.579)} \\
+\midrule
+
+\multicolumn{5}{l}{\textbf{\textit{Modus operandi (ref.\ direct attack)}}} \\
+Illegal roadblock & 1.780* & 2.339 & 0.000*** & 5.044** \\
+                  & {\scriptsize (0.012)} & {\scriptsize (0.069)} & {\scriptsize (0.000)} & {\scriptsize (0.003)} \\
+Deception & 1.330 & 3.275*** & 0.000*** & 0.555 \\
+          & {\scriptsize (0.309)} & {\scriptsize (0.000)} & {\scriptsize (0.000)} & {\scriptsize (0.421)} \\
+\midrule
+
+\multicolumn{5}{l}{\textbf{\textit{Kidnapping characteristics}}} \\
+Group structure (vs.\ individual) & 0.950 & 0.577 & 3.736 & 3.226** \\
+                                  & {\scriptsize (0.801)} & {\scriptsize (0.114)} & {\scriptsize (0.331)} & {\scriptsize (0.008)} \\
+GAULA intervention (vs.\ none) & 0.716 & 0.597 & 1.172 & 0.976 \\
+                               & {\scriptsize (0.267)} & {\scriptsize (0.244)} & {\scriptsize (0.932)} & {\scriptsize (0.961)} \\
+$\ln$(total victims per case) & 1.205 & 1.593* & 0.659 & 0.295*** \\
+                              & {\scriptsize (0.191)} & {\scriptsize (0.052)} & {\scriptsize (0.739)} & {\scriptsize (0.000)} \\
+\midrule
+
+\multicolumn{5}{l}{\textbf{\textit{Historical period (ref.\ pre-1998)}}} \\
+Crisis/Cagu\'an (1998--2002) & 1.112 & 0.677 & 1.366 & 0.401 \\
+                             & {\scriptsize (0.514)} & {\scriptsize (0.243)} & {\scriptsize (0.878)} & {\scriptsize (0.150)} \\
+Democratic security (2003--2010) & 0.735 & 2.022* & 9.186 & 0.220 \\
+                                 & {\scriptsize (0.125)} & {\scriptsize (0.036)} & {\scriptsize (0.108)} & {\scriptsize (0.063)} \\
+Peace process/current (2011+) & 0.510* & 4.863*** & 35.559** & 4.886** \\
+                              & {\scriptsize (0.035)} & {\scriptsize (0.000)} & {\scriptsize (0.008)} & {\scriptsize (0.002)} \\
+\midrule
+
+\multicolumn{5}{l}{\textit{Model statistics}} \\
+Observations ($N$) & 461 & 461 & 461 & 461 \\
+Events & 277 & 120 & 13 & 51 \\
+Wald $\chi^2$ & 117.57 & 182.68 & --- & 116.45 \\
+Prob $>\chi^2$ & 0.0000 & 0.0000 & 0.0000 & 0.0000 \\
+\end{longtable}
+}
+\tabnote\ Hazard ratios (HR) with cluster-robust $p$-values in parentheses
+(two-sided). * $p<.05$; ** $p<.01$; *** $p<.001$. Duration categories are
+excluded (collinear with the time axis). The Cox subsample ($N=461$) drops
+602 cases with missing duration and 64 zero-day captivities (Breslow ties).
+Payment and Rescue coefficients match Section~2.3 of the main paper; Death
+and Escape equations use the same covariate vector (\path{cox_only.do}). The
+Death equation has only 13 events: several HRs hit numerical bounds (reported
+as 0.000) owing to quasi-complete separation; its Wald statistic is omitted
+from interpretation. Pacific zone, unknown victim profile, military
+incursion, unknown modus, and sex indicators are estimated but omitted for
+parity with the main-text table layout.
+\tabsource

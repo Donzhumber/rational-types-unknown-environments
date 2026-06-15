@@ -1,0 +1,582 @@
+% !TEX root = Appendix_2.tex
+% =========================================================================
+% APPENDIX 2 -- MICROSTRUCTURE AND COMPETING HAZARDS IN COLOMBIA
+% Econometrica / Econometric Society supplement format.
+% Detailed presentation of Section~2.3 results. Replication: Appendix_2/
+% =========================================================================
+\documentclass[ecta,nameyear,final,supplement]{econsocart}
+
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{ragged2e}
+\usepackage{longtable}
+\RequirePackage[colorlinks,citecolor=blue,linkcolor=blue,urlcolor=blue,pagebackref]{hyperref}
+\urlstyle{same}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\startlocaldefs
+\numberwithin{equation}{section}
+\numberwithin{table}{section}
+
+\newcommand{\E}{\mathbb{E}}
+
+\renewcommand{\thesection}{S\arabic{section}}
+% Compact AMS-style labels: S{sec}.{sub}.{subsub}.{para}; 0 if level unused
+\makeatletter
+\newcommand{\@appzero}[1]{\ifnum\value{#1}=0 0\else\arabic{#1}\fi}
+\newcommand{\@appsec}{S\arabic{section}}
+\newcommand{\@appsub}{\@appzero{subsection}}
+\newcommand{\@appsubsub}{\@appzero{subsubsection}}
+\renewcommand{\thesubsection}{\@appsec.\@appsub.0.0}
+\renewcommand{\thesubsubsection}{\@appsec.\@appsub.\@appsubsub.0}
+\renewcommand{\theparagraph}{\@appsec.\@appsub.\@appsubsub.\arabic{paragraph}}
+\setcounter{secnumdepth}{4}
+\@addtoreset{subsection}{section}
+\@addtoreset{subsubsection}{subsection}
+\@addtoreset{paragraph}{section}
+\makeatother
+
+% APA 7-style table notes (Publication Manual, \S7.21)
+\newcommand{\tabnote}{\par\addvspace{0.4em}\noindent\emph{Note.}}
+\newcommand{\tabsource}{\ \textit{Source:} Authors' own calculations based on
+CNMH/SIEVCAC microdata (Section~\ref{sec:data}). Software: Stata~19
+(StataCorp, 2025).}
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Supplement to ``Identifying Rational Types in Unknown Environments''\\
+Appendix 2: Microstructure and Competing Hazards in Colombia}
+\runtitle{Microstructure Supplement}
+
+\begin{aug}
+\author[add1,add2]{\fnms{Humberto}~\snm{Bernal}}
+\address[add1]{%
+\orgdiv{Economics Program},
+\orgname{Universidad Colegio Mayor de Cundinamarca}}
+\address[add2]{%
+\orgdiv{Ph.D. in Economics},
+\orgname{Universidad de los Andes}}
+\ead[label=e1]{hbernal@uniandes.edu.co}
+\ead[label=e2]{hbernalc@universidadmayor.edu.co}
+\end{aug}
+
+\begin{funding}
+Economist, professor of the Economics Program at the Universidad Colegio
+Mayor de Cundinamarca and graduate of the Ph.D.\ in Economics from the
+Universidad de los Andes, Colombia.
+\end{funding}
+
+\end{frontmatter}
+
+\noindent
+This supplement presents in full detail the microeconometric results
+summarized in Section~2.3 of the main paper (``Microstructure and competing
+hazards in Colombia''). It documents the CNMH/SIEVCAC data, the construction
+of the analytical sample, the sample-selection test, the multinomial logit
+(MNL) model of kidnapping outcomes, specification diagnostics and robustness
+checks, and the cause-specific Cox proportional hazards models of resolution
+timing. All estimates were reproduced from the Stata scripts in the
+\texttt{Appendix\_2/} replication package (Section~\ref{sec:repro}).
+
+% ============================================================================
+\section{Data and sample construction}
+\label{sec:data}
+% ============================================================================
+
+Individual kidnapping records come from the Information System on Events of
+Violence in the Colombian Armed Conflict (SIEVCAC), maintained by the
+National Center of Historical Memory (CNMH) \citep{cnmh_datos,CNMH2013}.
+The replication package includes the merged case--victim file
+\path{stata/data/Data_merge.dta} ($N=39{,}369$ victim-level records) and the
+estimation-ready checkpoint \path{stata/data/analytical_sample.dta} ($n=1{,}125$
+after outcome filters, variable construction, and dropping eight cases with
+missing geographic zone).
+
+\subsection{Universe and sequential filters}
+
+Table~\ref{tab:sample-flow} summarizes the sample flow reported in the main
+text. The universe comprises all documented kidnapping victims in the merged
+CNMH export. The first filter retains extortionate kidnappings
+(\texttt{TipodeSecuestro = EXTORSIVO}) with a valid event date. The second
+filter requires an observable liberation outcome (excluding \texttt{ND},
+\texttt{OTRO}, and \texttt{NA} in \texttt{TipodeLiberación}). The third
+filter requires complete covariates for estimation; eight cases with missing
+geographic zone are dropped, yielding $n=1{,}125$.
+
+\begin{table}[t]
+\centering
+\caption{Analytical Sample Construction}
+\label{tab:sample-flow}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Stage & $n$ & Share of prior stage \\
+\midrule
+Universe (merged CNMH records) & 39,369 & --- \\
+Valid event date & 36,916 & 93.8\% \\
+Extortionate typology & 11,270 & 30.5\% \\
+Observable outcome & 1,133 & 10.1\% \\
+Complete covariates & 1,125 & 99.3\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ Valid event date: non-missing \texttt{Fecha} and \texttt{Año}$\neq 0$
+after parsing \path{Data_merge.dta}. Extortionate share of universe:
+$11{,}270/39{,}369=28.6\%$. Estimation share: $1{,}125/39{,}369=2.9\%$. Eight
+cases with missing geographic zone are dropped at the final stage.
+\tabsource
+\end{table}
+
+\subsection{Outcome variable}
+
+The dependent variable \texttt{Y\_Resultado} classifies each extortionate
+episode into four mutually exclusive outcomes (reference category: Payment):
+\begin{itemize}
+\item \textbf{Payment} ($Y=1$): ransom or exchange paid
+  (\texttt{PAGO}, \texttt{CANJE}, and related codes).
+\item \textbf{Rescue} ($Y=3$): liberation by state forces (\texttt{RESCATE}).
+\item \textbf{Escape or release without payment} ($Y=0$):
+  \texttt{FUGA} or release under external pressure without ransom.
+\item \textbf{Death} ($Y=2$): victim killed in captivity
+  (\texttt{MUERTO EN CAUTIVERIO}, \texttt{ASESINADO}).
+\end{itemize}
+Table~\ref{tab:outcome-dist} reports the distribution in the estimation
+sample.
+
+\begin{table}[t]
+\centering
+\caption{Outcome Distribution in the Estimation Sample}
+\label{tab:outcome-dist}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Outcome & Count & Share \\
+\midrule
+Payment (reference) & 512 & 45.5\% \\
+Rescue & 471 & 41.9\% \\
+Escape or release without payment & 121 & 10.8\% \\
+Death in captivity & 21 & 1.9\% \\
+\midrule
+Total & 1,125 & 100.0\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ Estimation sample $n=1{,}125$. Payment is the MNL reference category.
+\tabsource
+\end{table}
+
+\subsection{Covariates}
+
+The covariate vector $\mathbf{X}_{i,m}\in\mathbb{R}^{26}$ in the main text
+comprises four blocks (all coded as indicator variables with stated
+reference categories):
+\begin{enumerate}
+\item \textbf{Perpetrator} ($\mathbf{G}_i$): FARC (ref.), ELN, paramilitaries,
+  common delinquency/other.
+\item \textbf{Victim profile} ($\mathbf{V}_i$): high income (ref.), middle
+  class, vulnerable, public sector, unknown.
+\item \textbf{Context} ($\mathbf{C}_{i,m}$): geographic zone (metropolis ref.,
+  Andean, Caribbean, Pacific/conflict, East/jungle) and historical period
+  (pre-1998 ref., 1998--2002, 2003--2010, post-2011).
+\item \textbf{Tactics} ($\mathbf{T}_i$): modus operandi, collective vs.\
+  individual structure, GAULA intervention, victim sex, captivity duration
+  category (express $\le 2$ days ref., short $\le 30$ days, long $>30$ days,
+  missing), and $\ln(\text{total victims per case})$.
+\end{enumerate}
+Standard errors are clustered at the municipal level (373~clusters). Variable
+construction rules are implemented in \path{microstructure_replication.do}
+and \path{sample_selection_robustness.do}.
+
+% ============================================================================
+\section{Sample-selection test}
+\label{sec:selection}
+% ============================================================================
+
+Because only 10.1\% of extortionate cases have observable outcomes, a binary
+logistic model was estimated on the extortionate stratum with complete
+attrition covariates ($n=11{,}253$ of $11{,}270$ extortionate cases with valid
+date), with dependent variable \texttt{Missing\_Outcome}$=1$ when the liberation
+type is unobserved \citep{LittleRubin2020}. Table~\ref{tab:attrition} summarizes
+the main findings as odds ratios with cluster-robust standard errors by
+municipality.
+
+\begin{table}[t]
+\centering
+\caption{Attrition Logistic Regression Results}
+\label{tab:attrition}
+\small
+\begin{tabular}{@{}lccr@{}}
+\toprule
+Covariate & OR & $p$-value & Significance \\
+\midrule
+Non-metropolitan zones & 1.9--2.2 & $<0.001$ & 1\% \\
+Period 1998--2002 & 1.76 & $0.001$ & 1\% \\
+Victim profile & --- & $>0.10$ & --- \\
+$\ln$(total victims per case) & --- & $>0.10$ & --- \\
+\bottomrule
+\end{tabular}
+\tabnote\ Estimated on extortionate cases with complete attrition covariates
+($n=11{,}253$; $11{,}270$ extortionate cases with valid date). Stata drops 17
+observations with missing covariates. Cluster-robust standard errors by
+municipality. OR $>1$ indicates higher odds of an unobservable outcome.
+Non-metropolitan zones comprise Andean, Caribbean, Pacific, and East/jungle
+categories. Victim-profile and scale covariates are not predictive at the 10\%
+level; geography and the 1998--2002 period show systematic attrition. The
+Significance column reports the highest conventional level (1\%, 5\%, 10\%);
+``---'' denotes not significant at 10\%.
+\tabsource
+\end{table}
+
+The test rejects complete randomness of missing outcomes while supporting
+the internal validity of the structural estimators: substantive covariates do
+not predict missingness, and the remaining bias is territorial (metropolitan
+overrepresentation).
+
+% ============================================================================
+\section{Multinomial logit model}
+\label{sec:mnl}
+% ============================================================================
+
+\subsection{Specification}
+
+With Payment as the base category ($Y=1$), the MNL estimates
+\begin{equation}
+\ln\!\left(\frac{\Pr(Y_{i,m}=j \mid \mathbf{X}_{i,m})}{\Pr(Y_{i,m}=1 \mid \mathbf{X}_{i,m})}\right)
+= \alpha_j + \mathbf{X}_{i,m}'\boldsymbol{\beta}_j,
+\quad j\in\{0,2,3\}.
+\label{eq:mnl-app}
+\end{equation}
+The main specification uses cluster-robust standard errors at the municipality
+level \citep{Wooldridge2010}.
+
+\subsection{Model fit}
+
+The model is jointly significant: Wald $\chi^2(78)=5{,}250.34$, $p<0.001$;
+McFadden pseudo-$R^2=0.18$.
+
+\subsection{Full estimation results}
+
+Table~\ref{tab:mnl-full} reports the complete MNL specification: all 26
+covariates for the three non-payment outcomes (Escape, Death, Rescue), with
+cluster-robust standard errors, $z$-statistics, $p$-values, and 95\%
+confidence intervals. The baseline outcome is Payment ($Y=1$).
+
+\input{tables_mnl_full}
+
+\subsection{Key relative risk ratios}
+
+Table~\ref{tab:mnl-key} summarizes the three headline findings in Section~2.3
+of the main paper, expressed as relative risk ratios (RRR $=\exp(\hat\beta)$).
+The corresponding rows in Table~\ref{tab:mnl-full} are Peace process/current
+(Escape), public-sector victim (Escape), and short/long duration (Rescue).
+
+\begin{table}[t]
+\centering
+\caption{Selected Multinomial Logit Relative Risk Ratios}
+\label{tab:mnl-key}
+\small
+\begin{tabular}{@{}llccr@{}}
+\toprule
+Outcome & Covariate & RRR & $p$-value & Significance \\
+\midrule
+Escape & Post-2011 period & 11.28 & $<0.01$ & 1\% \\
+Escape & Public-sector victim & 3.92 & $<0.01$ & 1\% \\
+Rescue & Short captivity ($\le 30$~d) & 0.18 & $<0.001$ & 1\% \\
+Rescue & Long captivity ($>30$~d) & 0.08 & $<0.001$ & 1\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ Base category: Payment. RRR $=\exp(\hat\beta)$. Duration
+categories are relative to express captivities ($\le 2$~days). Period
+contrast: post-2011 vs.\ pre-1998. The Significance column reports the
+highest conventional level (1\%, 5\%, 10\%); ``---'' denotes not significant
+at 10\%.
+\tabsource
+\end{table}
+
+\subsection{Predicted probabilities (margins)}
+
+Table~\ref{tab:mnl-margins} reports average marginal predicted probabilities
+from the main MNL (unconditional margins).
+
+\begin{table}[t]
+\centering
+\caption{Average Predicted Probabilities from the Main MNL}
+\label{tab:mnl-margins}
+\small
+\begin{tabular}{@{}llr@{}}
+\toprule
+Dimension & Category & $\Pr(\cdot)$ \\
+\midrule
+\multicolumn{3}{@{}l@{}}{\textit{Rescue by geographic zone}} \\
+& Metropolis & 0.465 \\
+& Andean & 0.447 \\
+& Pacific & 0.414 \\
+& East/jungle & 0.424 \\
+& Caribbean & 0.343 \\
+\midrule
+\multicolumn{3}{@{}l@{}}{\textit{Death by perpetrator group}} \\
+& FARC & 0.002 \\
+& ELN & 0.007 \\
+& Paramilitaries & 0.026 \\
+& Common delinquency & 0.071 \\
+\bottomrule
+\end{tabular}
+\tabnote\ Unconditional margins from \texttt{margins} after the main MNL
+($n=1{,}125$). Rescue probabilities decline away from metropolitan nodes;
+death probabilities rise as logistical retention capacity falls.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{MNL diagnostics and robustness}
+\label{sec:mnl-diag}
+% ============================================================================
+
+\subsection{IIA test}
+
+The Hausman--McFadden \citep{HausmanMcFadden1984} SUEST generalization
+\citep{Weesie1999} compares the full four-outcome model with a restricted
+model that excludes Death. The test does not reject independence of
+irrelevant alternatives: $\chi^2(1)=0.24$, $p=0.625$.
+
+\subsection{Coefficient stability}
+
+Three specifications are compared: (i)~main model with municipal clusters;
+(ii)~robust standard errors without clustering; and (iii)~specification
+without duration categories.
+
+Table~\ref{tab:robust} reports two coefficients from the Death equation.
+
+\begin{table}[t]
+\centering
+\caption{MNL Robustness Coefficients}
+\label{tab:robust}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & \multicolumn{3}{c}{$\hat\beta$ (Death equation)} \\
+\cmidrule(lr){2-4}
+Covariate & Main & Robust SE & No duration \\
+\midrule
+Common delinquency (vs.\ FARC) & 4.15 & 4.15 & 4.15 \\
+Collective structure (vs.\ individual) & 2.46 & 2.46 & 2.46 \\
+\bottomrule
+\end{tabular}
+\tabnote\ Municipal clusters in Main and No duration; heteroskedasticity-
+robust standard errors in Robust SE. Coefficients are stable across
+specifications: both remain positive and significant at the 1\% level in all
+three columns ($p<0.01$; No duration $p<0.001$).
+\tabsource
+\end{table}
+
+\subsection{Death-rate heterogeneity}
+
+Raw death rates in the estimation sample are 8.0\% for common delinquency
+and 0.2\% for the FARC. A two-sample proportion test (FARC vs.\ common
+delinquency) rejects equal rates: $z=-5.71$, $p<0.001$.
+
+% ============================================================================
+\section{Cause-specific Cox proportional hazards}
+\label{sec:cox}
+% ============================================================================
+
+\subsection{Specification}
+
+Following \citet{Cox1972} and the competing-risks framework of
+\citet{Bradburn2003}, four cause-specific Cox models are estimated on
+\texttt{DíasdeCautiverio} (days in captivity). In each model, one outcome
+defines the event of interest and the remaining three outcomes are treated
+as right-censored. The cause-specific hazard is
+\begin{equation}
+h_j(t \mid \mathbf{X}) = h_{0j}(t)\exp\!\left(\mathbf{X}'\tilde{\boldsymbol{\beta}}_j\right),
+\qquad j\in\{\text{Payment, Rescue, Death, Escape}\},
+\label{eq:cox-app}
+\end{equation}
+with the same covariate blocks as the MNL but excluding duration categories,
+which would be collinear with the time axis. The Cox subsample comprises
+$N=461$ cases with positive captivity duration and complete covariates (602
+cases with missing duration and 64 zero-day captivities are excluded; Breslow
+ties). FARC is the reference perpetrator group. Cluster-robust standard
+errors are reported.
+
+\subsection{Estimation results}
+
+Table~\ref{tab:cox-full} reports all four cause-specific equations (Payment,
+Rescue, Death, and Escape/release without payment). Table~\ref{tab:cox-hr}
+lists the coefficients emphasized in Section~2.3 of the main paper.
+
+\input{tables_cox_full}
+
+\begin{table}[t]
+\centering
+\caption{Selected Cause-Specific Cox Hazard Ratios}
+\label{tab:cox-hr}
+\small
+\begin{tabular}{@{}llccr@{}}
+\toprule
+Equation & Covariate & HR & $p$-value & Significance \\
+\midrule
+\multicolumn{5}{@{}l@{}}{\textit{Payment equation}} \\
+& Paramilitaries & 4.28 & $<0.001$ & 1\% \\
+& Common delinquency & 1.71 & $0.021$ & 5\% \\
+& ELN & 1.19 & $0.317$ & --- \\
+\midrule
+\multicolumn{5}{@{}l@{}}{\textit{Payment and Rescue equations}} \\
+& Public-sector victim (Payment) & 0.20 & $<0.001$ & 1\% \\
+& Public-sector victim (Rescue) & 0.24 & $0.001$ & 1\% \\
+\midrule
+\multicolumn{5}{@{}l@{}}{\textit{Post-2011 period}} \\
+& Post-2011 (Payment) & 0.51 & $0.035$ & 5\% \\
+& Post-2011 (Rescue) & 4.86 & $<0.001$ & 1\% \\
+\bottomrule
+\end{tabular}
+\tabnote\ Rows match Table~\ref{tab:cox-full} (rounded for the narrative).
+Reference perpetrator group: FARC. HR $=\exp(\tilde\beta)$; HR $>1$ indicates
+faster resolution, HR $<1$ slower resolution. The Significance column reports
+the highest conventional level (1\%, 5\%, 10\%); ``---'' denotes not
+significant at 10\%. Payment speed falls 49\% post-2011 ($1-0.51$); Rescue
+hazard multiplies by ${\approx}4.86$.
+\tabsource
+\end{table}
+
+\subsection{GAULA intervention and cumulative rescue}
+
+Unconditional margins from the Rescue Cox model show that GAULA intervention
+raises the predicted rescue probability at each duration category
+(Table~\ref{tab:cox-gaula}).
+
+Cumulative rescue probabilities by day~100 appear in
+Table~\ref{tab:cox-cumul} (exported in \path{outputs/Datos_Graficas_Cox.xlsx}).
+
+\begin{table}[t]
+\centering
+\caption{Rescue Probability by GAULA Intervention and Duration}
+\label{tab:cox-gaula}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+GAULA intervention & Express & Short & Long \\
+\midrule
+No & 0.64 & 0.28 & 0.14 \\
+Yes & 0.72 & 0.35 & 0.19 \\
+\bottomrule
+\end{tabular}
+\tabnote\ Unconditional margins from the Rescue cause-specific Cox model.
+Duration categories: express ($\le 2$~days), short ($\le 30$~days), long
+($>30$~days).
+\tabsource
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Cumulative Rescue Probability at Day 100}
+\label{tab:cox-cumul}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Perpetrator group & $\Pr(\text{Rescue by day 100})$ \\
+\midrule
+Paramilitaries & 0.33 \\
+ELN & 0.29 \\
+FARC & 0.27 \\
+\bottomrule
+\end{tabular}
+\tabnote\ Computed from cause-specific survival curves ($1-S_t$) at day
+$t=98$ (maximum grid point in \path{stcurve} with \texttt{range(0 100)}) in
+\path{outputs/cumul_rescue_d100.dta}, exported to
+\path{outputs/Datos_Graficas_Cox.xlsx} by \path{microstructure_replication.do}.
+\tabsource
+\end{table}
+
+\subsection{Mortality}
+
+The MNL yields unconditional average predicted death probabilities of 0.002
+(FARC) and 0.071 (common delinquency) in Table~\ref{tab:mnl-margins}. The
+corresponding cause-specific Cox margins reported in Section~2.3 of the main
+paper are 0.002 and 0.079 (${\approx}35\times$ and ${\approx}40\times$,
+respectively). Both specifications preserve the same ordering: mortality rises
+as logistical retention capacity falls.
+
+% ============================================================================
+\section{Relevance for the mechanism}
+\label{sec:relevance}
+% ============================================================================
+
+\paragraph{Scope.}
+This section maps the microeconometric results to the mechanism-design model
+(Section~2.3 of the main paper, ``Microstructure and competing hazards in
+Colombia''). It introduces no new estimates. Every empirical quantity cited
+below is reported in Sections~S1--S7 and can be verified from the replication
+package using \path{README.txt} at the package root.
+
+\begin{table}[t]
+\centering
+\caption{Mechanism Inputs and Replication Files}
+\label{tab:mechanism-map}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Y
+  >{\raggedright\arraybackslash}Y
+  >{\raggedright\arraybackslash}Y@{}}
+\toprule
+Mechanism object & Main-text result & Package file \\
+\midrule
+Prior $\mu_0$ over types $\theta_K$ & MNL outcome distribution &
+  \path{microstructure_replication.do} \\
+Terminal payment technology & RRR by victim profile &
+  \path{sample_selection_robustness.do} \\
+Arrival rates $\lambda_j(\theta_K,t)$ & Cox cause-specific HRs &
+  \path{microstructure_replication.do} \\
+GAULA effectiveness $\gamma_t$ & GAULA $\times$ duration margins &
+  \path{outputs/Datos_Graficas_Cox.xlsx} \\
+Sample validity & Attrition logit, IIA, robustness &
+  \path{sample_selection_robustness.do} \\
+\bottomrule
+\end{tabularx}
+\tabnote\ The MNL supplies the static type map; the Cox models supply
+dynamic resolution hazards that feed the daily public signal $\zeta_t$ in the
+MDG process. All paths are relative to \path{Appendix_2/stata/}.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Reproducibility}
+\label{sec:repro}
+% ============================================================================
+
+\begin{sloppypar}
+All results in this supplement are reproduced by Stata scripts in the
+\texttt{Appendix\_2/} replication package. Set the working directory to
+\texttt{Appendix\_2/} and run \path{replicate.do}. See \path{README.txt} at the
+package root for step-by-step instructions. Requirements: Stata~19 or later.
+Estimated runtime: 5--15 minutes. Batch mode:
+\texttt{stata -b -q do replicate.do}.
+\end{sloppypar}
+
+\begin{enumerate}
+\item \path{replicate.do} runs the full pipeline in \path{stata/}:
+  \path{microstructure_replication.do}, \path{sample_selection_robustness.do},
+  and \path{cox_only.do}.
+\item Individual scripts live in \path{stata/}; each includes
+  \path{_setup_paths.do} and locates \path{stata/data/Data_merge.dta}
+  automatically.
+\item Generated outputs: \path{stata/outputs/analytical_sample.dta},
+  \path{stata/outputs/cox_appendix_rows.txt},
+  \path{stata/outputs/cox_cumul_day100.txt}, and log files.
+\item Cox curves: \path{stata/outputs/Datos_Graficas_Cox.xlsx} and
+  \path{stata/outputs/cumul_rescue_d100.dta} (Tables~\ref{tab:cox-gaula}
+  and \ref{tab:cox-cumul}); regenerated by \path{microstructure_replication.do}.
+\item (Optional) Compile \path{tex/Appendix_2.pdf} from \path{tex/} with
+  \texttt{pdflatex} and \texttt{bibtex}.
+\end{enumerate}
+
+\begin{sloppypar}
+Section~\ref{sec:relevance} (Table~\ref{tab:mechanism-map}) maps
+microeconometric outputs to mechanism inputs. Raw CNMH exports used to build
+\path{stata/data/Data_merge.dta} are documented in \path{README.txt}.
+\end{sloppypar}
+
+\bibliographystyle{econsoc}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,1445 @@
+% !TEX root = Appendix_3.tex
+% =========================================================================
+% APPENDIX 3 -- FORMAL PROOFS AND LEAN VERIFICATION
+% Econometrica / Econometric Society supplement format.
+% Formal proofs supporting the identification argument. Replication: Appendix_3/
+% =========================================================================
+\documentclass[ecta,nameyear,final,supplement]{econsocart}
+
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\RequirePackage[colorlinks,citecolor=blue,linkcolor=blue,urlcolor=blue,pagebackref]{hyperref}
+\urlstyle{same}
+
+\startlocaldefs
+\numberwithin{equation}{section}
+\numberwithin{table}{section}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ProbE}{\mathbb{P}_{\mathrm{E}}}
+\newcommand{\ProbI}[1]{\mathbb{P}_{\mathrm{I},#1}}
+\newcommand{\ProbC}[1]{\mathbb{P}_{\mathrm{C},#1}}
+\newcommand{\Unif}{\mathrm{Unif}}
+
+\newenvironment{fnnote}{%
+  \begin{minipage}[t]{\linewidth}\sloppy
+}{\end{minipage}}
+
+\makeatletter
+\@ifpackageloaded{etoolbox}{\AtEndEnvironment{definition}{\par\nobreak{\hfill\ensuremath{\square}\par}}}{}
+\makeatother
+
+\renewcommand{\thesection}{S\arabic{section}}
+% Compact AMS-style labels: S{sec}.{sub}.{subsub}.{para}; 0 if level unused
+\makeatletter
+\newcommand{\@appzero}[1]{\ifnum\value{#1}=0 0\else\arabic{#1}\fi}
+\newcommand{\@appsec}{S\arabic{section}}
+\newcommand{\@appsub}{\@appzero{subsection}}
+\newcommand{\@appsubsub}{\@appzero{subsubsection}}
+\renewcommand{\thesubsection}{\@appsec.\@appsub.0.0}
+\renewcommand{\thesubsubsection}{\@appsec.\@appsub.\@appsubsub.0}
+\renewcommand{\theparagraph}{\@appsec.\@appsub.\@appsubsub.\arabic{paragraph}}
+\setcounter{secnumdepth}{4}
+\@addtoreset{subsection}{section}
+\@addtoreset{subsubsection}{subsection}
+\@addtoreset{paragraph}{section}
+\makeatother
+
+% APA 7-style table notes (Publication Manual, \S7.21)
+\newcommand{\tabnote}{\par\addvspace{0.4em}\noindent\emph{Note.}}
+\newcommand{\tabsource}{\ \textit{Source:} Analytical proofs in this supplement;
+  Lean identifiers in \path{lean/Appendix3Proofs.lean}. Software: Lean~4
+  (\path{lean-toolchain}); Mathlib via Lake.}
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Supplement to ``Identifying Rational Types in Unknown Environments''\\
+Appendix 3: Formal Proofs and Lean Verification}
+\runtitle{Formal Proofs Supplement}
+
+\begin{aug}
+\author[add1,add2]{\fnms{Humberto}~\snm{Bernal}}
+\address[add1]{%
+\orgdiv{Economics Program},
+\orgname{Universidad Colegio Mayor de Cundinamarca}}
+\address[add2]{%
+\orgdiv{Ph.D. in Economics},
+\orgname{Universidad de los Andes}}
+\ead[label=e1]{hbernal@uniandes.edu.co}
+\ead[label=e2]{hbernalc@universidadmayor.edu.co}
+\end{aug}
+
+\begin{funding}
+Economist, professor of the Economics Program at the Universidad Colegio
+Mayor de Cundinamarca and graduate of the Ph.D.\ in Economics from the
+Universidad de los Andes, Colombia.
+\end{funding}
+
+\end{frontmatter}
+
+\noindent
+This supplement presents in full detail the formal statements and proofs
+supporting the identification argument in the main paper. It is organized in
+eight sections that mirror the logical structure of the model: stochastic
+trends (Section~\ref{sec:main}), public information and Bayesian learning
+(Section~\ref{sec:info-bayes}), the stochastic implementation mechanism
+(Section~\ref{sec:mdg}), asymptotic type identification
+(Section~\ref{sec:id-asintotica}), competitive risks and operational pressure
+(Section~\ref{sec:riesgos}), policy implications (Section~\ref{sec:politica}),
+equilibrium implementability (Section~\ref{sec:equilibrio}), and the abstract
+Kakutani identification criterion (Section~\ref{sec:id-abstracta}), plus
+machine-checked verification (Section~\ref{sec:lean-formalization}). Analytical
+proofs are self-contained in this document; algebraic steps verified in Lean~4
+are reproduced from the \texttt{Appendix\_3/} replication package
+(Section~\ref{sec:repro}). Classical measure-theoretic inputs (Kakutani,
+Blackwell--Dubins, fixed-point existence) remain proved here and are not
+re-derived inside the proof assistant.
+
+% ============================================================================
+\section{Results from the main paper}
+\label{sec:main}
+% ============================================================================
+
+\noindent The following result is imported from
+\textit{Identifying Rational Types in Unknown Environments: Evidence from
+Kidnapping in Colombia}. It operates in the time-series domain and is
+independent of the game-theoretic blocks below. Lemma~\ref{lem:I0-closed}
+supplies the integration-order step.
+
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[$I(0)$ closed under linear combinations]
+\label{lem:I0-closed}
+If $X_t\sim I(0)$ and $Y_t\sim I(0)$, then $aX_t+bY_t\sim I(0)$ for all
+$a,b\in\mathbb{R}$.
+\end{lemma}
+
+\begin{proof}
+Covariance stationarity is preserved under finite linear combinations: for all
+$s,t$ and all $a,b\in\mathbb{R}$,
+\[
+\E\bigl[(aX_{t+s}+bY_{t+s})-(aX_t+bY_t)\bigr]=0,
+\]
+and the autocovariance function of $aX_t+bY_t$ depends on lags only through
+$t-s$. Hence $aX_t+bY_t$ is integrated of order zero.
+\end{proof}
+
+\bigskip
+
+\begin{corollary}[Equivalence of stochastic trends]
+\label{cor:trend_equivalence}
+Let $\{y_t\}$ be a time series integrated of order one, $I(1)$. Suppose the
+existence of two valid decompositions:
+\[
+y_t = P_t^{(1)} + u_t^{(1)} = P_t^{(2)} + u_t^{(2)},
+\]
+where $P_t^{(1)}$ and $P_t^{(2)}$ are $I(1)$ processes and $u_t^{(1)}$,
+$u_t^{(2)}$ are stationary $I(0)$ processes. Then:
+\[
+P_t^{(1)} - P_t^{(2)} \sim I(0).
+\]
+Consequently, all valid stochastic trends derived from the same observed
+series are equivalent up to a stationary component.
+\end{corollary}
+
+\begin{proof}
+From the two decompositions,
+$P_t^{(1)}-P_t^{(2)}=u_t^{(2)}-u_t^{(1)}$. Since $u_t^{(1)}$ and $u_t^{(2)}$
+are $I(0)$, Lemma~\ref{lem:I0-closed} with $a=1$ and $b=-1$ yields
+$P_t^{(1)}-P_t^{(2)}\sim I(0)$. Any pair of valid stochastic trends extracted
+from the same $I(1)$ series therefore differs by a transitory $I(0)$ component.
+\end{proof}
+
+% ============================================================================
+\section{Public information, likelihood, and Bayesian learning}
+\label{sec:info-bayes}
+% ============================================================================
+
+\noindent The three definitions below construct the public filtration, the
+likelihood kernel, and the belief process. The stability lemma closes the
+block.
+
+% ---------------------------------------------------------------------------
+
+\begin{definition}[Public signal and filtration]
+\label{def:zeta-filtration}
+\noindent\textbf{(i) Public signal $\zeta_t$.}
+The public signal $\zeta_t$ is the random vector that summarizes what is
+observable at the close of period~$t$:
+\[
+\zeta_t=(\alpha_t,\gamma_t,\,\tilde{a}_t^F,\tilde{a}_t^K,\tilde{a}_t^S,\,m_t,d_t)
+\in
+\mathcal{Z}_t\subseteq\mathbb{R}^2\times\mathcal{A}^F\times\mathcal{A}^K
+\times\mathcal{A}^{S,\mathrm{disc}}\times\mathcal{M}_{\mathrm{out}}\times\{0,1\}.
+\]
+
+\noindent\textbf{(ii) Public filtration $\{\mathcal{F}_t^{\mathrm{pub}}\}$.}
+Set $\mathcal{F}_0^{\mathrm{pub}}:=\sigma(z,\theta_V)$. For $t\ge 1$,
+\[
+\mathcal{F}_t^{\mathrm{pub}}:=\sigma(z,\zeta_0,\ldots,\zeta_{t-1}),
+\]
+that is, the $\sigma$-algebra generated by the initial location and by the
+signals observed strictly before period~$t$ begins.
+
+\noindent\textbf{(iii) Measurability.}
+Each $\zeta_t:(\Omega,\mathcal{F})\to(\mathcal{Z}_t,\mathcal{B}(\mathcal{Z}_t))$
+is measurable, and $\sigma(z,\zeta_0,\ldots,\zeta_{t-1})$ is well defined as a
+sub-$\sigma$-algebra of $\mathcal{F}$.
+\end{definition}
+
+\bigskip
+
+\begin{definition}[Predictive likelihood under a counterfactual type]
+\label{def:predictive-likelihood}
+Fixing a PBE with profile $(\chi,s^F,s^K)$ and a counterfactual type
+$\theta\in\Theta_K$, the \textbf{predictive likelihood} of period~$t$ is
+\begin{equation}
+\label{eq:likelihood-zeta}
+\ell_t(\theta;J)
+:=\ProbC{\theta}\bigl(\zeta_t\in J\mid\mathcal{F}_t^{\mathrm{pub}}\bigr),
+\qquad J\in\mathcal{B}(\mathcal{Z}_t).
+\end{equation}
+The mapping $J\mapsto\ell_t(\theta;J)$ is a \textbf{probability kernel} that
+carries the information state $\mathcal{F}_t^{\mathrm{pub}}$ to the law of
+$\zeta_t$ under type~$\theta$.
+\end{definition}
+
+\bigskip
+
+\begin{definition}[Beliefs and PBE-consistent Bayesian updating]
+\label{def:beliefs-martingale}
+Let $\mu_0\in\Delta(\Theta_K)$ be the \textbf{common prior} with full support,
+$\mu_0(\theta\mid z,\theta_V)>0$ for all $\theta\in\Theta_K$.
+For $t\ge 1$, let $\mu_t\in\Delta(\Theta_K)$ be the distribution obtained by
+iterated Bayes from $\mu_0$, using the realizations of
+$(\zeta_0,\ldots,\zeta_{t-1})$ and the predictive kernels
+$\ell_s(\theta';J)$ induced by the same PBE.
+
+The process $\{\mu_t\}_{t\ge 0}$ is \textbf{consistent with the PBE} if, under
+the ex-ante law $\ProbE$,
+\begin{equation}
+\label{eq:beliefs-ebp-consistency}
+\mu_t(\theta)
+=\ProbE\bigl(\theta_K=\theta\mid\mathcal{F}_t^{\mathrm{pub}}\bigr)
+\qquad\forall\,\theta\in\Theta_K,\;\forall\,t\ge 1,
+\end{equation}
+interpreted $\ProbE$-almost surely upon fixing regular versions of the
+conditional probabilities.
+\end{definition}
+
+\bigskip
+
+\begin{lemma}[Asymptotic stability of beliefs. Convergence theorem of
+\citeauthor{Doob1953Stochastic}, \citeyear{Doob1953Stochastic}]
+\label{lem:asymptotic-beliefs}
+Under the ex-ante law $\ProbE$ of
+Definition~\ref{def:beliefs-martingale}, the process
+$\{\mu_t(\theta)\}_{t\ge 0}$ is a \textbf{bounded martingale} that converges
+$\ProbE$-almost surely to a limit random variable
+$Z_\theta\in[0,1]$ $\ProbE$-a.s.
+\end{lemma}
+
+\begin{proof}
+The proof verifies the conditions of the convergence theorem of
+\citet{Doob1953Stochastic,Williams1991Martingales,Shiryaev2019Probability}.
+
+\smallskip
+\noindent\textbf{1.~Martingale property.}
+Let $M=\mathbf{1}\{\theta_K=\theta\}$. By equilibrium consistency
+(Definition~\ref{def:beliefs-martingale}),
+\[
+\mu_t(\theta)=\E^{\ProbE}[M\mid\mathcal{F}_t^{\mathrm{pub}}]\quad\ProbE\text{-a.s.}
+\]
+As $\mathcal{F}_t^{\mathrm{pub}}\subseteq\mathcal{F}_{t+1}^{\mathrm{pub}}$,
+the \textbf{law of iterated expectations} yields
+\[
+\E^{\ProbE}[\mu_{t+1}(\theta)\mid\mathcal{F}_t^{\mathrm{pub}}]
+=\E^{\ProbE}\!\bigl[\E^{\ProbE}[M\mid\mathcal{F}_{t+1}^{\mathrm{pub}}]
+                     \mid\mathcal{F}_t^{\mathrm{pub}}\bigr]
+=\E^{\ProbE}[M\mid\mathcal{F}_t^{\mathrm{pub}}]
+=\mu_t(\theta)\quad\ProbE\text{-a.s.}
+\]
+The process is a martingale under $\ProbE$.
+
+\smallskip
+\noindent\textbf{2.~Pointwise and uniform $L^1$ bound.}
+As $\mu_t(\theta)$ is a probability mass,
+$0\le\mu_t(\theta)\le 1$ for all $t\ge 0$ (outside a
+$\ProbE$-null set). In particular,
+$\sup_{t\ge 0}\E^{\ProbE}[|\mu_t(\theta)|]\le 1$, which provides the
+uniform $L^1$ bound required by Doob's theorem.
+
+\smallskip
+\noindent\textbf{3.~Almost sure convergence.}
+Once the martingale property and the uniform $L^1$ bound are verified,
+\textbf{Doob's convergence theorem} guarantees the existence of
+$Z_\theta$ such that
+\[
+\lim_{t\to\infty}\mu_t(\theta)=Z_\theta\quad\ProbE\text{-a.s.}
+\]
+The pointwise bound $0\le\mu_t(\theta)\le 1$ implies $Z_\theta\in[0,1]$
+$\ProbE$-a.s.
+\end{proof}
+
+% ============================================================================
+\section{Stochastic implementation mechanism (MDG)}
+\label{sec:mdg}
+% ============================================================================
+
+\noindent This section establishes the fundamental definitions of the
+stochastic implementation layer (MDG), which transforms strategic intentions
+into materialized actions, and of the law governing the physical outcome that
+determines the observable results of the episode.
+
+% ---------------------------------------------------------------------------
+
+\begin{definition}[MDG stochastic implementation filter]
+\label{def:mano-dios-filtro}
+Let $\mathcal{A}^i$ be the finite set of admissible actions of agent~$i$.
+Given the plan $a_t^{i\ast}\in\mathcal{A}^i$ and the state vector $X_t$,
+execution is determined by the \textbf{implementation law}
+\[
+\tilde{a}_t^i \sim \ProbI{i}\bigl(\cdot \mid a_t^{i\ast},\,X_t\bigr).
+\]
+The stochastic structure is formalized on a measurable space
+$(\Omega,\mathcal{F})$. The measurable function
+$\mathcal{H}_t^i:\mathcal{A}^i\times\Omega\to\mathcal{A}^i$ materializes the
+sequential draw: $\tilde{a}_t^i(\omega)=\mathcal{H}_t^i(a_t^{i\ast},\omega)$.
+The \textbf{aggregate profile of executed actions} is
+\begin{equation}
+\label{eq:tilde-A-t}
+\tilde{A}_t = (\tilde{a}_t^K,\,\tilde{a}_t^S,\,\tilde{a}_t^F).
+\end{equation}
+The following regularity assumptions are imposed.
+\begin{enumerate}
+  \item[\textup{(i)}] \textbf{Plan dominance and error support.}
+  For all $t<\tau$, $\ProbI{i}$ concentrates most of its mass on
+  $a_t^{i\ast}$ and assigns strictly positive probability to the remaining
+  actions. Under the \textbf{full support} hypothesis,
+  $\ProbI{i}(\tilde{a}_t^i=a\mid a_t^{i\ast},X_t)>0$ for all
+  $a\in\mathcal{A}^i$.
+  \item[\textup{(ii)}] \textbf{Institutional convergence.}
+  In the long-horizon regime one may impose
+  \[
+  \lim_{t\to\infty}\ProbE\bigl(\tilde{a}_t^i=a_t^{i\ast}\mid
+    \mathcal{F}_t^{\mathrm{pub}}\bigr)=1,\qquad\forall\,i,
+  \]
+  which is satisfied when the posterior entropy $H(\mu_t)\to 0$.
+\end{enumerate}
+The implementation law adopts the \textbf{hybrid-temperature logit}
+structure:
+\begin{equation}
+\label{eq:logit-hybrid}
+\ProbI{i}\bigl(\tilde{a}_t^i=a\mid a_t^{i\ast},X_t\bigr)
+=\frac{\exp\bigl(\mathbf{1}\{a=a_t^{i\ast}\}/T_t\bigr)}
+      {\sum_{a'\in\mathcal{A}^i}\exp\bigl(\mathbf{1}\{a'=a_t^{i\ast}\}/T_t\bigr)},
+\end{equation}
+with hybrid temperature
+\begin{equation}
+\label{eq:temperatura-piso}
+T_t = T_0\!\left[\frac{H(\mu_t)}{H(\mu_0)}\right]
+      \max\!\bigl\{e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\bigr\},
+\end{equation}
+where $T_0>0$ is the initial temperature and $\eta_{\mathrm{cal}}>0$ is the
+calendar decay rate. Shannon entropy is
+$H(\mu_t)=-\sum_\theta\mu_t(\theta)\ln\mu_t(\theta)$, and
+$\underline{c}\in(0,1]$ is the floor of structural noise.
+\end{definition}
+
+\begin{remark}[Axiomatic justification of the logit as the unique implementation law]
+\label{rem:axiomas-logit}
+Equation~\eqref{eq:logit-hybrid} is the \emph{unique} distribution over
+$\mathcal{A}^i$ that simultaneously satisfies the three axioms:
+\begin{enumerate}
+  \item[\textup{(A1)}] \textbf{Full support:}
+  $\ProbI{i}(a\mid a_t^{i\ast},X_t)>0$ for all $a\in\mathcal{A}^i$.
+  \item[\textup{(A2)}] \textbf{Dominance:}
+  $\ProbI{i}(a_t^{i\ast}\mid a_t^{i\ast},X_t)>\ProbI{i}(a\mid a_t^{i\ast},X_t)$
+  for all $a\neq a_t^{i\ast}$.
+  \item[\textup{(A3)}] \textbf{Maximum entropy:}
+  Among all distributions satisfying~(A1) and~(A2),
+  $\ProbI{i}$ maximizes the Shannon entropy
+  $H=-\sum_a p_a\ln p_a$ subject to the optimal action receiving fixed
+  probability $1-\varepsilon_t\in(0,1)$.
+\end{enumerate}
+By the characterization theorem of \citet{Jaynes1957Information}, the unique
+maximizer is the logit in~\eqref{eq:logit-hybrid}. The MDG process is thus
+axiomatically justified as the unique implementation process compatible with
+bounded rationality and maximum entropy.
+\end{remark}
+
+\bigskip
+
+\begin{definition}[Law of the physical outcome]
+\label{def:desenlace-fisico-mt}
+The \textbf{physical outcome} $m_t$ is an observable categorical variable on
+the support $\mathcal{M}_{\mathrm{out}}$, where
+$\mathcal{M}_{\mathrm{cont}}=\{\mathrm{cont}\}$,
+$\mathcal{M}_{\mathrm{term}}=\{\mathrm{pay},\mathrm{res},\mathrm{rel},\mathrm{kill}\}$
+and $\mathcal{M}_{\mathrm{out}}=\mathcal{M}_{\mathrm{cont}}\cup\mathcal{M}_{\mathrm{term}}$.
+The label $\mathrm{cont}$ represents the continuation of captivity and
+$j\in\{1,2,3,4\}$ closure by competitive cause~$j$. For $j\in\{1,2,3\}$, the
+effective intensity $\tilde\lambda_j(t\mid\theta_K)$ carries the type-specific
+parameter $\beta_{K,j}(\theta_K)$ in the Cox specification; cause $j=4$ enters
+only through the baseline hazard (there is no $\beta_{K,4}$). Conditional on the
+captor's type and the material state of the period
+\[
+\mathcal{C}_t(\theta_K)
+=\bigl(\theta_K,\theta_F,\theta_V,\theta_S,z,
+\tilde{a}_t^F,\tilde{a}_t^K,\tilde{a}_t^S,
+\alpha_t^\ast,\gamma_t^\ast,p_{\mathrm{det},t}\bigr),
+\]
+the distribution of $m_t$ is defined from the effective intensities
+$\tilde\lambda_j(t\mid\theta_K)$. Denote by
+\[
+Q_t(m\mid\theta_K,\mathcal C_t,\alpha_t^\ast,\gamma_t^\ast)
+:=\ProbE(m_t=m\mid\theta_K,\mathcal C_t,\alpha_t^\ast,\gamma_t^\ast)
+\]
+the transition kernel of the physical outcome, and by $\mathsf{G}_t$ the
+measurable rule that materializes a concrete realization of $m_t$ from that
+kernel and a uniform draw. The \textbf{continuation probability} is
+\[
+Q_t(\mathrm{cont}\mid\theta_K,\mathcal{C}_t,\alpha_t^\ast,\gamma_t^\ast)
+=\exp\!\left(-\sum_{j=1}^{4}\tilde\lambda_j(t\mid\theta_K)\,\Delta t\right).
+\]
+The daily closure total and the relative weight of each cause are
+\[
+q_t(\theta_K)=1-p_{\mathrm{Cont},t},\quad
+\xi_j=\frac{\tilde\lambda_j}{\sum_\ell\tilde\lambda_\ell},\quad
+\bar h_j(t\mid\theta_K)=q_t\,\xi_j.
+\]
+The materialization of $m_t$ is obtained by \textbf{inverse transform}:
+let $v_t\sim\Unif(0,1)$; then
+\[
+m_t=r
+\iff
+\sum_{\ell<r}Q_t(\ell\mid\theta_K,\mathcal{C}_t,\alpha_t^\ast,\gamma_t^\ast)\le v_t
+<\sum_{\ell\le r}Q_t(\ell\mid\theta_K,\mathcal{C}_t,\alpha_t^\ast,\gamma_t^\ast),
+\]
+and the likelihood of $m_t$ in the Bayesian update is
+\[
+\ProbE(m_t\mid\theta_K,\mathcal{C}_t)
+=p_{\mathrm{Cont}}^{\mathbf{1}\{m_t=\mathrm{cont}\}}
+\prod_{j=1}^{4}\bar h_j^{\mathbf{1}\{m_t=j\}}.
+\]
+\end{definition}
+
+% ============================================================================
+\section{Asymptotic type identification}
+\label{sec:id-asintotica}
+% ============================================================================
+
+\noindent This section defines the prolonged captivity event and the notion of
+asymptotic identification, states the structural identifiability lemma (bridge
+between the parameters $\beta_{K,j}$ and the singularity of laws), and
+concludes with the posterior consistency theorem.
+
+\medskip
+\noindent\textbf{Notation.}
+Throughout Sections~\ref{sec:id-asintotica} and~\ref{sec:id-abstracta},
+$\theta_K^\ast$ denotes the realized captor type. When conditioning on the law
+of the true type, the notation $\theta^\ast:=\theta_K^\ast$ and
+$\mu_C:=\ProbC{\theta^\ast}(\cdot\mid\mathcal{T})$ is adopted.
+
+% ---------------------------------------------------------------------------
+
+\begin{definition}[Prolonged captivity event]
+\label{def:event-T-long}
+Let $\tau$ be the stopping time of the episode. The
+\textbf{prolonged captivity event} is
+\[
+\mathcal{T}
+:=\{\tau=\infty\}
+=\bigl\{\omega\in\Omega:m_t(\omega)\in\mathcal{M}_{\mathrm{cont}}\;\forall\,t\ge 0\bigr\}.
+\]
+In $\mathcal{T}$ the episode admits no terminal outcome in any finite period
+and generates an infinite sequence of public signals
+$\{\zeta_t\}_{t\ge 0}$.
+\end{definition}
+
+\bigskip
+
+\begin{definition}[Asymptotic identification in the event $\mathcal{T}$]
+\label{def:asymptotic-id}
+The model is \textbf{asymptotically identifiable} in $\mathcal{T}$
+(Definition~\ref{def:event-T-long}) if
+$\ProbC{\theta_K^\ast}(\mathcal{T})>0$ and, for every $\theta\in\Theta_K$ with
+$\theta\neq\theta_K^\ast$, at least one of the following conditions holds.
+\begin{enumerate}
+  \item[\textup{(a)}] \textbf{Exclusion by survival.}
+  $\ProbC{\theta}(\mathcal{T})=0$.
+  \item[\textup{(b)}] \textbf{Tail singularity of signals.}
+  $\ProbC{\theta}(\mathcal{T})>0$ and the laws of $\{\zeta_t\}_{t\ge 0}$
+  restricted to $\mathcal{T}$ under $\ProbC{\theta}$ and under
+  $\ProbC{\theta_K^\ast}$ are \textbf{mutually singular}.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Role of Lemma~\ref{lem:hazard-separation} in the analysis]
+Theorem~\ref{thm:posterior-consistency} requires asymptotic identification
+(Definition~\ref{def:asymptotic-id}), a condition formulated in terms of
+laws of entire processes. Lemma~\ref{lem:hazard-separation} is the
+\textbf{operational bridge} between that abstract hypothesis and the
+parameters $\beta_{K,j}$ already introduced in the mechanism: it allows one
+to verify in the practice of the model when two distinct types generate
+asymptotically distinguishable trajectories. Without this result, the learning
+section would rest on a high-level condition difficult to connect with the
+proportional parametrization of the $\lambda_j$.
+\end{remark}
+
+\bigskip
+
+\begin{lemma}[Structural identifiability and asymptotic learning]
+\label{lem:hazard-separation}
+Suppose $|\Theta_K|<\infty$. Let $Y_t:=(m_t,d_t)$ be the daily public record.
+Under a PBE, $p_\theta(\cdot\mid\mathcal{F}_t^{\mathrm{pub}})$ denotes the
+mass function of $Y_t$ conditioned on public information at the opening of~$t$
+under type~$\theta$.
+
+\smallskip
+\noindent\textbf{Part~(i) --- local sufficiency
+\citep{Cox1972,Bradburn2003}.}
+Let $\theta,\theta'\in\Theta_K$ be distinct. If there exists $j\in\{1,2,3\}$ such that
+$\beta_{K,j}(\theta)\neq\beta_{K,j}(\theta')$ (causes $j\in\{1,2,3\}$ only; see
+Definition~\ref{def:desenlace-fisico-mt}) and no exact compensations arise
+between the masses of $Y_t$ (\emph{knife-edges}),
+then there exists $\varepsilon=\varepsilon(\theta,\theta',t)>0$ such that
+\begin{equation}
+\label{eq:TV-separation}
+\bigl\|p_\theta(\cdot\mid\mathcal{F}_t^{\mathrm{pub}})
+-p_{\theta'}(\cdot\mid\mathcal{F}_{t}^{\mathrm{pub}})\bigr\|_{\mathrm{TV}}
+\ge\varepsilon.
+\end{equation}
+
+\smallskip
+\noindent\textbf{Part~(ii) --- asymptotic sufficiency
+\citep{Kakutani1948,Shiryaev2019Probability}.}
+Fixing a policy trajectory $(\chi_s)_{s\ge 0}$, suppose that
+conditional on $\mathcal{T}$ the $\{Y_t\}_{t\ge 0}$ are independent. For
+each pair $\theta\neq\theta'$, let $\mathcal{S}_{\theta,\theta'}\subseteq\mathbb{N}$
+be the set of periods where~\eqref{eq:TV-separation} holds. If
+$\mathcal{S}_{\theta,\theta_K^\ast}$ is infinite $\ProbC{\theta_K^\ast}$-a.s.\
+and there exists $\underline\varepsilon_\theta>0$ such that
+$\|p_\theta^{(t)}-p_{\theta_K^\ast}^{(t)}\|_{\mathrm{TV}}
+\ge\underline\varepsilon_\theta$ for all $t\in\mathcal{S}_{\theta,\theta_K^\ast}$,
+then the laws of $(Y_t)_{t\ge 0}$ conditioned on $\mathcal{T}$ under
+$\ProbC{\theta}$ and under $\ProbC{\theta_K^\ast}$ are
+\textbf{mutually singular}.
+\end{lemma}
+
+\begin{proof}
+The proof identifies the causal mechanism within the day, translates it to a
+statistical bound in total variation, and couples the repeated experiment to
+the criterion of \citet{Kakutani1948}.
+
+\smallskip
+\noindent\textbf{1. Same control menu, distinct criminal technology.}
+Fix $t$ and $\mathcal{F}_t^{\mathrm{pub}}$. In the counterfactual that changes
+only the type ($\theta$ vs.\ $\theta'$), keeping equal the executed triple
+$\tilde{A}_t$, the instruments $(\alpha_t^\ast,\gamma_t^\ast)$, and the
+maturation filter $M(t)$, the proportional parametrization implies
+\[
+\frac{\lambda_j(t\mid\theta)}{\lambda_j(t\mid\theta')}
+=\exp\!\bigl(\beta_{K,j}(\theta)-\beta_{K,j}(\theta')\bigr)\neq 1.
+\]
+
+\smallskip
+\noindent\textbf{2. From daily intensity to distinct predictions over $Y_t$.}
+The proportional difference in $\lambda_j(t)$ is projected onto the aggregate
+exponential of $q(t)$, the causal mix $\xi_j(t)$, or the marginal hazards
+$\bar h_j(t)=q(t)\xi_j(t)$. Except for \emph{knife-edges}, the marginal of $m_t$
+cannot coincide under $\theta$ and $\theta'$, and the two mass functions differ
+in total variation, verifying~\eqref{eq:TV-separation}.
+
+\smallskip
+\noindent\textbf{3. Repetition with uniform margin and Kakutani criterion.}
+Conditional on the fixed policy and on $\mathcal{T}$, the law of the sequence is
+a product of daily experiments
+$\bigotimes_{t\ge 0}p_\theta^{(t)}$ versus
+$\bigotimes_{t\ge 0}p_{\theta_K^\ast}^{(t)}$. Part~(ii) then follows from
+Lemma~\ref{lem:general-id-appendix} (Section~\ref{sec:id-abstracta}): recurrent
+uniform total-variation separation on an infinite set forces the Bhattacharyya
+product affinity to zero and, by the criterion of \citet{Kakutani1948}, mutual
+singularity of the infinite product measures
+\citep{Shiryaev2019Probability}.
+\end{proof}
+
+\bigskip
+
+\begin{theorem}[Identification and consistency of true types]
+\label{thm:posterior-consistency}
+Consider a prior $\mu_0\in\Delta(\Theta_K)$ with full support and a
+PBE-consistent Bayesian updating
+(Definition~\ref{def:beliefs-martingale}). Let $\theta^\ast:=\theta_K^\ast$ be the
+realized type and $\mu_C:=\ProbC{\theta^\ast}(\cdot\mid\mathcal{T})$ the law
+of the true type restricted to the event $\mathcal{T}$
+(Definition~\ref{def:event-T-long}).
+
+If the mechanism is \textbf{asymptotically identifiable} in $\mathcal{T}$
+(Definition~\ref{def:asymptotic-id}), the following properties are satisfied
+$\mu_C$-almost surely:
+\begin{enumerate}
+  \item \textbf{Exclusion of false hypotheses:}
+  $\mu_t(\theta)\xrightarrow{t\to\infty}0$ for all $\theta\neq\theta^\ast$.
+  \item \textbf{Concentration on the true type:}
+  $\mu_t(\theta^\ast)\xrightarrow{t\to\infty}1$.
+\end{enumerate}
+Consequently, in $\mathcal{T}$ the sequence $\{\mu_t\}$ converges weakly
+to the Dirac measure $\delta_{\theta^\ast}$.
+\end{theorem}
+
+\begin{proof}
+The proof separates the general probabilistic argument from the structural
+identification assumption.
+
+\paragraph{1. Stability of beliefs.}
+By equilibrium consistency,
+$\mu_t(\theta)=\E^{\ProbE}[\mathbf{1}\{\theta_K=\theta\}\mid
+\mathcal{F}_t^{\mathrm{pub}}]$ $\ProbE$-a.s. Lemma
+~\ref{lem:asymptotic-beliefs} guarantees that $\{\mu_t(\theta)\}$ is a
+bounded martingale with limit $Z_\theta\in[0,1]$ $\ProbE$-a.s. The
+transfer to $\mu_C$-a.s.\ is justified by disintegration: the mixture
+$\ProbE=\sum_\vartheta\mu_0(\vartheta)\ProbC{\vartheta}$ implies that every
+$\ProbE$-null set is $\ProbC{\theta^\ast}$-null (since
+$\mu_0(\theta^\ast)>0$), and domination is preserved upon restricting to
+$\mathcal{T}$.
+
+\paragraph{2. Identification and exclusion of false types.}
+Fix $\theta\neq\theta^\ast$.
+
+\emph{Case} $\ProbC{\theta}(\mathcal{T})=0$: the trajectory under $\mu_C$
+belongs to an event that the false type cannot generate; its posterior
+likelihood is null in the conditioned regime.
+
+\emph{Case} $\ProbC{\theta}(\mathcal{T})>0$: the singularity of
+Definition~\ref{def:asymptotic-id}(b) implies that there exists a tail event
+$A_\theta$ with
+$\ProbC{\theta^\ast}(A_\theta\mid\mathcal{T})=1$ and
+$\ProbC{\theta}(A_\theta\mid\mathcal{T})=0$.
+Let $R_t^\theta$ be the likelihood ratio of the false type against the true
+type on finite horizons. Tail singularity forces
+$R_t^\theta\to 0$ $\mu_C$-a.s.\
+\citep{BlackwellDubins1962,Schervish1995Theory}.
+By Bayes' formula with a full-support prior,
+\[
+\mu_t(\theta)
+=\frac{\mu_0(\theta)\,R_t^\theta}
+      {\mu_0(\theta^\ast)+\sum_{\theta'\neq\theta^\ast}\mu_0(\theta')R_t^{\theta'}}
+\le\frac{\mu_0(\theta)}{\mu_0(\theta^\ast)}\,R_t^\theta,
+\]
+and since $\mu_0(\theta^\ast)>0$, it follows that
+$\mu_t(\theta)\to 0$ $\mu_C$-a.s.\ for all $\theta\neq\theta^\ast$.
+
+\paragraph{3. Closure by normalization.}
+For all $t$, $\sum_{\theta\in\Theta_K}\mu_t(\theta)=1$. As $\Theta_K$ is
+finite and all false coordinates converge to zero $\mu_C$-a.s.,
+\[
+1=\lim_{t\to\infty}\sum_\theta\mu_t(\theta)
+=Z_{\theta^\ast}+\sum_{\theta\neq\theta^\ast}0,
+\]
+hence $Z_{\theta^\ast}=1$ $\mu_C$-a.s., that is,
+$\mu_t(\theta^\ast)\to 1$ $\mu_C$-a.s. On a finite simplex, coordinate
+convergence is equivalent to weak convergence $\mu_t\to\delta_{\theta^\ast}$.
+\end{proof}
+
+\begin{remark}[Economic reading and link with $\beta_{K,j}$]
+\label{rem:lectura-beta}
+Definition~\ref{def:asymptotic-id} requires that the design of the game
+(policy + incentives + risk technology) produce long trajectories incompatible
+with false types. Distinct shifts
+$\beta_{K,j}(\theta)\neq\beta_{K,j}(\theta')$ favor the singularity of
+the laws of $(m_t,d_t)$. If the equilibrium pools types, Lemma
+~\ref{lem:asymptotic-beliefs} still holds but Theorem
+~\ref{thm:posterior-consistency} does not: the limit may split mass among
+observationally equivalent types.
+\end{remark}
+
+\begin{remark}[Finite horizon]
+\label{rmk:horizonte-finito}
+If $\tau<\infty$ almost surely, $\mathcal{T}$ has measure zero and the
+statement of Theorem~\ref{thm:posterior-consistency} is vacuous. The relevant
+conclusion is then only the martingale convergence of Lemma
+~\ref{lem:asymptotic-beliefs}: beliefs stabilize at the finite limit of
+observations.
+\end{remark}
+
+% ============================================================================
+\section{Competitive risks and operational pressure}
+\label{sec:riesgos}
+% ============================================================================
+
+\noindent The following proposition uses directly the proportional risk
+structure, without requiring the equilibrium machinery of
+Section~\ref{sec:equilibrio}. It depends only on the intensities
+$\tilde\lambda_j$ introduced in Definition~\ref{def:desenlace-fisico-mt}.
+
+% ---------------------------------------------------------------------------
+
+\begin{proposition}[Expected duration of captivity and operational pressure]
+\label{prop:expected-captivity-gamma}
+Define the \textbf{net sensitivity} of type $\theta_K$ to optimal operational
+pressure $\gamma_t^\ast$ as
+\begin{equation}
+\label{eq:kappa-c}
+\kappa_h(\theta_K,t)
+:=\bigl(\zeta_{\gamma,2}\,\tilde\lambda_2(t\mid\theta_K)
+        +\zeta_{\gamma,3}\,\tilde\lambda_3(t\mid\theta_K)\bigr)
+  -\zeta_{\gamma,1}\,\tilde\lambda_1(t\mid\theta_K).
+\end{equation}
+If $\kappa_h(\theta_K,t)>0$ for all $t$, the expected duration of captivity
+$\mathbb{E}[\tau\mid\theta_K]$ is strictly decreasing in $\gamma_t^\ast$.
+If $\kappa_h(\theta_K,t)<0$ for all $t$, it is strictly increasing. The model
+generates the \textbf{testable differential prediction}:
+\begin{equation}
+\operatorname{sgn}\!\left(
+  \frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
+\right)
+=-\operatorname{sgn}\!\left(\kappa_h(\theta_K,t)\right),
+\end{equation}
+with the sign varying across types through the structural parameters
+$\beta_{K,j}(\theta_K)$.
+\end{proposition}
+
+\begin{proof}
+The proof proceeds in three steps: differentiation of daily survival,
+propagation by the chain rule, and conclusion by dominated convergence.
+
+\paragraph{Step 1. Duration identity and survival.}
+By \textbf{Fubini's theorem} \citep{Fubini1907},
+\begin{equation}
+\label{eq:duracion-identidad}
+\mathbb{E}[\tau\mid\theta_K]
+=\sum_{t'=0}^{\infty}S(t'\mid\theta_K),
+\end{equation}
+where $S(t'\mid\theta_K):=\prod_{s=1}^{t'}p_{\mathrm{Cont},s\mid\theta_K}$,
+with $S(0\mid\theta_K)=1$. Under the proportional parametrization,
+\[
+p_{\mathrm{Cont},s\mid\theta_K}
+=\exp\!\Bigl(-\sum_{j=1}^{4}\tilde\lambda_j(s\mid\theta_K)\,\Delta t\Bigr),
+\]
+consistent with Definition~\ref{def:desenlace-fisico-mt}. Since only the causes
+$j\in\{1,2,3\}$ respond to operational pressure (cause $j=4$ carries no
+$\beta_{K,4}$ and does not depend on $\gamma_t^\ast$), differentiating with
+respect to $\gamma_t^\ast$:
+\begin{equation}
+\label{eq:dpCont-dgamma}
+\frac{\partial\,p_{\mathrm{Cont},t\mid\theta_K}}{\partial\gamma_t^\ast}
+=-\kappa_h(\theta_K,t)\;p_{\mathrm{Cont},t\mid\theta_K}\;\Delta t.
+\end{equation}
+
+\paragraph{Step 2. Propagation to accumulated survival.}
+For $t'\ge t$, only the factor $s=t$ in the product depends on $\gamma_t^\ast$;
+by the chain rule:
+\begin{equation}
+\label{eq:dS-dgamma}
+\frac{\partial S(t'\mid\theta_K)}{\partial\gamma_t^\ast}
+=-\kappa_h(\theta_K,t)\;S(t'\mid\theta_K)\;\Delta t,\qquad t'\ge t.
+\end{equation}
+For $t'<t$, the derivative is zero.
+
+\paragraph{Step 3. Expected duration.}
+Differentiating~\eqref{eq:duracion-identidad} and applying
+\eqref{eq:dS-dgamma} gives
+\begin{equation}
+\label{eq:dE-dgamma}
+\frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
+=-\kappa_h(\theta_K,t)\,\Delta t\sum_{t'=t}^{\infty}S(t'\mid\theta_K).
+\end{equation}
+The interchange of sum and derivative is justified by the \textbf{dominated
+convergence theorem}: the bound
+$|\partial S(t')/\partial\gamma_t^\ast|\le|\kappa_h|\,S(t')\,\Delta t$ is
+summable because $\mathbb{E}[\tau\mid\theta_K]<\infty$, guaranteed by the
+uniform positivity of the baseline hazards.
+
+As $S(t'\mid\theta_K)\ge 0$ and the tail $\sum_{t'\ge t}S(t')>0$:
+\[
+\operatorname{sgn}\!\left(
+  \frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
+\right)
+=-\operatorname{sgn}\!\left(\kappa_h(\theta_K,t)\right).\qedhere
+\]
+\end{proof}
+
+% ============================================================================
+\section{Policy implications}
+\label{sec:politica}
+% ============================================================================
+
+\noindent This proposition requires the belief machinery of
+Section~\ref{sec:info-bayes} and the equilibrium context of
+Section~\ref{sec:equilibrio}: optimal pressure is calibrated in a Bayesian
+manner.
+
+% ---------------------------------------------------------------------------
+
+\begin{proposition}[Optimal operational pressure and Bayesian type identification]
+\label{prop:optimal-gamma-beliefs}
+Suppose $\Theta_K=\{\theta_{low},\theta_{high}\}$ and fix a discrete branch
+$b\in\{R,N\}$ in a neighborhood of the posterior belief under consideration. Let
+$x_t=(\alpha_t,\gamma_t)$ and define the complete branch objective
+\begin{equation}
+\label{eq:obj-rama-completo}
+J_t^b(x_t,\mu_t)
+:=
+\sum_{\theta\in\Theta_K}\mu_t(\theta)
+L_t(b,\alpha_t,\gamma_t,\theta,\iota_t)
++\Pi_{t,b}^{S}(\alpha_t,\gamma_t;\mu_t)
+-\psi_H\Delta H_t(\alpha_t,\gamma_t).
+\end{equation}
+If $(\alpha_t^\ast,\gamma_t^\ast)$ is an interior optimum of
+$J_t^b(\cdot,\mu_t)$, the constraints $IC^K$, $IR^K$, and $IR^F$ do not locally
+change regime, the Hessian
+$H_t^b:=\nabla_{xx}^2J_t^b(x_t^\ast,\mu_t)$ is positive definite, and the net
+marginal effect of increasing $\mu_t(\theta_{high})$ on the first-order
+condition for $\gamma_t$ favors greater pressure, that is,
+\begin{equation}
+\label{eq:monotonia-neta-gamma}
+e_\gamma'
+\bigl(H_t^b\bigr)^{-1}
+\nabla_{x\mu}^2J_t^b(x_t^\ast,\mu_t)
+<0,
+\qquad
+e_\gamma=(0,1)',
+\end{equation}
+then the optimal operational pressure of that branch is locally increasing in
+the posterior belief on the high-risk type:
+\[
+\frac{d\gamma_t^\ast}{d\mu_t(\theta_{high})}>0.
+\]
+The structural separation $\beta_{K,j}(\theta_{high})-\beta_{K,j}(\theta_{low})$
+for $j\in\{2,3\}$ contributes to this condition through the ratio
+\[
+\frac{\tilde\lambda_j(t\mid\theta_{high})}{\tilde\lambda_j(t\mid\theta_{low})}
+=\exp\!\bigl(\beta_{K,j}(\theta_{high})-\beta_{K,j}(\theta_{low})\bigr),
+\quad j\in\{2,3\}.
+\]
+Monotonicity, however, depends on the joint net effect of material losses,
+deviation penalties, and informational gains.
+\end{proposition}
+
+\begin{proof}
+Write $\mu:=\mu_t(\theta_{high})$ and
+$\mu_t(\theta_{low})=1-\mu$. Within the fixed discrete branch $b$, the interior
+optimum $x_t^\ast(\mu)=(\alpha_t^\ast(\mu),\gamma_t^\ast(\mu))$ satisfies
+\begin{equation}
+\label{eq:foc-rama-completa}
+\nabla_x J_t^b(x_t^\ast(\mu),\mu)=0.
+\end{equation}
+The hypothesis $H_t^b=\nabla_{xx}^2J_t^b(x_t^\ast,\mu)\succ0$ implies that the
+local optimum is isolated and that the Jacobian of the first-order condition
+with respect to $x_t$ is invertible. By the implicit function theorem,
+$x_t^\ast(\mu)$ is locally differentiable and
+\begin{equation}
+\label{eq:dx-dmu-completo}
+\frac{d x_t^\ast}{d\mu}
+=
+-\bigl(H_t^b\bigr)^{-1}\nabla_{x\mu}^2J_t^b(x_t^\ast,\mu).
+\end{equation}
+Taking the second coordinate yields
+\begin{equation}
+\label{eq:dgamma-dmu-completo}
+\frac{d\gamma_t^\ast}{d\mu_t(\theta_{high})}
+=
+-e_\gamma'
+\bigl(H_t^b\bigr)^{-1}
+\nabla_{x\mu}^2J_t^b(x_t^\ast,\mu_t).
+\end{equation}
+By the net monotonicity condition~\eqref{eq:monotonia-neta-gamma}, the right-hand
+side of~\eqref{eq:dgamma-dmu-completo} is strictly positive.
+
+To interpret this condition, note that the coordinate of
+$\nabla_{x\mu}^2J_t^b$ associated with $\gamma_t$ contains
+\begin{equation}
+\label{eq:efecto-neto-gamma}
+\frac{\partial L_t}{\partial\gamma_t}
+(b,\alpha_t^\ast,\gamma_t^\ast,\theta_{high},\iota_t)
+-
+\frac{\partial L_t}{\partial\gamma_t}
+(b,\alpha_t^\ast,\gamma_t^\ast,\theta_{low},\iota_t)
++
+\frac{\partial}{\partial\mu}
+\left[
+\frac{\partial \Pi_{t,b}^{S}}{\partial\gamma_t}
+-\psi_H
+\frac{\partial \Delta H_t}{\partial\gamma_t}
+\right]_{x_t=x_t^\ast}.
+\end{equation}
+The first differential captures the material separation between types. Under
+proportional risks,
+\[
+\frac{\tilde\lambda_j(t\mid\theta_{high})}
+     {\tilde\lambda_j(t\mid\theta_{low})}
+=
+\exp\!\bigl(\beta_{K,j}(\theta_{high})
+-\beta_{K,j}(\theta_{low})\bigr),
+\]
+so that greater structural distance in $j\in\{2,3\}$ increases the difference
+in marginal losses associated with operational pressure. However, the deviation
+premium and the informational subsidy also enter the first-order condition;
+therefore the result is formulated as monotonicity of the net marginal effect
+of the complete objective, not as a property of material loss alone. Under
+~\eqref{eq:monotonia-neta-gamma}, increasing the posterior mass on the
+high-risk type shifts the interior optimum toward a higher $\gamma_t^\ast$.
+\end{proof}
+
+% ============================================================================
+\section{Equilibrium and implementability}
+\label{sec:equilibrio}
+% ============================================================================
+
+\noindent This section introduces the dynamic mechanism with its PBE, the
+notion of implementability with the constraints $IC^K$, $IR^K$, $IR^F$, and
+proves the existence of the implementable equilibrium.
+
+% ---------------------------------------------------------------------------
+
+\begin{definition}[Dynamic mechanism and Perfect Bayesian Equilibrium]
+\label{def:pbe-mechanism}
+Consider a discrete-time Bayesian game with horizon
+$\mathbb{T}=\{0,1,\ldots,\tau\}$, players $\mathcal{J}=\{S,K,F\}$, and captor
+type $\theta_K\in\Theta_K$ according to common prior $\mu_0$ with
+$\mu_0(\theta)>0$ for all $\theta$. A \textbf{dynamic mechanism} is described by:
+\begin{itemize}
+  \item \emph{Strategy profile:} $s=(s^S,s^K,s^F)$, where
+  $s^S=\chi=(\chi_t)_{t\in\mathbb{T}}$ with
+  $\chi_t:H_t\times\mathcal{R}
+   \to\mathcal{A}^{S,\mathrm{disc}}\times\mathcal{A}^\alpha\times\mathcal{A}^\gamma$.
+  \item \emph{Belief system:} $\mu=\{\mu_t\}_{t\ge 0}$,
+  $\mu_t\in\Delta(\Theta_K)$.
+  \item \emph{Ex-ante law:} $\ProbE^s$ induced by profile $s$, prior
+  $\mu_0$, and the physical dynamics of captivity.
+\end{itemize}
+
+\noindent\textbf{Perfect Bayesian Equilibrium.} The pair $(s,\mu)$ is a
+\textbf{PBE} if the following hold:
+\begin{enumerate}
+  \item[\textup{(a)}] \textbf{Sequential rationality.}
+  At every node reached with positive probability, each agent $i$ solves
+  its optimization program given $\mu_t$ and $s^{-i}$. For the state:
+  \[
+  \begin{aligned}
+  (a_t^{S\ast},\alpha_t^\ast,\gamma_t^\ast)\in
+  \arg\min_{(a_t^S,\alpha_t,\gamma_t)}
+  \Bigl\{&
+  \sum_\theta\mu_t(\theta)L_t(a_t^S,\alpha_t,\gamma_t,\theta,\iota_t)\\
+  &+\Pi_{t,a^S}^S(\alpha_t,\gamma_t;\mu_t)
+  -\psi_H\Delta H_t(\alpha_t,\gamma_t)\Bigr\}.
+  \end{aligned}
+  \]
+  For $i\in\{K,F\}$:
+  $a_t^{i\ast}\in\arg\max_{a_t^i}\mathcal{U}_t^i(a_t^i\mid\mathcal{I}_t^i,\chi,s^{-i})$.
+  \item[\textup{(b)}] \textbf{On-path Bayesian consistency.}
+  \[
+  \mu_t(\theta)=\ProbE^s(\theta_K=\theta\mid\mathcal{F}_t^{\mathrm{pub}}),
+  \qquad\forall\,\theta,\;t\ge 1.
+  \]
+\end{enumerate}
+\end{definition}
+
+\begin{remark}
+Definition~\ref{def:pbe-mechanism} defines the PBE as an \emph{object}: the
+pair $(s,\mu)$ satisfying~(a) and~(b). It does not assert existence nor that the
+profile satisfies incentive and participation constraints; those properties are
+the content of Theorem~\ref{thm:ebp-implementabilidad}.
+\end{remark}
+
+\bigskip
+
+\begin{definition}[Nash-Bayes-$IC^K$,$IR^K$,$IR^F$ implementability]
+\label{def:implementable-mechanism}
+Let $(s^\ast,\mu^\ast)$ be a PBE (Definition~\ref{def:pbe-mechanism}). The
+mechanism is \textbf{implementable Nash-Bayes-$IC^K$,$IR^K$,$IR^F$} if the
+profile additionally satisfies the following conditions:
+
+\smallskip
+\noindent\textbf{Bayesian incentive compatibility of the captor ($IC^K$).}
+For all $t\in\mathbb{T}$ and all rival mimicry $\theta_j\in\Theta_K$,
+\[
+\mathbb{E}_{\theta\sim\mu_t^\ast}
+\!\left[
+V^K_t\!\bigl(a^\ast(\theta)\mid\theta,\alpha_t^\ast,\gamma_t^\ast\bigr)
+-V^K_t\!\bigl(a^\ast(\theta_j)\mid\theta,\alpha_t^\ast,\gamma_t^\ast\bigr)
+\right]\ge 0.
+\]
+\noindent\textbf{Participation constraint of the captor ($IR^K$).}
+\[
+\mathbb{E}_{\theta\sim\mu_t^\ast}
+\!\left[U^K_{\mathrm{rel}}(\theta)
+-\max\bigl\{V^K_{\mathrm{cont},t}(\theta,\alpha_t^\ast,\gamma_t^\ast),
+U^K_{\mathrm{kill}}(\theta,\theta_S)\bigr\}\right]\ge 0.
+\]
+\noindent\textbf{Participation constraint of the family ($IR^F$).}
+\[
+\mathcal{U}^F_t(a_{\mathrm{coop}})\ge\mathcal{U}^F_t(a_{\mathrm{col}}).
+\]
+The \textbf{feasible set of policies} is
+\begin{equation}
+\label{eq:gamma-factible}
+\Gamma_t(\mu_t)
+:=\Bigl\{(a_t^S,\alpha_t,\gamma_t)\in
+\mathcal{A}^{S,\mathrm{disc}}\times[0,1]^2:
+IC^K,\;IR^K,\;IR^F\text{ are satisfied}\Bigr\}.
+\end{equation}
+Its non-emptiness --- \textbf{robust feasibility} --- is the primitive
+hypothesis of Theorem~\ref{thm:ebp-implementabilidad}.
+\end{definition}
+
+\begin{remark}
+Definition~\ref{def:implementable-mechanism} states implementability as a
+\emph{property} of the pair $(s^\ast,\mu^\ast)$: given the existence of the
+PBE, one asks whether it additionally satisfies $IC^K$, $IR^K$, and $IR^F$. The
+cycle criterion of \citet{Rochet1987} provides a useful algebraic
+reformulation for auditing $IC^K$ when $\Theta_K$ is finite.
+\end{remark}
+
+\begin{remark}[Full support of the MDG and Bayesian operability]
+The full support of $\ProbI{i}$ (hypothesis~(iii) of
+Theorem~\ref{thm:ebp-implementabilidad}) guarantees strictly positive
+probability at all reachable nodes, making Bayesian updating operative on the
+path and reducing indeterminacy off the path.
+\end{remark}
+
+\bigskip
+
+\begin{theorem}[Conditional implementability of the mechanism in PBE]
+\label{thm:ebp-implementabilidad}
+Consider the mechanism of Definition~\ref{def:pbe-mechanism} under the
+following conditions:
+\begin{itemize}
+  \item[\textup{(i)}] $|\Theta_K|<\infty$ with strictly positive prior.
+  \item[\textup{(ii)}] Finite action spaces $\mathcal{A}^i$ for all
+  $i\in\{K,S,F\}$.
+  \item[\textup{(iii)}] The law $\ProbI{i}$ of the MDG process assigns strictly
+  positive probability to every action (\textbf{full support}).
+  \item[\textup{(iv)}] $\mathcal{A}^\alpha=\mathcal{A}^\gamma=[0,1]$,
+  compact and convex; $L_t$ and $\mathcal{U}_t^i$ are measurable, bounded, and
+  continuous in the continuous decision variables. The physical outcome rule
+  $\mathsf{G}_t$ is measurable, and the transition kernel $Q_t$ induced by
+  $\mathsf{G}_t$ and by the competitive risk probabilities is continuous in
+  those variables.
+  \item[\textup{(v)}] \textbf{Robust feasibility.}
+  For each $t$ and $\mu_t\in\Delta(\Theta_K)$, $\Gamma_t(\mu_t)$ is non-empty
+  and compact; the sections $\Gamma_t^{a^S}(\mu_t)$ are convex; the
+  correspondence $\mu_t\mapsto\Gamma_t(\mu_t)$ is continuous with compact
+  values.
+  \item[\textup{(vi)}] \textbf{Parametric separability.}
+  \[
+  V^K_t(a^\ast(\theta')\mid\theta_K,\alpha_t,\gamma_t)
+  =
+  \sum_jw_j(a^\ast(\theta'),\alpha_t,\gamma_t)
+  \exp(\beta_{K,j}(\theta_K)\cdot z).
+  \]
+  \item[\textup{(vii)}] \textbf{Quasiconvexity of the restricted objective.}
+  For each $t$, $\mu_t$, and $a_t^S$, the functional
+  $(\alpha_t,\gamma_t)\mapsto\sum_\theta\mu_t(\theta)L_t+\Pi^S_{t,a^S}
+  -\psi_H\Delta H_t$ is quasiconvex in $(\alpha_t,\gamma_t)$ over
+  $\Gamma_t^{a^S}(\mu_t)$.
+\end{itemize}
+Then there exists $(s^\ast,\mu^\ast)$ such that:
+\begin{enumerate}
+  \item[\textup{(a)}] Constitutes a \textbf{PBE}
+  (Definition~\ref{def:pbe-mechanism}).
+  \item[\textup{(b)}] \textbf{Implements the social choice rule} $f_t$:
+  $\chi_t^\ast(h_t)=(a_t^{S\ast},\alpha_t^\ast,\gamma_t^\ast)$ minimizes the
+  expected social loss subject to $\Gamma_t(\mu_t^\ast)$.
+  \item[\textup{(c)}] \textbf{Satisfies $IC^K$, $IR^K$, and $IR^F$} in profile
+  $(s^\ast,\mu^\ast)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The proof proceeds in five steps.
+
+\paragraph{1. Existence of equilibrium.}
+By~(ii), the behavioral strategy space $\Sigma^i$ of each agent is a finite
+product of simplices, compact and convex. By~(v),
+$\Gamma_t(\mu_t)$ is compact, non-empty, with convex sections and continuous
+correspondence. The state's objective is continuous in $(\alpha_t,\gamma_t)$
+by~(iv); by \textbf{Berge's maximum theorem} \citep{AliprantisBorder2006}, the
+correspondence of optima $\Psi_t(\mu_t)$ is upper hemicontinuous and compact.
+By~(vii), the functional is quasiconvex; the argmin of a quasiconvex function
+over a compact convex set is convex, so $\Psi_t(\mu_t)$ has convex values. The
+utilities of $K$ and $F$ are multilinear in behavioral strategies, so the best
+response correspondence
+\[
+\mathrm{BR}(s)
+:=\mathrm{BR}^S_\Gamma(s^{-S})\times\mathrm{BR}^K(s^{-K})
+  \times\mathrm{BR}^F(s^{-F})
+\]
+has non-empty convex values. By \textbf{Kakutani's fixed-point theorem}
+\citep{Kakutani1941}, there exists $s^\ast$ with
+$s^\ast\in\mathrm{BR}(s^\ast)$.
+
+\paragraph{2. On-path Bayesian consistency.}
+By~(iii), $\ProbI{i}$ assigns positive probability to all actions compatible
+with the physical dynamics. Bayes' formula
+\[
+\mu_t^\ast(\theta)
+=\ProbE^{s^\ast}\!\bigl(\theta_K=\theta\mid\sigma(z,\zeta_0,\ldots,\zeta_{t-1})\bigr)
+\]
+is well defined at reached nodes and satisfies condition~(b) of
+Definition~\ref{def:pbe-mechanism}.
+
+\paragraph{3. Implementation of the social choice rule.}
+At the fixed point, the state's strategy solves at each node on the path:
+\[
+(a_t^{S\ast},\alpha_t^\ast,\gamma_t^\ast)
+\in\arg\min_{(a_t^S,\alpha_t,\gamma_t)\in\Gamma_t(\mu_t^\ast)}
+\!\Bigl\{\sum_\theta\mu_t^\ast(\theta)L_t
++\Pi_{t,a^S}^S(\alpha_t,\gamma_t;\mu_t^\ast)
+-\psi_H\Delta H_t(\alpha_t,\gamma_t)\Bigr\}.
+\]
+The objective is continuous by~(iv) and $\Gamma_t(\mu_t^\ast)$ is compact and
+non-empty by~(v); by Weierstrass a solution exists.
+
+\paragraph{4. Incentive compatibility ($IC^K$): cycle reformulation
+\citep{Rochet1987}.}
+$IC^K$ is imposed through the feasible set $\Gamma_t(\mu_t^\ast)$, not verified
+ex post: equilibrium instruments belong to $\Gamma_t(\mu_t^\ast)$, which by~(v)
+and Definition~\ref{def:implementable-mechanism} incorporates $IC^K$ as a
+constitutive condition. For algebraic auditing with
+$\Delta_{ij}^t:=V^K_t(a^\ast(\theta_j)\mid\theta_i)
+-V^K_t(a^\ast(\theta_i)\mid\theta_i)$, the Bayesian version is equivalent to
+$\mathbb{E}_{\theta_i\sim\mu_t^\ast}[\Delta_{ij}^t]\le 0$ for all $j$.
+For every cycle $(\theta_{k_0},\ldots,\theta_{k_m},\theta_{k_0})$:
+\[
+\sum_{\ell=0}^{m}
+\mu_t^\ast(\theta_{k_\ell})\,\Delta_{k_\ell,k_{\ell+1}}^t\le 0
+\qquad(\text{indices mod }m+1).
+\]
+
+\paragraph{5. Participation constraints ($IR^K$, $IR^F$).}
+By construction in Step~3, $(\alpha_t^\ast,\gamma_t^\ast)\in\Gamma_t(\mu_t^\ast)$,
+a set that by~(v) simultaneously guarantees $IR^K$ and $IR^F$ in the
+equilibrium profile.
+
+Having completed the five steps, $(s^\ast,\mu^\ast)$ is a PBE that implements
+$f_t$ and satisfies $IC^K$, $IR^K$, and $IR^F$ simultaneously.
+\end{proof}
+
+\begin{remark}[Separation of results: implementability and asymptotic identification]
+Theorem~\ref{thm:ebp-implementabilidad} and Theorem
+~\ref{thm:posterior-consistency} guarantee complementary properties. The first
+guarantees existence of a PBE with implementable policy subject to
+$\Gamma_t$: $IC^K$ enters through the definition of the feasible set. The
+second guarantees that under that same equilibrium, if heterogeneity in
+$\beta_{K,j}$ generates uniform separation in total variation, beliefs converge
+to the true type almost surely in $\mathcal{T}$. The full support of the MDG
+plays a role in both: it reduces the \emph{off-path} region and avoids
+degeneracies of the likelihood.
+\end{remark}
+
+% ============================================================================
+\section{Abstract structural identification (Kakutani criterion)}
+\label{sec:id-abstracta}
+% ============================================================================
+
+\noindent This section isolates the measure-theoretic argument: under product
+structure and recurrent separation in total variation, the criterion of
+\citet{Kakutani1948} forces mutual singularity of trajectory laws.
+Theorem~\ref{thm:posterior-consistency-appendix} states the same Bayesian
+conclusion as Section~\ref{sec:id-asintotica}, replacing Lemma
+~\ref{lem:hazard-separation} with the abstract hypotheses of the following
+lemma.
+
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[Product of experiments and singularity (Kakutani criterion)]
+\label{lem:general-id-appendix}
+Fix $\theta\neq\theta'$. Suppose that conditional on equilibrium policy and
+on event $\mathcal{T}$, the sequence $\{Y_t\}_{t\ge 0}$ is independent and each
+$Y_t$ takes values in a common finite support $\mathcal{Y}_t$. Let
+$\rho_t:=\rho\bigl(p_\theta^{(t)},p_{\theta'}^{(t)}\bigr)$ be the
+Bhattacharyya affinity. Then the affinity between the product laws on horizon
+$T$ is
+\begin{equation}
+\label{eq:appendix-rho-product}
+\rho\!\Bigl(\bigotimes_{t=0}^{T}p_\theta^{(t)},\,
+            \bigotimes_{t=0}^{T}p_{\theta'}^{(t)}\Bigr)
+=\prod_{t=0}^{T}\rho_t.
+\end{equation}
+If there exists an infinite set $\mathcal{S}_{\theta,\theta'}\subseteq\mathbb{N}$
+with $\|p_\theta^{(t)}-p_{\theta'}^{(t)}\|_{\mathrm{TV}}\ge\underline\varepsilon>0$
+for all $t\in\mathcal{S}_{\theta,\theta'}$, then
+$\prod_{t\in\mathcal{S}}\rho_t=0$ and, by the criterion of
+\citet{Kakutani1948}, the product measures over the infinite sequence are
+\textbf{mutually singular} \citep{Shiryaev2019Probability}.
+\end{lemma}
+
+\begin{proof}
+\textbf{Identity~\eqref{eq:appendix-rho-product}.}
+Under independence,
+\[
+\rho\!\Bigl(\bigotimes_{t=0}^{T}p_\theta^{(t)},\,
+            \bigotimes_{t=0}^{T}p_{\theta'}^{(t)}\Bigr)
+=\sum_{(y_0,\ldots,y_T)}\prod_{t=0}^{T}\sqrt{p_\theta^{(t)}(y_t)p_{\theta'}^{(t)}(y_t)}
+=\prod_{t=0}^{T}\sum_{y_t\in\mathcal{Y}_t}
+  \sqrt{p_\theta^{(t)}(y_t)p_{\theta'}^{(t)}(y_t)}.
+\]
+
+\noindent\textbf{Singularity.}
+The proof uses the standard inequality
+$\|p-q\|_{\mathrm{TV}}\le\sqrt{2}\,\mathsf{H}(p,q)$
+on finite spaces, with $\mathsf{H}^2(p,q)=1-\rho(p,q)$. If
+$\|p-q\|_{\mathrm{TV}}\ge\underline\varepsilon$, then
+\[
+\rho(p,q)\le 1-\frac{\underline\varepsilon^{\,2}}{2}.
+\]
+At each $t\in\mathcal{S}_{\theta,\theta'}$,
+$\rho_t\le 1-\underline\varepsilon^2/2<1$. As $\mathcal{S}$ is infinite, the
+product contains infinitely many factors uniformly less than~$1$:
+$\prod_{t\in\mathcal{S}}\rho_t=0$. By the criterion of \citet{Kakutani1948},
+the infinite product measures are mutually singular
+\citep{Shiryaev2019Probability}.
+\end{proof}
+
+\bigskip
+
+\begin{theorem}[Posterior consistency under product-measure singularity]
+\label{thm:posterior-consistency-appendix}
+Suppose $\Theta_K$ finite, prior $\mu_0$ with full support, and PBE-consistent
+Bayesian updating (Definition~\ref{def:beliefs-martingale}).
+Let $\theta_K^\ast$ be the realized type and $\mathcal{T}$ the prolonged
+captivity event (Definition~\ref{def:event-T-long}). Suppose that for all
+$\theta\neq\theta_K^\ast$ the following hold:
+\begin{enumerate}
+  \item[\textup{(i)}] \textbf{Trajectory compatibility.}
+  $\ProbC{\theta_K^\ast}(\mathcal{T})>0$; for each false type, either
+  $\ProbC{\theta}(\mathcal{T})=0$, or signal laws are compared under the law
+  restricted to $\mathcal{T}$.
+  \item[\textup{(ii)}] \textbf{Product structure and recurrent TV separation.}
+  The sequence $\{Y_t\}_{t\ge 0}$ satisfies product factorization and the
+  existence of $\mathcal{S}_{\theta,\theta_K^\ast}$ and
+  $\underline\varepsilon_\theta>0$ from Lemma~\ref{lem:general-id-appendix}.
+  \item[\textup{(iii)}] \textbf{Signal-experiment alignment.}
+  In $\mathcal{T}$, $\zeta_t$ contains $Y_t=(m_t,d_t)$, so that singularity of
+  $\{Y_t\}$ transfers to $\{\zeta_t\}$ by monotonicity of singularity with
+  respect to $\sigma$-algebras.
+\end{enumerate}
+Then, in $\mathcal{T}$,
+\[
+\mu_t(\theta)\xrightarrow{t\to\infty}0\;\;\forall\,\theta\neq\theta_K^\ast,
+\qquad
+\mu_t(\theta_K^\ast)\xrightarrow{t\to\infty}1,
+\qquad\ProbC{\theta_K^\ast}\textup{-a.s.}
+\]
+Equivalently, $\{\mu_t\}$ converges weakly to $\delta_{\theta_K^\ast}$
+$\ProbC{\theta_K^\ast}$-a.s.\ in $\mathcal{T}$.
+\end{theorem}
+
+\begin{proof}
+Fix $\theta\neq\theta_K^\ast$.
+
+\textbf{Case} $\ProbC{\theta}(\mathcal{T})=0$: the false type cannot generate
+trajectories in $\mathcal{T}$; its posterior likelihood is annulled by survival
+exclusion.
+
+\textbf{Case} $\ProbC{\theta}(\mathcal{T})>0$: by~(ii), Lemma
+~\ref{lem:general-id-appendix} implies that the infinite product laws are
+mutually singular. By~(iii), that singularity transfers to the public flow
+$\{\zeta_t\}$. There exists a tail event $A_\theta$ with
+\[
+\ProbC{\theta_K^\ast}(A_\theta\mid\mathcal{T})=1,\qquad
+\ProbC{\theta}(A_\theta\mid\mathcal{T})=0.
+\]
+The likelihood ratio $R_t^\theta$ of the false type against the true type
+satisfies $R_t^\theta\to 0$ $\ProbC{\theta_K^\ast}$-a.s.\ in $\mathcal{T}$
+\citep{BlackwellDubins1962,Schervish1995Theory}. By Bayes,
+\[
+\mu_t(\theta)
+\le\frac{\mu_0(\theta)}{\mu_0(\theta_K^\ast)}\,R_t^\theta\to 0
+\qquad\ProbC{\theta_K^\ast}\text{-a.s.\ in }\mathcal{T}.
+\]
+As $\Theta_K$ is finite, all false coordinates converge to zero
+simultaneously. Finally,
+\[
+1=\lim_{t\to\infty}\sum_\theta\mu_t(\theta)
+=\lim_{t\to\infty}\mu_t(\theta_K^\ast)+0,
+\]
+so that $\mu_t(\theta_K^\ast)\to 1$ $\ProbC{\theta_K^\ast}$-a.s.\ in
+$\mathcal{T}$.
+\end{proof}
+
+% ============================================================================
+\section{Formal verification in Lean~4}
+\label{sec:lean-formalization}
+% ============================================================================
+
+\begin{sloppypar}
+\noindent
+This replication package includes a standalone Lean~4 project in folder
+\path{lean/} (main file \path{Appendix3Proofs.lean}) that
+formalizes the logical dependency graph of this supplement. The development is
+independent of earlier project-specific files and mirrors Sections
+\ref{sec:main}--\ref{sec:id-abstracta}. Each declaration is tagged with its TeX
+label where applicable. A successful build (\path{lake build}) yields no
+\path{sorry} obligations. Build instructions appear in Section~\ref{sec:repro}.
+\end{sloppypar}
+
+\medskip
+\noindent\textbf{Reading the status tags.}
+Every Lean declaration carries one of two tags. \texttt{[Proved]} means the
+statement is fully verified by the Lean~4 compiler against Mathlib: the proof
+is machine-checked and admits no gaps. \texttt{[Hypothesis]} means the
+statement is declared as an explicit interface and \emph{assumed}, not
+re-proved, inside Lean; each such interface corresponds to a classical step
+proved analytically in this supplement or in the cited literature. The
+formalization therefore does \emph{not} replace the proofs in this document:
+it certifies the finite-dimensional algebra and the logical assembly of the
+identification argument, and makes every classical input explicit.
+
+\medskip
+\noindent\textbf{Proved in Lean (machine-checked).}
+\begin{itemize}
+  \item \textbf{Section~\ref{sec:main}.}
+  Lemma~\ref{lem:I0-closed} and Corollary~\ref{cor:trend_equivalence}.
+  \item \textbf{Section~\ref{sec:info-bayes}.}
+  Public filtration, predictive likelihood, and martingale beliefs;
+  Lemma~\ref{lem:asymptotic-beliefs} (bounded martingale with a.s.\ limit in
+  $[0,1]$, via Doob's theorem in Mathlib); and the normalization closure of
+  step~3 of Theorem~\ref{thm:posterior-consistency}: false-type collapse
+  forces $\mu_t(\theta^\ast)\to 1$.
+  \item \textbf{Section~\ref{sec:mdg}.}
+  Continuation probability of Definition~\ref{def:desenlace-fisico-mt}; Cox
+  hazard-ratio algebra (distinct $\beta_{K,j}$ $\Rightarrow$ ratio
+  $\neq 1$); the predictive masses $p_\theta^{(t)}$ form probability masses;
+  local TV separation --- Lemma~\ref{lem:hazard-separation}(i) --- for those
+  masses under $\beta_{K,j}$ separation and a non-knife-edge total hazard;
+  logit axioms (A1)~full support and (A2)~plan dominance of
+  Remark~\ref{rem:axiomas-logit}.
+  \item \textbf{Section~\ref{sec:riesgos}.}
+  Sign certificate of Proposition~\ref{prop:expected-captivity-gamma}:
+  negativity of~\eqref{eq:dE-dgamma} and the sign identity under
+  $\kappa_h\gtrless 0$.
+  \item \textbf{Section~\ref{sec:id-asintotica}.}
+  Logical assembly of Lemma~\ref{lem:hazard-separation}: conditions (a)/(b)
+  imply Definition~\ref{def:asymptotic-id}; packaging of recurrent uniform TV
+  margins; and the Bayes factorization of step~2 of
+  Theorem~\ref{thm:posterior-consistency}: the bound
+  $\mu_t(\theta)\le(\mu_0(\theta)/\mu_0(\theta^\ast))\,R_t^\theta$ forces
+  $\mu_t(\theta)\to 0$ whenever $R_t^\theta\to 0$.
+  \item \textbf{Section~\ref{sec:id-abstracta}.}
+  Bhattacharyya product identity~\eqref{eq:appendix-rho-product}; the
+  Hellinger--TV bound $\rho\le 1-\underline\varepsilon^2/2$; and vanishing of
+  the product affinity under recurrent separation, i.e., the entire algebraic
+  part of Lemma~\ref{lem:general-id-appendix}.
+  \item \textbf{Identification bridge.}
+  Cox predictive masses plus a recurrent TV margin imply asymptotic
+  identification, conditional only on the two Kakutani interfaces listed
+  below.
+\end{itemize}
+
+\medskip
+\noindent\textbf{Not proved in Lean (explicit hypotheses).}
+The following classical steps are stated as interfaces and assumed inside
+Lean, mainly because infinite product measures and their convergence theory
+are not available in Mathlib. Each one is proved analytically where indicated.
+\begin{itemize}
+  \item \emph{Kakutani mutual singularity} --- vanishing product affinity
+  implies mutually singular trajectory laws: proof of
+  Lemma~\ref{lem:general-id-appendix} and \citet{Kakutani1948}.
+  \item \emph{Singularity transfer} $Y_t\Rightarrow\zeta_t$: item~(iii) of
+  Theorem~\ref{thm:posterior-consistency-appendix}.
+  \item \emph{Singularity implies vanishing likelihood ratio}: step~2 of
+  Theorem~\ref{thm:posterior-consistency}
+  \citep{BlackwellDubins1962,Schervish1995Theory}.
+  \item \emph{Survival exclusion}, $\ProbC{\theta}(\mathcal{T})=0$ implies
+  collapse: step~2 of Theorem~\ref{thm:posterior-consistency}.
+  \item \emph{Maximum entropy axiom (A3)} of Remark~\ref{rem:axiomas-logit}:
+  \citet{Jaynes1957Information}.
+  \item \emph{Implicit-function step} of
+  Proposition~\ref{prop:optimal-gamma-beliefs}: proof in
+  Section~\ref{sec:politica}.
+  \item \emph{Existence of the implementable PBE},
+  Theorem~\ref{thm:ebp-implementabilidad}: fixed-point proof in
+  Section~\ref{sec:equilibrio} \citep{Kakutani1941}.
+\end{itemize}
+Table~\ref{tab:lean-status} maps these hypotheses to their Lean identifiers.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Lean formalization status for selected supplement objects}
+\label{tab:lean-status}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}%
+  >{\raggedright\arraybackslash}p{0.37\linewidth}%
+  >{\raggedright\arraybackslash}p{0.41\linewidth}%
+  >{\raggedright\arraybackslash}p{0.12\linewidth}@{}}
+\toprule
+TeX object & Lean identifier & Status \\
+\midrule
+Lemma~\ref{lem:general-id-appendix} (algebraic part)
+  & \texttt{generalIdAppendix\-Lemma} & Proved \\
+Kakutani (1948) mutual singularity
+  & \texttt{kakutani\-Mutual\-Singularity} & Hyp. \\
+Outcome-trajectory laws on $\mathcal{T}$
+  & \texttt{kakutani\-Signal\-Singularity} & Hyp. \\
+Singularity transfer $Y_t\Rightarrow\zeta_t$
+  & \texttt{signal\-Experiment\-Alignment} & Hyp. \\
+Singularity $\Rightarrow$ vanishing likelihood ratio
+  & \texttt{singularity\-Implies\-Likelihood\-Vanishing} & Hyp. \\
+$\ProbC{\theta}(\mathcal{T})=0$ $\Rightarrow$ collapse
+  & \texttt{zeroMass\-Posterior\-Collapse} & Hyp. \\
+Remark~\ref{rem:axiomas-logit}, axiom (A3)
+  & \texttt{logitProb\-\_max\-Entropy\-\_hyp} & Hyp. \\
+Proposition~\ref{prop:optimal-gamma-beliefs}
+  & \texttt{prop\-\_optimal\-\_gamma\-\_beliefs} & Hyp. \\
+Theorem~\ref{thm:ebp-implementabilidad}
+  & \texttt{conditional\-Implementability} & Hyp. \\
+\bottomrule
+\end{tabular}
+\tabnote\ \texttt{[Proved]}: machine-checked in Lean~4. \texttt{[Hyp.]}:
+declared interface; proved analytically in this supplement or cited literature.
+\tabsource
+\end{table}
+
+% ============================================================================
+\section{Reproducibility}
+\label{sec:repro}
+% ============================================================================
+
+\begin{sloppypar}
+All analytical proofs in this supplement are self-contained in
+\path{tex/Appendix_3.tex}. Machine-checked algebraic steps are reproduced by
+the Lean~4 project in \path{lean/}. Set the working directory to
+\texttt{Appendix\_3/} and run \path{replicate.sh}. See \path{README.txt} at the
+package root for step-by-step instructions. Requirements: Lean~4 (toolchain in
+\path{lean-toolchain}) and Lake; Mathlib is fetched automatically on first
+build (network required; estimated first-build time 15--45 minutes).
+\end{sloppypar}
+
+\begin{enumerate}
+\item \path{replicate.sh} at the package root runs \path{lake build} in
+  \path{lean/} and writes a log to \path{lean/build.log}.
+\item Main formal file: \path{lean/Appendix3Proofs.lean}. Project metadata:
+  \path{lakefile.lean}, \path{lean-toolchain}, \path{lake-manifest.json}.
+\item Section~\ref{sec:lean-formalization} and Table~\ref{tab:lean-status}
+  document which results are \texttt{[Proved]} vs.\ \texttt{[Hyp.]}.
+\item (Optional) Compile \path{tex/Appendix_3.pdf} from \path{tex/} with
+  \texttt{pdflatex} and \texttt{bibtex}.
+\end{enumerate}
+
+\begin{sloppypar}
+Section~\ref{sec:lean-formalization} (Table~\ref{tab:lean-status}) documents
+which results are machine-checked vs.\ hypothetical. All paths are relative to
+\texttt{Appendix\_3/}; see \path{README.txt} for the full build workflow.
+\end{sloppypar}
+
+\bibliographystyle{econsoc}
+\bibliography{references}
+
+\end{document}
