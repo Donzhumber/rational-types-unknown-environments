@@ -216,14 +216,15 @@ def hybrid_temperature(
     c_bar: float = 0.1,
 ) -> float:
     """
-    Temperatura híbrida (Mechanism.tex eq.693):
-        T_t = T_0 · (H(μ_t)/H(μ_0)) · max{e^{-η_cal·t}, c̄}
-    Mayor H(μ_t) → mayor T_t → más ruido operativo MDG (acción ejecutada menos alineada con A*_t).
+    Temperatura híbrida (Bernal_H.tex eq:temperature / Appendix_3 eq:temperatura-piso):
+        T_t = T_0 · max{(H(μ_t)/H(μ_0))·e^{-η_cal·t}, c̄}
+    Cuando H(μ_t) cae, el término entrópico decrece; con c̄>0 la temperatura queda
+    acotada inferiormente por T_0·c̄ y el soporte MDG permanece completo.
     H0=0 se trata como 1 para evitar división por cero (uniforme).
     """
     ratio_H = H_mu / max(1e-12, H0)
-    decay = max(c_bar, np.exp(-eta_cal * max(0, t)))
-    return float(T0 * ratio_H * decay)
+    info_term = ratio_H * np.exp(-eta_cal * max(0, t))
+    return float(T0 * max(c_bar, info_term))
 
 
 def mdg_execution_noise(eps0: float, T_t: float) -> float:

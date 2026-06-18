@@ -1,4 +1,6 @@
+% !TEX program = pdflatex
 % !TEX root = Appendix_3.tex
+% !TEX outputDirectory = out
 % =========================================================================
 % APPENDIX 3 -- FORMAL PROOFS AND LEAN VERIFICATION
 % Econometrica / Econometric Society supplement format.
@@ -25,6 +27,7 @@
 \newtheorem{remark}[theorem]{Remark}
 
 \newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
 \newcommand{\ProbE}{\mathbb{P}_{\mathrm{E}}}
 \newcommand{\ProbI}[1]{\mathbb{P}_{\mathrm{I},#1}}
 \newcommand{\ProbC}[1]{\mathbb{P}_{\mathrm{C},#1}}
@@ -301,19 +304,36 @@ $\ProbE$-a.s.
 \noindent This section establishes the fundamental definitions of the
 stochastic implementation layer (MDG), which transforms strategic intentions
 into materialized actions, and of the law governing the physical outcome that
-determines the observable results of the episode.
+determines the observable results of the episode. The episode horizon is the
+endogenous stopping time
+\begin{equation}
+\label{eq:stopping-time}
+\tau:=\inf\{t\ge 0:m_t\in\mathcal{M}_{\mathrm{term}}\},
+\end{equation}
+where $m_t$ is the physical outcome,
+$\mathcal{M}_{\mathrm{cont}}=\{\mathrm{cont}\}$,
+$\mathcal{M}_{\mathrm{term}}=\{\mathrm{pay},\mathrm{res},\mathrm{rel},\mathrm{kill}\}$,
+and $\mathcal{M}_{\mathrm{out}}=\mathcal{M}_{\mathrm{cont}}\cup\mathcal{M}_{\mathrm{term}}$
+(fully formalized in Definition~\ref{def:desenlace-fisico-mt}). Active
+periods satisfy $t<\tau$ while captivity continues.
 
 % ---------------------------------------------------------------------------
 
 \begin{definition}[MDG stochastic implementation filter]
 \label{def:mano-dios-filtro}
-Let $\mathcal{A}^i$ be the finite set of admissible actions of agent~$i$.
-Given the plan $a_t^{i\ast}\in\mathcal{A}^i$ and the state vector $X_t$,
+Let $i\in\{K,S,F\}$ and let $\mathcal{A}^i$ be the finite set of admissible
+actions of agent~$i$. The \textbf{state vector} is
+$X_t:=(\mu_t,h_t)$, with $\mu_t$ from
+Definition~\ref{def:beliefs-martingale} and $h_t$ the public history at the
+opening of~$t$. Given the plan $a_t^{i\ast}\in\mathcal{A}^i$ and $X_t$,
 execution is determined by the \textbf{implementation law}
 \[
 \tilde{a}_t^i \sim \ProbI{i}\bigl(\cdot \mid a_t^{i\ast},\,X_t\bigr).
 \]
-The stochastic structure is formalized on a measurable space
+In the base logit specification~\eqref{eq:logit-hybrid},
+$\ProbI{i}(\cdot\mid a_t^{i\ast},X_t)$ depends on $X_t$ only through $\mu_t$
+(via the temperature $T_t$); conditioning on $h_t$ is reserved for extended
+specifications. The stochastic structure is formalized on a measurable space
 $(\Omega,\mathcal{F})$. The measurable function
 $\mathcal{H}_t^i:\mathcal{A}^i\times\Omega\to\mathcal{A}^i$ materializes the
 sequential draw: $\tilde{a}_t^i(\omega)=\mathcal{H}_t^i(a_t^{i\ast},\omega)$.
@@ -325,18 +345,21 @@ The \textbf{aggregate profile of executed actions} is
 The following regularity assumptions are imposed.
 \begin{enumerate}
   \item[\textup{(i)}] \textbf{Plan dominance and error support.}
-  For all $t<\tau$, $\ProbI{i}$ concentrates most of its mass on
-  $a_t^{i\ast}$ and assigns strictly positive probability to the remaining
-  actions. Under the \textbf{full support} hypothesis,
+  In the \textbf{base specification} with $\underline{c}>0$, for all
+  $t<\tau$ (with $\tau$ as in~\eqref{eq:stopping-time}),
+  $\ProbI{i}$ satisfies strict \textbf{plan dominance},
+  $\ProbI{i}(a_t^{i\ast}\mid a_t^{i\ast},X_t)>\ProbI{i}(a\mid a_t^{i\ast},X_t)$
+  for all $a\neq a_t^{i\ast}$, and \textbf{full support},
   $\ProbI{i}(\tilde{a}_t^i=a\mid a_t^{i\ast},X_t)>0$ for all
   $a\in\mathcal{A}^i$.
-  \item[\textup{(ii)}] \textbf{Institutional convergence.}
-  In the long-horizon regime one may impose
-  \[
-  \lim_{t\to\infty}\ProbE\bigl(\tilde{a}_t^i=a_t^{i\ast}\mid
-    \mathcal{F}_t^{\mathrm{pub}}\bigr)=1,\qquad\forall\,i,
-  \]
-  which is satisfied when the posterior entropy $H(\mu_t)\to 0$.
+  \item[\textup{(ii)}] \textbf{Bounded institutional maturation.}
+  The informational component
+  $[H(\mu_t)/H(\mu_0)]e^{-\eta_{\mathrm{cal}}t}$ declines as posterior
+  uncertainty falls, while the structural floor $\underline{c}$ persists in
+  ~\eqref{eq:temperatura-piso}. When $\underline{c}>0$, even if
+  $H(\mu_t)\to 0$ one has $T_t\ge T_0\underline{c}$ and
+  $\ProbI{i}(\tilde{a}_t^i=a_t^{i\ast}\mid a_t^{i\ast},X_t)<1$, so full
+  support over $\mathcal{A}^i$ is preserved in the long run.
 \end{enumerate}
 The implementation law adopts the \textbf{hybrid-temperature logit}
 structure:
@@ -349,14 +372,27 @@ structure:
 with hybrid temperature
 \begin{equation}
 \label{eq:temperatura-piso}
-T_t = T_0\!\left[\frac{H(\mu_t)}{H(\mu_0)}\right]
-      \max\!\bigl\{e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\bigr\},
+T_t = T_0\max\!\Bigl\{\frac{H(\mu_t)}{H(\mu_0)}e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\Bigr\},
 \end{equation}
-where $T_0>0$ is the initial temperature and $\eta_{\mathrm{cal}}>0$ is the
-calendar decay rate. Shannon entropy is
-$H(\mu_t)=-\sum_\theta\mu_t(\theta)\ln\mu_t(\theta)$, and
-$\underline{c}\in(0,1]$ is the floor of structural noise.
+where $T_0>0$ is the initial temperature, $\eta_{\mathrm{cal}}>0$ is the
+calendar decay rate, Shannon entropy is
+$H(\mu_t)=-\sum_\theta\mu_t(\theta)\ln\mu_t(\theta)$ with
+$H(\mu_0)>0$ by the full-support prior in
+Definition~\ref{def:beliefs-martingale}, and
+$\underline{c}\in[0,1]$ is the floor of structural noise.
 \end{definition}
+
+\begin{remark}[Residual noise and the limit $\underline{c}=0$]
+\label{rem:mdg-floor}
+The special case $\underline{c}=0$ is interpreted as a limit without residual
+noise: it allows
+$\ProbE(\tilde{a}_t^i=a_t^{i\ast}\mid\mathcal{F}_t^{\mathrm{pub}})\to 1$
+when $H(\mu_t)\to 0$, but sacrifices the persistent full support maintained
+under $\underline{c}>0$. The base version with $\underline{c}>0$ aligns with
+the absolute continuity or ``grain of truth'' condition of
+\citet{KalaiLehrer1993}, according to which rational learning must not assign
+zero probability to events that can occur.
+\end{remark}
 
 \begin{remark}[Axiomatic justification of the logit as the unique implementation law]
 \label{rem:axiomas-logit}
@@ -372,9 +408,12 @@ $\mathcal{A}^i$ that simultaneously satisfies the three axioms:
   Among all distributions satisfying~(A1) and~(A2),
   $\ProbI{i}$ maximizes the Shannon entropy
   $H=-\sum_a p_a\ln p_a$ subject to the optimal action receiving fixed
-  probability $1-\varepsilon_t\in(0,1)$.
+  probability $1-\varepsilon_t\in(0,1)$, where
+  $\varepsilon_t:=1-\ProbI{i}(a_t^{i\ast}\mid a_t^{i\ast},X_t)$ is the
+  implementation-error rate induced by the logit.
 \end{enumerate}
-By the characterization theorem of \citet{Jaynes1957Information}, the unique
+In the parametrization~\eqref{eq:logit-hybrid}, $\varepsilon_t$ is decreasing
+in $1/T_t$. By the characterization theorem of \citet{Jaynes1957Information}, the unique
 maximizer is the logit in~\eqref{eq:logit-hybrid}. The MDG process is thus
 axiomatically justified as the unique implementation process compatible with
 bounded rationality and maximum entropy.
@@ -457,7 +496,7 @@ $\mu_C:=\ProbC{\theta^\ast}(\cdot\mid\mathcal{T})$ is adopted.
 
 \begin{definition}[Prolonged captivity event]
 \label{def:event-T-long}
-Let $\tau$ be the stopping time of the episode. The
+Let $\tau$ be as in~\eqref{eq:stopping-time}. The
 \textbf{prolonged captivity event} is
 \[
 \mathcal{T}

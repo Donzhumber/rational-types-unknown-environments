@@ -3840,7 +3840,7 @@ def _mdg_t0_temperature(agent: str) -> float:
     T0 = float(st.session_state.get(f"mdg_T0_{agent}", 1.0))
     cbar = float(st.session_state.get(f"mdg_cbar_{agent}", 0.05))
     eta = float(st.session_state.get("cal_mdg_eta_cal_by_i", {}).get(agent, 0.0))
-    return float(max(T0 * max(np.exp(-eta * 0.0), cbar), 1e-12))
+    return float(max(hybrid_temperature(1.0, T0, 1.0, eta, 0, cbar), 1e-12))
 
 
 def _mdg7_session_probs(agent: str, keys: list[str], base_probs: dict[str, float]) -> dict[str, float]:
@@ -8058,8 +8058,7 @@ with tab_mdg:
     _cinst_mdg = (_rb("rb_calp", 0.8), _rb("rb_cgam", 0.5), _rb("rb_ccross", 0.2))
 
     _H_mu_mdg = shannon_entropy(_mu_mdg_tab)
-    _H0_mdg = max(_H_mu_mdg, 1e-12)
-    _ratio_H_mdg = 1.0 if _H0_mdg <= 1e-12 else float(_H_mu_mdg / _H0_mdg)
+    _H0_ref_mdg = float(np.log(len(TIPOS_SECUESTRADOR)))
     _agentes_mdg = [
         ("1 · Secuestrador (K)", "K"),
         ("2 · Familia (F)", "F"),
@@ -8123,9 +8122,9 @@ with tab_mdg:
             _cbar_w = float(st.session_state[_key_cbar])
             _t_int_mdg = int(st.session_state.get("mdg_tday", 1))
             _eta_w = float(st.session_state.cal_mdg_eta_cal_by_i[_mdg_focal_code])
-            _exp_decay = float(np.exp(-float(_eta_w) * _t_int_mdg))
-            _floor_mdg = float(max(_exp_decay, _cbar_w))
-            _T_t_mdg = float(_T0_w * _ratio_H_mdg * _floor_mdg)
+            _T_t_mdg = float(hybrid_temperature(
+                _H_mu_mdg, _T0_w, H0=_H0_ref_mdg, eta_cal=_eta_w, t=_t_int_mdg, c_bar=_cbar_w
+            ))
             
             _p_map_theoretical = _mdg_implementation_logit_probs(_actions_mdg, _astar_mdg, _T_t_mdg)
             _p_map = dict(_p_map_theoretical)
@@ -8154,7 +8153,7 @@ with tab_mdg:
             _n_u += 1
             _rows_mdg_katex.append({"#": _n_u, "Término": "Prior marginal μ(θ_K) incidente", "Coeficiente": r"\mu(\theta_K)", "Valor": _prior_const, "Valor_KaTeX": rf"\text{{{_fmt_es_num(_prior_const, 2)}}}", "Clase_tab7": "Prior"})
             
-            _tt_specs = [("Temperatura base T₀", "T_0", _T0_w), ("Entropía de referencia H(μ₀)", r"H(\mu_0)", float(_H0_mdg)), ("Piso c̲ (inferior)", r"\underline{c}", _cbar_w)]
+            _tt_specs = [("Temperatura base T₀", "T_0", _T0_w), ("Entropía de referencia H(μ₀)", r"H(\mu_0)", float(_H0_ref_mdg)), ("Piso c̲ (inferior)", r"\underline{c}", _cbar_w)]
             for _term_tt, _coef_tt, _val_tt in _tt_specs:
                 _n_u += 1
                 _rows_mdg_katex.append({"#": _n_u, "Término": _term_tt, "Coeficiente": _coef_tt, "Valor": _val_tt, "Valor_KaTeX": rf"\text{{{_fmt_es_num(_val_tt, 2)}}}", "Clase_tab7": "No prior"})
@@ -8169,7 +8168,7 @@ with tab_mdg:
                 st.markdown("#### Ley de Implementación")
                 st.latex(rf"\mathbb{{P}}_{{\mathrm{{I}},{_mdg_focal_code}}}(\tilde a=a \mid a^\ast, X_t) = \frac{{\exp(\mathbf{{1}}\{{a=a^\ast\}}/T_t)}}{{\sum_{{a'\in\mathcal{{A}}^{{{_mdg_focal_code}}}}}\exp(\mathbf{{1}}\{{a'=a^\ast\}}/T_t)}}")
                 st.markdown("#### Dinámica de Temperatura")
-                st.latex(r"T_t = T_0 \left[\frac{H(\mu_t)}{H(\mu_0)}\right] \max\!\left\{e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\right\}")
+                st.latex(r"T_t = T_0 \max\!\left\{\frac{H(\mu_t)}{H(\mu_0)}e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\right\}")
                 st.latex(rf"H(\mu_t) = -\sum_{{\theta \in \Theta_K}} \mu_t(\theta) \ln \mu_t(\theta) = \text{{{_fmt_es_num(_H_mu_mdg, 2)}}}")
             
             with _c_tbl:
@@ -11959,7 +11958,7 @@ with tab_mech_sol:
                 tau: int = 1,
             ) -> dict[str, float]:
                 """Ley de Implementación de Tabla 7 para el agente indicado.
-                T_t = T0 * [H(mu_t)/H(mu_0)] * max(exp(-eta_cal * t), c_bar)  (eq. temperatura-piso)
+                T_t = T0 * max((H(mu_t)/H(mu_0)) * exp(-eta_cal * t), c_bar)  (eq. temperatura-piso)
                 """
                 intent_i = str(intent) if str(intent) in actions else actions[0]
 
@@ -11974,12 +11973,14 @@ with tab_mech_sol:
 
                 h0_i = _entropy_mu(mu0)
                 ht_i = _entropy_mu(mu_tau if mu_tau is not None else mu0)
-                ratio_h = float(ht_i / h0_i) if h0_i > 1e-12 else 1.0
                 t_tau = float(max(0, int(tau)))
                 t0_i = float(st.session_state.get(f"mdg_T0_{player}", 1.0))
                 cbar_i = float(st.session_state.get(f"mdg_cbar_{player}", 0.05))
                 eta_i = float(st.session_state.get("cal_mdg_eta_cal_by_i", {}).get(player, 0.0))
-                temp_i = float(max(t0_i * ratio_h * max(np.exp(-eta_i * t_tau), cbar_i), 1e-12))
+                temp_i = float(max(
+                    hybrid_temperature(ht_i, t0_i, H0=h0_i, eta_cal=eta_i, t=int(t_tau), c_bar=cbar_i),
+                    1e-12,
+                ))
                 return _mdg_implementation_logit_probs(actions, intent_i, temp_i)
 
             def _t52_p1(
@@ -17857,16 +17858,17 @@ if False:
     mC.metric("ε_t = ε₀·T_t", f"{eps_t:.2f}")
     mD.metric("Coherencia Ã↔A*", f"{align:.2f}")
     st.latex(
-        r"T_t = T_0\cdot\frac{H(\mu_t)}{H(\mu_0)}\cdot\max\!\left\{e^{-\eta_{\mathrm{cal}}\,t},\;\bar c\right\}"
+        r"T_t = T_0\max\!\left\{\frac{H(\mu_t)}{H(\mu_0)}e^{-\eta_{\mathrm{cal}}\,t},\;\bar c\right\}"
     )
     st.latex(r"H(\mu_t) = -\sum_{\theta\in\Theta_K} \mu_t(\theta)\,\log \mu_t(\theta)")
     st.markdown(
-        r"A mayor entropía $H(\mu_t)$ (mayor incertidumbre sobre $\theta_K$), $T_t$ es **mayor** y $\varepsilon_t$ aumenta, "
-        r"de modo que la mezcla MDG aleja la **acción ejecutada** $\tilde A_t$ de la **intención** $A^*_t$ "
+        r"A mayor entropía $H(\mu_t)$ (mayor incertidumbre sobre $\theta_K$), el término "
+        r"$(H/H_0)e^{-\eta_{\mathrm{cal}} t}$ es mayor y, mientras no ligue $\bar c$, $T_t$ y $\varepsilon_t$ aumentan — "
+        r"la mezcla MDG aleja la **acción ejecutada** $\tilde A_t$ de la **intención** $A^*_t$ "
         r"(más ruido operativo cuando el Estado no ha identificado al secuestrador). "
-        r"Conforme las creencias se concentran, $H(\mu_t)\to 0$, $T_t\to 0$ y la ejecución converge a $A^*_t$. "
-        r"El término $\max\{e^{-\eta_{\mathrm{cal}} t},\bar c\}$ impone un piso $\bar c$ al decaimiento temporal "
-        r"(Mechanism.tex, ec. 693)."
+        r"Conforme las creencias se concentran ($H(\mu_t)\downarrow$), $T_t$ decrece hacia $T_0\bar c$; "
+        r"con $\bar c>0$ el soporte MDG permanece completo y la probabilidad de la acción óptima no converge a uno "
+        r"(Bernal_H.tex, ec. temperatura)."
     )
 
     st.markdown("### Riesgos competitivos y maduración M(t)")

@@ -1,6 +1,10 @@
+% !TEX program = pdflatex
+% !TEX root = Appendix_4.tex
+% !TEX outputDirectory = out
 \documentclass[ecta,nameyear,final,supplement]{econsocart}
 
 \usepackage{amsmath,amssymb,bm}
+\usepackage{url}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
@@ -154,8 +158,7 @@ The temperature used in the app is
 \begin{equation}
 T_t
 =
-T_0\frac{H(\mu_t)}{H(\mu_0)}
-\max\{\exp(-\eta_{\mathrm{cal}}t),\bar c\},
+T_0\max\!\Bigl\{\frac{H(\mu_t)}{H(\mu_0)}e^{-\eta_{\mathrm{cal}}t},\,\bar c\Bigr\},
 \qquad
 H(\mu_t)=-\sum_{\theta\in\ThetaK}\mu_t(\theta)\ln\mu_t(\theta).
 \label{eq:app-temperature}

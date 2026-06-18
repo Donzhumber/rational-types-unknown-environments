@@ -1,0 +1,59 @@
+{
+  "latex-workshop.latex.outDir": "%DIR%/out",
+  "latex-workshop.latex.auxDir": "%DIR%/out",
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.autoBuild.run": "onFileChange",
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk",
+      "command": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin/latexmk",
+      "cwd": "%DIR%",
+      "args": [
+        "-cd",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-pdf",
+        "-outdir=%OUTDIR%",
+        "%DOC%"
+      ],
+      "env": {
+        "PATH": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin"
+      }
+    },
+    {
+      "name": "latexmk-force",
+      "command": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin/latexmk",
+      "cwd": "%DIR%",
+      "args": [
+        "-cd",
+        "-g",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-pdf",
+        "-outdir=%OUTDIR%",
+        "%DOC%"
+      ],
+      "env": {
+        "PATH": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin"
+      }
+    },
+    {
+      "name": "latexmk-clean",
+      "command": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin/latexmk",
+      "cwd": "%DIR%",
+      "args": ["-cd", "-C", "-outdir=%OUTDIR%", "%DOC%"],
+      "env": {
+        "PATH": "/Users/zhumber/Library/TinyTeX/bin/universal-darwin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin"
+      }
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    { "name": "latexmk (TinyTeX)", "tools": ["latexmk"] },
+    { "name": "latexmk: forzar recompilación (-g)", "tools": ["latexmk-force"] },
+    { "name": "latexmk: limpiar auxiliares (-C)", "tools": ["latexmk-clean"] }
+  ],
+  "latex-workshop.latex.search.rootFiles.include": ["Appendix_3.tex"],
+  "latex-workshop.view.pdf.viewer": "tab"
+}

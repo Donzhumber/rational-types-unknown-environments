@@ -307,7 +307,7 @@ $$\mathbb{P}_I^i\!\left(\tilde{a}_i = a \;\middle|\; a_i^*\right) = \frac{\exp\!
 <p>La temperatura es <strong>por jugador</strong> y depende del período τ (<em>corregido en app.py</em>):</p>
 
 <div class="boxed">
-$$T_i(\tau) = T_{i,0} \;\cdot\; \underbrace{\frac{H(\mu_\tau)}{H(\mu_0)}}_{\text{ratio entropía}} \;\cdot\; \max\!\left\{e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
+$$T_i(\tau) = T_{i,0}\;\max\!\left\{\underbrace{\frac{H(\mu_\tau)}{H(\mu_0)}}_{\text{ratio entropía}}\;e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
 </div>
 
 <p>donde:</p>
@@ -466,7 +466,7 @@ $$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\cdot\;\mathcal{L}_{F,\tau}(\th
   <h3>Fase 1 · Temperatura en τ=0</h3>
 
   <div class="eq-block">
-    $$T_i(0) = T_{i,0} \;\cdot\; \frac{H(\mu_0)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i \cdot 0},\;\bar{c}_i\right\} = T_{i,0} \cdot 1 \cdot \max\{1,\;\bar{c}_i\} = T_{i,0}$$
+    $$T_i(0) = T_{i,0}\;\max\!\left\{\frac{H(\mu_0)}{H(\mu_0)}e^{-\eta_i \cdot 0},\;\bar{c}_i\right\} = T_{i,0}\;\max\{1,\;\bar{c}_i\} = T_{i,0}$$
   </div>
 
   <p>En τ=0 el ratio de entropía es 1 y el decaimiento es $e^0 = 1$: la temperatura es exactamente $T_{i,0}$ (máxima). Las acciones óptimas $a_F^*$, $a_K^*$, $a_S^*$ se leen del selector "Escenario base τ=0" en el expander (pestaña 5).</p>
@@ -504,7 +504,7 @@ $$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\cdot\;\mathcal{L}_{F,\tau}(\th
   <h3>Fase 1 · Temperatura en τ=1</h3>
 
   <div class="eq-block">
-    $$T_i(1) = T_{i,0} \;\cdot\; \frac{H(\mu_1)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i},\;\bar{c}_i\right\}$$
+    $$T_i(1) = T_{i,0}\;\max\!\left\{\frac{H(\mu_1)}{H(\mu_0)}e^{-\eta_i},\;\bar{c}_i\right\}$$
   </div>
 
   <p>La distribución $\mathbb{P}_I^i$ se calcula <strong>dos veces</strong> en la app para τ=1:</p>
@@ -539,7 +539,7 @@ $$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\cdot\;\mathcal{L}_{F,\tau}(\th
   <h3>Fase 1 · Temperatura en τ ≥ 2</h3>
 
   <div class="eq-block">
-    $$T_i(\tau) = T_{i,0} \;\cdot\; \frac{H(\mu_\tau)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
+    $$T_i(\tau) = T_{i,0}\;\max\!\left\{\frac{H(\mu_\tau)}{H(\mu_0)}e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
   </div>
 
   <p>El decaimiento calendario $e^{-\eta_i\,\tau}$ disminuye con cada período, haciendo que la distribución $\mathbb{P}_I^i$ se concentre más en $a^*$. La creencia $\mu_\tau$ viene del paso Bayes del ciclo anterior.</p>
@@ -605,8 +605,8 @@ $$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\cdot\;\mathcal{L}_{F,\tau}(\th
   <tr>
     <td>Temperatura $T_i(\tau)$</td>
     <td>$T_{i,0} \cdot 1 \cdot 1 = T_{i,0}$</td>
-    <td>$T_{i,0}\cdot\frac{H_1}{H_0}\cdot\max(e^{-\eta_i},\bar c_i)$</td>
-    <td>$T_{i,0}\cdot\frac{H_\tau}{H_0}\cdot\max(e^{-\eta_i\tau},\bar c_i)$</td>
+    <td>$T_{i,0}\max(\frac{H_1}{H_0}e^{-\eta_i},\bar c_i)$</td>
+    <td>$T_{i,0}\max(\frac{H_\tau}{H_0}e^{-\eta_i\tau},\bar c_i)$</td>
   </tr>
   <tr>
     <td>Maduración $M(\tau)$</td>
@@ -775,7 +775,7 @@ $$a^*_K(\tau) = \arg\max_{a\in\{C,L,M\}}\;\sum_\theta\mu_\tau(\theta)\,\hat V^K_
 <div class="phase phase-F">
 <p><strong>Definición.</strong> La "temperatura" del agente $i\in\{F,K,S\}$ controla cuánto se concentra su distribución implementada $\mathbb{P}_I^i$ alrededor de $a^*_i$:</p>
 <div class="eq-block">
-$$T_i(\tau) = T_{i,0}\;\cdot\;\frac{H(\mu_\tau)}{H(\mu_0)}\;\cdot\;\max\!\Bigl\{e^{-\eta_i\,\tau},\;\bar{c}_i\Bigr\}$$
+$$T_i(\tau) = T_{i,0}\;\max\!\Bigl\{\frac{H(\mu_\tau)}{H(\mu_0)}e^{-\eta_i\,\tau},\;\bar{c}_i\Bigr\}$$
 </div>
 
 <ul>
@@ -1039,7 +1039,7 @@ $$\text{flow\_rev}(\tau) = R\;\cdot\;\texttt{Epi\_pay\_Qcont}(\tau) \;\cdot\; h_
   <tr><td>3</td><td>$(\alpha^*,\gamma^*,a^*_S)$</td><td>$\arg\min_{\Gamma_\tau} Q^b - \psi_H\Delta H$</td><td><code>_t52_optimize_state_policy</code></td></tr>
   <tr><td>4</td><td>$a^*_F$</td><td>$\arg\max_{a_F} \mathcal{U}^F(a_F;\alpha^*,\gamma^*,\mu)$</td><td><code>compute_family_table</code></td></tr>
   <tr><td>5</td><td>$a^*_K(\tau)$</td><td>Inducción hacia atrás Tabla 15, leída en $t=0$ con override $\mu_\tau$</td><td><code>kidnapper_backward_induction_k_table</code></td></tr>
-  <tr><td>6</td><td>$T_i(\tau)$</td><td>$T_{i,0}\cdot H(\mu_\tau)/H(\mu_0)\cdot\max(e^{-\eta_i\tau},\bar c_i)$</td><td><code>_t52_p1</code>, <code>_t52_p1_s</code></td></tr>
+  <tr><td>6</td><td>$T_i(\tau)$</td><td>$T_{i,0}\max(H(\mu_\tau)/H(\mu_0)\,e^{-\eta_i\tau},\bar c_i)$</td><td><code>_t52_p1</code>, <code>_t52_p1_s</code></td></tr>
   <tr><td>7</td><td>$\mathbb{P}^i_I(\tilde a\mid a^*_i)$</td><td>Logit MDG, eq. §8.7</td><td><code>_t52_p1</code></td></tr>
   <tr><td>8</td><td>$\tilde a_F,\tilde a_K,\tilde a_S$</td><td>$F_i^{-1}(u_i)$, uniformes fijos con <code>dgp_seed</code></td><td><code>_t52_draw_action</code></td></tr>
   <tr><td>9</td><td>$p_{\mathrm{det},\tau}$</td><td>$\sigma(\beta_0+\beta_\alpha\alpha+\beta_\gamma\gamma+\beta_\iota\iota)$</td><td><code>modelo.prob_deteccion</code></td></tr>
