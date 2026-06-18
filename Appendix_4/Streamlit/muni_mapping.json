@@ -1,0 +1,62 @@
+{
+    "BELLO": {
+        "region": "Metrópolis",
+        "lat": 6.3496714238,
+        "lon": -75.59907030405
+    },
+    "BOGOTA, D.C.": {
+        "region": "Metrópolis",
+        "lat": 4.35495250055814,
+        "lon": -74.17250134130232
+    },
+    "BUCARAMANGA": {
+        "region": "Metrópolis",
+        "lat": 7.155833544,
+        "lon": -73.111569971
+    },
+    "CARTAGENA DE INDIAS": {
+        "region": "Metrópolis",
+        "lat": 10.463433617,
+        "lon": -75.45889915
+    },
+    "CUCUTA": {
+        "region": "Metrópolis",
+        "lat": 8.082551980857142,
+        "lon": -72.49147649257144
+    },
+    "ENVIGADO": {
+        "region": "Metrópolis",
+        "lat": 6.160642961,
+        "lon": -75.564816894
+    },
+    "MANIZALES": {
+        "region": "Metrópolis",
+        "lat": 5.08343301,
+        "lon": -75.50727881
+    },
+    "MEDELLIN": {
+        "region": "Metrópolis",
+        "lat": 6.257248110863636,
+        "lon": -75.6095596984091
+    },
+    "PEREIRA": {
+        "region": "Metrópolis",
+        "lat": 4.803662773,
+        "lon": -75.795790934
+    },
+    "SABANETA": {
+        "region": "Metrópolis",
+        "lat": 6.138305183,
+        "lon": -75.608805993
+    },
+    "SANTIAGO DE CALI": {
+        "region": "Metrópolis",
+        "lat": 3.4007235315555557,
+        "lon": -76.57037885688888
+    },
+    "SOACHA": {
+        "region": "Metrópolis",
+        "lat": 4.581866267,
+        "lon": -74.240296958
+    }
+}

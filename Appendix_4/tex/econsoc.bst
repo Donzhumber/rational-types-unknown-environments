@@ -533,18 +533,45 @@ FUNCTION {sep.filter}
 FUNCTION {cite.author.editor}
 { 's :=
   s num.names$ 'numnames :=
+  #1 'int :=
+  
+  ""
   numnames #2 >
-    { s #1 "{ll}" format.name$
-      " " *
-      bbl.etal *
+    {   
+      s #1 "{ll}" format.name$ *
+      " et~al." *
     }
-    { numnames #2 =
-        { s #1 "{ll}" format.name$
-          " and " *
-          s #2 "{ll}" format.name$ *
+    { 
+        numnames 'namesleft :=
+          { namesleft #0 > }
+          { 
+            s int "{ll}" format.name$ 'v :=
+            v 
+            
+            namesleft #0 >
+              {
+                namesleft #1 >
+                  { namesleft #2 =
+                      { 
+                          numnames #2 >
+                            {", and "}
+                            {" and "}
+                          if$
+                      }
+                      {", "}
+                    if$  
+                    *
+                  }
+                  'skip$
+                if$
+              }
+              'skip$
+            if$
+            namesleft #1 - 'namesleft :=
+            int #1 + 'int :=
+            *
         }
-        { s #1 "{ll}" format.name$ }
-      if$
+        while$
     }
   if$
 }

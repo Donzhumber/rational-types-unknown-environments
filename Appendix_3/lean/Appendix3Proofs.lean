@@ -36,7 +36,9 @@ Cox algebra (`cox_hazard_ratio_ne_one`) and predictive masses (`predictiveMass`,
 `predictiveMass_isProbMass`, `coxTvSeparationLocal_predictiveMass`,
 `coxTvSeparationLocal_of_betaSeparation`) are proved in §3 for `def:desenlace-fisico-mt`;
 `asymptoticIdentification_from_coxBetaSeparation` wires them to §4 via `IdentificationBridge`.
-Abstract `coxTvSeparationLocal` remains the general interface. Section~6 records
+Abstract `coxTvSeparationLocal` remains the general interface. Section~5 certifies
+`kappa_h_signed`, `dLambda_eq_kappa`, `dContProb_eq`, and the sign of
+`eq:dE-dgamma-prop` with explicit `Δt` and `survivalTail`. Section~6 records
 `prop_optimal_gamma_beliefs` as a `[Hypothesis]` interface (IFT not formalized).
 Kakutani layer~(1) is proved (`kakutaniAlgebraicPrerequisite`); layer~(2) is
 `kakutaniMutualSingularity` (classical hypothesis).
@@ -466,9 +468,10 @@ noncomputable def continuationProbability (hazards : Fin 4 → ℝ) (Δt : ℝ) 
   -- def:desenlace-fisico-mt: Q_t(cont) = exp(-∑_j λ̃_j Δt)
   Real.exp (-(∑ j : Fin 4, hazards j) * Δt)
 
-/-- `[Def]` Net sensitivity `κ_h` (eq. `eq:kappa-c`), used in Section 5. -/
+/-- `[Def]` Net sensitivity `κ_h` (eq. `eq:kappa-c`), used in Section 5.
+    Indices: `0` = payment ($j=1$), `1` = death ($j=2$), `2` = rescue ($j=3$). -/
 noncomputable def netSensitivity (zetaGamma tildeLambda : Fin 3 → ℝ) : ℝ :=
-  -- eq:kappa-c
+  -- eq:kappa-c: ζ₂λ₂ + ζ₃λ₃ − ζ₁λ₁
   zetaGamma 1 * tildeLambda 1 + zetaGamma 2 * tildeLambda 2 - zetaGamma 0 * tildeLambda 0
 
 section CoxProportionalHazards
@@ -953,31 +956,104 @@ end AsymptoticIdentification
 /-!
 ## Section 5 — Competitive risks and operational pressure (`sec:riesgos`)
 
-TeX: Proposition `prop:expected-captivity-gamma`, eqs. `eq:kappa-c`, `eq:dE-dgamma`.
+TeX: Proposition `prop:expected-captivity-gamma`, eqs. `eq:kappa-c`, `eq:dpCont-dgamma`,
+`eq:dE-dgamma-prop`. `Fin 3` indices: `0` = payment ($j=1$), `1` = death ($j=2$),
+`2` = rescue ($j=3$); exogenous cause $j=4$ is `lambda4`.
 -/
 
 section OperationalPressure
 
-/-- `[Def]` Net sensitivity `κ_h` (eq. `eq:kappa-c`). -/
+/-- Strategic hazard total `Λ_t = ∑_{j=1}^{3}\tilde\lambda_j`. -/
+noncomputable def strategicHazardTotal (tildeLambda : Fin 3 → ℝ) : ℝ :=
+  ∑ j : Fin 3, tildeLambda j
+
+/-- Strategic causes $j\in\{1,2,3\}$ plus exogenous $j=4$ (γ-invariant). -/
+noncomputable def hazardsStrategicExogenous (tildeLambda : Fin 3 → ℝ) (lambda4 : ℝ) :
+    Fin 4 → ℝ
+  | ⟨0, _⟩ => tildeLambda 0
+  | ⟨1, _⟩ => tildeLambda 1
+  | ⟨2, _⟩ => tildeLambda 2
+  | ⟨3, _⟩ => lambda4
+
+/-- `[Proved]` `p_Cont = exp(-Λ Δt)·exp(-\tilde\lambda_4 Δt)` (Step 1 factorization). -/
+theorem continuationProbability_strategic_exogenous
+    (tildeLambda : Fin 3 → ℝ) (lambda4 Δt : ℝ) :
+    continuationProbability (hazardsStrategicExogenous tildeLambda lambda4) Δt =
+      Real.exp (-strategicHazardTotal tildeLambda * Δt) * Real.exp (-lambda4 * Δt) := by
+  have hsum :
+      (∑ j : Fin 4, hazardsStrategicExogenous tildeLambda lambda4 j) =
+        (∑ j : Fin 3, tildeLambda j) + lambda4 := by
+    rw [Fin.sum_univ_four]
+    simp only [hazardsStrategicExogenous]
+    rw [Fin.sum_univ_three]
+  dsimp [continuationProbability, strategicHazardTotal]
+  rw [hsum]
+  have hsplit :
+      -((∑ j : Fin 3, tildeLambda j) + lambda4) * Δt =
+        -(∑ j : Fin 3, tildeLambda j) * Δt + -lambda4 * Δt := by ring
+  rw [hsplit, Real.exp_add]
+
+/-- Signed aggregation `∑_j η_j \tilde\lambda_j` (second equality in `eq:kappa-c`). -/
+noncomputable def kappaHSigned (eta tildeLambda : Fin 3 → ℝ) : ℝ :=
+  ∑ j : Fin 3, eta j * tildeLambda j
+
+/-- Absolute semi-elasticities: `ζ_{γ,1}=-η_1`, `ζ_{γ,j}=η_j` for $j\in\{2,3\}$. -/
+noncomputable def zetaFromEta (eta : Fin 3 → ℝ) (j : Fin 3) : ℝ :=
+  if j = 0 then -eta j else eta j
+
+/-- `[Def]` Net sensitivity `κ_h` (eq. `eq:kappa-c`, compact form). -/
 noncomputable def kappa_h (zetaGamma tildeLambda : Fin 3 → ℝ) : ℝ :=
   netSensitivity zetaGamma tildeLambda
 
-/-- `[Proved]` Proposition `prop:expected-captivity-gamma` — sign of `∂E[τ|θ_K]/∂γ*`
-    (eq. `eq:dE-dgamma`). -/
-theorem prop_expected_captivity_gamma
-    (kappa_h Δt tail : ℝ)
-    (hk_pos : 0 < kappa_h) (hdt_pos : 0 < Δt) (htail_pos : 0 < tail) :
-    -- eq:dE-dgamma: ∂E[τ|θ_K]/∂γ* = −κ_h · Δt · (tail sum) < 0 when κ_h > 0
-    -kappa_h * Δt * tail < 0 := by
-  nlinarith [mul_pos hk_pos hdt_pos, mul_pos (mul_pos hk_pos hdt_pos) htail_pos]
+/-- `[Proved]` `κ_h = ∑_j η_j \tilde\lambda_j` (`kappa_h_signed`; `eq:kappa-c`). -/
+theorem kappa_h_signed (eta tildeLambda : Fin 3 → ℝ) :
+    kappa_h (zetaFromEta eta) tildeLambda = kappaHSigned eta tildeLambda := by
+  dsimp [kappa_h, netSensitivity, kappaHSigned, zetaFromEta]
+  rw [Fin.sum_univ_three]
+  ring
 
-/-- `[Proved]` Sign identity from `prop:expected-captivity-gamma`:
-    `sgn(∂E[τ|θ_K]/∂γ*) = -sgn(κ_h)`. -/
+/-- `[Proved]` Step 1: `∂Λ/∂γ = κ_h` under semi-elasticities (S2). -/
+theorem dLambda_eq_kappa (eta tildeLambda : Fin 3 → ℝ) :
+    kappaHSigned eta tildeLambda = kappa_h (zetaFromEta eta) tildeLambda :=
+  (kappa_h_signed eta tildeLambda).symm
+
+/-- `[Def]` `∂p_{\mathrm{Cont}}/\partial\gamma` in eq. `eq:dpCont-dgamma`. -/
+noncomputable def contProbGammaDeriv (kappa_h_val pCont Δt : ℝ) : ℝ :=
+  -kappa_h_val * pCont * Δt
+
+/-- `[Proved]` `eq:dpCont-dgamma`: only `Λ_t` depends on `γ`; `\tilde\lambda_4` is γ-invariant. -/
+theorem dContProb_eq (tildeLambda : Fin 3 → ℝ) (lambda4 kappa_h_val Δt : ℝ) :
+    let pCont := continuationProbability (hazardsStrategicExogenous tildeLambda lambda4) Δt
+    contProbGammaDeriv kappa_h_val pCont Δt =
+      Real.exp (-lambda4 * Δt) * (-kappa_h_val * Δt *
+        Real.exp (-strategicHazardTotal tildeLambda * Δt)) := by
+  dsimp [contProbGammaDeriv]
+  rw [continuationProbability_strategic_exogenous]
+  ring
+
+/-- `[Proved]` Sign certificate for eq. `eq:dE-dgamma-prop` when `κ_h>0`. -/
+theorem prop_expected_captivity_gamma
+    (kappa_h_val Δt survivalTail : ℝ)
+    (hk_pos : 0 < kappa_h_val) (hdt_pos : 0 < Δt) (hsurv_pos : 0 < survivalTail) :
+    -- eq:dE-dgamma-prop: ∂E[τ|θ_K]/∂γ* = −κ_h · Δt · ∑_{s≥t} S(s)
+    -kappa_h_val * Δt * survivalTail < 0 := by
+  nlinarith [mul_pos hk_pos hdt_pos, mul_pos (mul_pos hk_pos hdt_pos) hsurv_pos]
+
+/-- `[Proved]` `eq:dE-dgamma-prop`: `sgn(∂E[τ|θ_K]/∂γ*) = -sgn(κ_h)`. -/
 theorem prop_expected_captivity_sgn
-    (κ derivEτ tail : ℝ)
-    (hderiv : derivEτ = -κ * tail) (htail : 0 < tail) :
+    (κ derivEτ Δt survivalTail : ℝ)
+    (hderiv : derivEτ = -κ * Δt * survivalTail)
+    (hdt : 0 < Δt) (hsurv : 0 < survivalTail) :
     (0 < κ → derivEτ < 0) ∧ (κ < 0 → 0 < derivEτ) := by
-  constructor <;> intro hk <;> rw [hderiv] <;> nlinarith [hk, htail]
+  constructor
+  · intro hk
+    rw [hderiv]
+    have hκ_neg : -κ < 0 := neg_neg_iff_pos.mpr hk
+    nlinarith [hκ_neg, hdt, hsurv, mul_pos hdt hsurv]
+  · intro hk
+    rw [hderiv]
+    have hκ_pos : 0 < -κ := neg_pos.mpr hk
+    nlinarith [hκ_pos, hdt, hsurv, mul_pos hdt hsurv]
 
 end OperationalPressure
 

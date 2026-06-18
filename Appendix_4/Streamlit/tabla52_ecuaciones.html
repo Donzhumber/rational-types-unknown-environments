@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tabla 5.2 — Cálculo exacto de cada ciclo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });"></script>
+<style>
+  :root {
+    --blue: #1e3a5f;
+    --lblue: #e8f0f8;
+    --green: #1a4d2e;
+    --lgreen: #e6f4ec;
+    --orange: #6b3200;
+    --lorange: #fdf0e6;
+    --red: #5c0a0a;
+    --lred: #fdecea;
+    --gray: #3a3a3a;
+    --lgray: #f5f5f5;
+    --border: #c8d0da;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Georgia', serif; max-width: 960px; margin: 32px auto; padding: 0 28px 60px; line-height: 1.72; color: var(--gray); background: #fafafa; }
+  h1 { font-size: 1.45rem; border-bottom: 3px solid var(--blue); padding-bottom: 10px; color: var(--blue); margin-bottom: 6px; }
+  .subtitle { font-size: 0.9rem; color: #666; margin-bottom: 2em; }
+  h2 { font-size: 1.15rem; margin-top: 2.4em; color: var(--blue); background: var(--lblue); border-left: 5px solid var(--blue); padding: 6px 14px; border-radius: 0 4px 4px 0; }
+  h3 { font-size: 1rem; margin-top: 1.6em; color: #444; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+  .phase { border: 1px solid var(--border); border-radius: 8px; padding: 16px 22px; margin: 14px 0 22px 0; }
+  .phase-F { border-left: 5px solid #2c6fad; background: #f7fbff; }
+  .phase-m { border-left: 5px solid #2e7d32; background: #f7fdf9; }
+  .phase-B { border-left: 5px solid #7b4c00; background: #fffbf5; }
+  .eq-block { background: #fff; border: 1px solid #dde3ee; border-radius: 5px; padding: 12px 20px; margin: 10px 0 14px 0; overflow-x: auto; }
+  .boxed { background: var(--lblue); border: 2px solid var(--blue); border-radius: 6px; padding: 14px 22px; margin: 12px 0 16px 0; overflow-x: auto; }
+  .warn { background: #fff8e1; border-left: 4px solid #f9a825; padding: 9px 16px; margin: 10px 0; font-size: 0.92rem; border-radius: 0 4px 4px 0; }
+  .fixed { background: var(--lgreen); border-left: 4px solid #388e3c; padding: 9px 16px; margin: 10px 0; font-size: 0.92rem; border-radius: 0 4px 4px 0; }
+  .note { background: var(--lgray); border-left: 4px solid #999; padding: 9px 16px; margin: 10px 0; font-size: 0.9rem; border-radius: 0 4px 4px 0; }
+  code { background: #f0f0f0; border-radius: 3px; padding: 1px 5px; font-size: 0.88em; font-family: 'Courier New', monospace; color: #333; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 12px; }
+  th { background: var(--blue); color: #fff; padding: 8px 12px; text-align: left; }
+  td { border: 1px solid var(--border); padding: 6px 10px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f7fb; }
+  .tau-block { border: 2px solid var(--border); border-radius: 8px; padding: 18px 22px; margin: 20px 0; }
+  .tau-0 { border-color: #7b1fa2; background: #fdf4ff; }
+  .tau-1 { border-color: #1976d2; background: #f4f8ff; }
+  .tau-dyn { border-color: #2e7d32; background: #f4fdf6; }
+  .tau-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; }
+  .tau-0 .tau-title { color: #7b1fa2; }
+  .tau-1 .tau-title { color: #1976d2; }
+  .tau-dyn .tau-title { color: #2e7d32; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 2.5em 0; }
+  .toc { background: var(--lgray); border: 1px solid var(--border); border-radius: 6px; padding: 14px 20px; margin-bottom: 28px; font-size: 0.9rem; }
+  .toc ol { margin: 6px 0 0 16px; }
+  .toc li { margin: 4px 0; }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<h1>Tabla 5.2 · Cálculo exacto de cada ciclo τ</h1>
+<p class="subtitle">Basado en <code>app.py</code> + <code>rational_behavior.py</code> · pestaña <strong>5 · Solución Mecanismo</strong></p>
+
+<div class="toc">
+  <strong>Contenido</strong>
+  <ol>
+    <li><a href="#estado">0 · Problema del Estado — instrumentos óptimos (α*, γ*)</a></li>
+    <li><a href="#fase1">Fase 1 — Implementación MDG (Ley de Implementación, Tabla 7)</a></li>
+    <li><a href="#fase2">Fase 2 — Desenlace m (Riesgos Competitivos, Ecs. 28–29)</a></li>
+    <li><a href="#fase3">Fase 3 — Actualización Bayesiana → μ<sub>τ+1</sub></a></li>
+    <li><a href="#tau0">Ciclo τ = 0 (base)</a></li>
+    <li><a href="#tau1">Ciclo τ = 1 (primer ciclo dinámico)</a></li>
+    <li><a href="#taun">Ciclos τ ≥ 2 (ciclos dinámicos)</a></li>
+    <li><a href="#resumen">Tabla resumen</a></li>
+    <li><a href="#vars">Variables por ciclo τ — Cálculo detallado</a></li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ ESTADO -->
+<h2 id="estado">0 · Problema del Estado — instrumentos óptimos $(\alpha^*_\tau, \gamma^*_\tau)$</h2>
+
+<p>Fuente: <strong>Mechanism.tex</strong> eqs. <code>state-dual-control-objective</code>, <code>state-loss-rescue-branch</code>, <code>negotiation-cost</code>, <code>cops-quadratic</code>, <code>cmaint-quadratic</code>, <code>prima-desviacion</code>, <code>expected-information-gain</code>, <code>state-discrete-rule</code>, <code>ic-kidnapper</code>, <code>ir-K</code>, <code>ir-family</code>.</p>
+<p>El Estado minimiza la pérdida social esperada eligiendo $(\alpha_\tau, \gamma_\tau) \in [0,1]^2$ y $a_S^* \in \{R, N\}$. El problema se resuelve por partición: primero se minimiza en $(\alpha,\gamma)$ dentro de cada rama $b \in \{R, N\}$; luego se comparan los pisos. (eq. <code>state-dual-control-objective</code>)</p>
+
+<!-- ─── VR ─── -->
+<h3>Rama Rescate (VR) — Mechanism.tex eq. <code>state-loss-rescue-branch</code> + <code>rescue-cost</code></h3>
+
+<p><strong>Pérdida condicional al tipo</strong> (tex exacto):</p>
+<div class="eq-block">
+$$V_\tau^R(\iota_\tau,\hat\theta_\tau,\theta_K,\alpha,\gamma) \;=\; \omega_k\!\left[1 - \mathbb{P}(s_\tau=1\mid\iota_\tau,\hat\theta_\tau,\theta_K)\right] \;+\; C_{\mathrm{ops}}(\gamma,\alpha;\theta_K)$$
+</div>
+
+<p><strong>Problema del Estado en VR</strong> (tex eq. <code>rescue-cost</code>):</p>
+<div class="boxed">
+$$V_\tau^{R,*} = \min_{(\alpha,\gamma)\,\in\,\Gamma_\tau^R(\mu_\tau)} \left\{\sum_{\theta\in\Theta}\mu_\tau(\theta)\,V_\tau^R(\iota_\tau,\hat\theta_\tau,\theta,\alpha,\gamma) \;+\; \Pi_{\tau,R}^S(\alpha,\gamma;\mu_\tau) \;-\; \psi_H\,\Delta H_\tau(\alpha,\gamma)\right\}$$
+</div>
+
+<p><strong>Forma cuadrática expandida en app.py</strong> — se obtiene desarrollando $\sum_\theta\mu_\tau(\theta)V_\tau^R + \Pi_{\tau,R}^S$:</p>
+<div class="eq-block">
+$$Q^R(\alpha,\gamma) \;=\; \underbrace{\omega_K(1-\bar{p}_{\mathrm{surv}}) + \overline{c_0} + \chi_\alpha(\bar\alpha_{R,\mu})^2 + \chi_\gamma(\bar\gamma_{R,\mu})^2}_{\texttt{const}^R}$$
+$$+\;\underbrace{(\overline{c_1} - 2\chi_\gamma\bar\gamma_{R,\mu})}_{\texttt{b\_gamma}}\,\gamma \;+\; \tfrac{1}{2}\underbrace{(\overline{c_2}+2\chi_\gamma)}_{\texttt{q\_gamma}}\,\gamma^2 \;+\; \underbrace{(\overline{c_3} - 2\chi_\alpha\bar\alpha_{R,\mu})}_{\texttt{b\_alpha}}\,\alpha \;+\; \tfrac{1}{2}\underbrace{(\overline{c_4}+2\chi_\alpha)}_{\texttt{q\_alpha}}\,\alpha^2 \;+\; \underbrace{\overline{c_5}}_{\texttt{q\_ga}}\,\gamma\alpha$$
+</div>
+
+<p>donde $\overline{c_k} = \sum_\theta\mu_\tau(\theta)\,c_k(\theta)$ y los centros bayesianos son $\bar\alpha_{R,\mu} = \sum_\theta\mu_\tau(\theta)\,\alpha_{R,\tau}^{\mathrm{bench}}(\theta)$, $\bar\gamma_{R,\mu}$ análogo (eq. <code>belief-weighted-policy</code>).</p>
+
+<!-- ─── VN ─── -->
+<h3>Rama Negociación (VN) — Mechanism.tex eq. <code>state-loss-neg-branch</code> + <code>negotiation-piso</code></h3>
+
+<p><strong>Pérdida bajo incertidumbre</strong> (tex eq. <code>negotiation-cost</code>):</p>
+<div class="eq-block">
+$$V_\tau^N(\mu_\tau,\alpha,\gamma) \;=\; \sum_{\theta\in\Theta}\mu_\tau(\theta)\!\left[\omega_p R(1-\alpha) \;+\; \omega_k\,h_2(\tau\mid\theta,\mathcal{C}_\tau) \;+\; C_{\mathrm{maint}}(\gamma,\alpha;\theta)\right]$$
+</div>
+
+<p><strong>Problema del Estado en VN</strong> (tex eq. <code>negotiation-piso</code>):</p>
+<div class="boxed">
+$$V_\tau^{N,*} = \min_{(\alpha,\gamma)\,\in\,\Gamma_\tau^N(\mu_\tau)} \left\{V_\tau^N(\mu_\tau,\alpha,\gamma) \;+\; \Pi_{\tau,N}^S(\alpha,\gamma;\mu_\tau) \;-\; \psi_H\,\Delta H_\tau(\alpha,\gamma)\right\}$$
+</div>
+
+<p><strong>Forma cuadrática expandida en app.py</strong> — $\omega_pR(1-\alpha) = \omega_pR - \omega_pR\alpha$, el término constante $\omega_pR$ va a <code>const</code> y el lineal $-\omega_pR\alpha$ va a <code>b_alpha</code>:</p>
+<div class="eq-block">
+$$Q^N(\alpha,\gamma) \;=\; \underbrace{\omega_P R + \omega_K\bar{p}_{\mathrm{kill}} + \overline{m_0} + \chi_\alpha(\bar\alpha_{N,\mu})^2 + \chi_\gamma(\bar\gamma_{N,\mu})^2}_{\texttt{const}^N}$$
+$$+\;\underbrace{(\overline{m_1} - 2\chi_\gamma\bar\gamma_{N,\mu})}_{\texttt{b\_gamma}}\,\gamma \;+\; \tfrac{1}{2}\underbrace{(\overline{m_2}+2\chi_\gamma)}_{\texttt{q\_gamma}}\,\gamma^2 \;+\; \underbrace{(\overline{m_3} - \omega_P R - 2\chi_\alpha\bar\alpha_{N,\mu})}_{\texttt{b\_alpha}}\,\alpha \;+\; \tfrac{1}{2}\underbrace{(\overline{m_4}+2\chi_\alpha)}_{\texttt{q\_alpha}}\,\alpha^2 \;+\; \underbrace{\overline{m_5}}_{\texttt{q\_ga}}\,\gamma\alpha$$
+</div>
+
+<!-- ─── Costos cuadráticos ─── -->
+<h3>Costos cuadráticos $C_{\mathrm{ops}}$ y $C_{\mathrm{maint}}$ — Mechanism.tex eqs. <code>cops-quadratic</code>, <code>cmaint-quadratic</code></h3>
+
+<div class="eq-block">
+$$C_{\mathrm{ops}}(\gamma,\alpha;\theta_K) = c_0(\theta_K)+c_1(\theta_K)\gamma+\tfrac{c_2(\theta_K)}{2}\gamma^2+c_3(\theta_K)\alpha+\tfrac{c_4(\theta_K)}{2}\alpha^2+c_5(\theta_K)\gamma\alpha$$
+$$C_{\mathrm{maint}}(\gamma,\alpha;\theta_K) = m_0(\theta_K)+m_1(\theta_K)\gamma+\tfrac{m_2(\theta_K)}{2}\gamma^2+m_3(\theta_K)\alpha+\tfrac{m_4(\theta_K)}{2}\alpha^2+m_5(\theta_K)\gamma\alpha$$
+</div>
+
+<p>Los coeficientes $c_k(\theta_K)$ y $m_k(\theta_K)$ provienen de la pestaña 4 (Tabla 12). Los promedios ponderados por tipo $\overline{c_k} = \sum_\theta\mu_\tau(\theta)\,c_k(\theta)$ se calculan en <code>_state_weighted_cost_tuple</code>.</p>
+
+<!-- ─── Penalización ─── -->
+<h3>Penalización por desviación $\Pi_{\tau,b}^S$ — Mechanism.tex eq. <code>prima-desviacion</code></h3>
+
+<div class="eq-block">
+$$\Pi_{\tau,b}^S(\alpha,\gamma;\mu_\tau) = \chi_\alpha(\alpha - \bar\alpha_{b,\mu})^2 + \chi_\gamma(\gamma - \bar\gamma_{b,\mu})^2, \qquad b\in\{R,N\}$$
+</div>
+
+<p>Al expandir y combinar con $Q^b$, los cuadrados $(\chi_\alpha\bar\alpha_{b,\mu}^2 + \chi_\gamma\bar\gamma_{b,\mu}^2)$ van al término <code>const</code>, los lineales $-2\chi\cdot\bar\cdot$ van a <code>b_gamma</code> y <code>b_alpha</code>, y los cuadráticos $2\chi$ van a <code>q_gamma</code> y <code>q_alpha</code>.</p>
+
+<!-- ─── DH ─── -->
+<h3>Ganancia de información $\Delta H$ — Mechanism.tex eq. <code>expected-information-gain</code></h3>
+
+<div class="eq-block">
+$$\Delta H_\tau(\alpha,\gamma) = H(\mu_\tau) - \sum_{m\in\mathcal{M}} \mathbb{P}(m_\tau=m\mid\mu_\tau,\alpha,\gamma,\mathcal{C}_\tau)\;H\!\left(\mu_{\tau+1}^m\right)$$
+</div>
+
+<p>La posterior contrafactual (tex eq. <code>posterior-counterfactual-entropy</code>): $\mu_{\tau+1}^m(\theta) \propto \mu_\tau(\theta)\,\mathbb{P}(m_\tau=m\mid\theta,\alpha,\gamma,\mathcal{C}_\tau)$. En la app se calcula en <code>_t52_expected_entropy_gain</code> evaluando los riesgos competitivos bajo la tripleta ejecutada con $(\alpha,\gamma)$ candidato.</p>
+
+<!-- ─── IRIC ─── -->
+<h3>Restricciones IRIC — conjunto $\Gamma_\tau(\mu_\tau)$</h3>
+
+<div class="phase phase-F">
+<strong>IR<sup>K</sup></strong> — Mechanism.tex eq. <code>ir-K</code>:
+<div class="eq-block">
+$$\sum_{\theta\in\Theta}\mu_\tau(\theta)\Bigl[U_{\mathrm{rel}}^K(\theta) - \max\bigl(V_{\mathrm{cont}}^K(\theta,\alpha,\gamma),\;U_{\mathrm{kill}}^K(\theta)\bigr)\Bigr] \;\geq\; 0$$
+</div>
+<p><strong>app.py:</strong> <code>_ir_gap = Σ μ(θ)·[U_rel(θ) − max(V_cont(θ),U_kill(θ))] ≥ 0</code> &nbsp;✅ idéntico</p>
+</div>
+
+<div class="phase phase-m">
+<strong>IC<sup>K</sup></strong> — Mechanism.tex eq. <code>ic-kidnapper</code>:
+<div class="eq-block">
+$$\forall\,\theta_j\in\Theta:\quad \sum_{\theta_i\in\Theta}\mu_\tau(\theta_i)\Bigl[V_\tau^K\!(a^*(\theta_i)\mid\theta_i) - V_\tau^K\!(a^*(\theta_j)\mid\theta_i)\Bigr] \;\geq\; 0$$
+</div>
+<p><strong>app.py:</strong> <code>gain_j = Σ μ(θᵢ)·[max_a U_a(θᵢ) − U_{a*(θⱼ)}(θᵢ)] ≥ 0</code> para todo θⱼ &nbsp;✅ idéntico</p>
+</div>
+
+<div class="phase phase-B">
+<strong>IR<sup>F</sup></strong> — Mechanism.tex eq. <code>ir-family</code>:
+<div class="eq-block">
+$$\mathcal{U}_\tau^F(a_{\mathrm{coop}}) \;\geq\; \mathcal{U}_\tau^F(a_{\mathrm{col}})$$
+</div>
+<p><strong>app.py:</strong> <code>U_coop ≥ U_col</code> evaluado con <code>compute_family_table</code> &nbsp;✅ idéntico</p>
+</div>
+
+<div class="warn">
+  <strong>Γ vacío.</strong> Si ningún punto de la grilla + candidatos analíticos satisface IR<sup>K</sup> ∧ IC<sup>K</sup> ∧ IR<sup>F</sup>, la app retorna el mínimo irrestricto marcado <code>feasible=False</code> y reporta "Γ vacío (sin óptimo formal)". Esto es consistente con el comentario en app.py: <em>"Γ_t(μ_t) = ∅ si no existe punto con IR^K, IC^K e IR^F."</em>
+</div>
+
+<!-- ─── Regla ─── -->
+<h3>Regla discreta — Mechanism.tex eq. <code>state-discrete-rule</code></h3>
+
+<div class="eq-block">
+$$(a_\tau^{S*},\alpha_\tau^*,\gamma_\tau^*) = \begin{cases}(a_{\mathrm{res}},\alpha_R^*,\gamma_R^*) & \text{si } V_\tau^{R,*} \leq V_\tau^{N,*} \\ (a_{\mathrm{neg}},\alpha_N^*,\gamma_N^*) & \text{si } V_\tau^{R,*} > V_\tau^{N,*}\end{cases}$$
+</div>
+<p><strong>app.py:</strong> <code>_vr_lt_vn = (V_R* ≤ V_N*)</code>, desempate a favor de rescate por desigualdad débil. &nbsp;✅ idéntico</p>
+
+<!-- ─── Método numérico ─── -->
+<h3>Método numérico de resolución</h3>
+<ol>
+  <li><strong>Interior analítico</strong>: $\nabla Q^b = 0$ → sistema $2\times2$, se agrega si cae en $[0,1]^2$</li>
+  <li><strong>Bordes</strong>: $\alpha\in\{0,1\}$ y $\gamma\in\{0,1\}$ con la otra variable optimizada analíticamente</li>
+  <li><strong>Grilla</strong>: $21\times21$ en $[0,1]^2$ (necesaria porque $\psi_H\Delta H$ puede crear mínimos no convexos)</li>
+</ol>
+<p>Se elige el candidato de menor <em>score</em> $Q^b - \psi_H\Delta H$ entre los que pertenecen a $\Gamma_\tau$.</p>
+
+<!-- ─── DIAGNÓSTICO ─── -->
+<h3 style="color:#b00">Diagnóstico de coherencia tex ↔ app.py</h3>
+
+<table>
+  <tr><th>Componente</th><th>Mechanism.tex</th><th>app.py</th><th>Estado</th></tr>
+  <tr>
+    <td>Estructura general del problema</td>
+    <td>$\min_{(a_S,\alpha,\gamma)\in\Gamma} \sum_\theta\mu L_t + \Pi - \psi_H\Delta H$</td>
+    <td>Partición VR/VN, mismo objetivo por rama</td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>$C_{\mathrm{ops}}$ y $C_{\mathrm{maint}}$: forma cuadrática</td>
+    <td>Eqs. cops-quadratic / cmaint-quadratic: 6 coefs. $c_k(\theta)$, $m_k(\theta)$</td>
+    <td><code>ops[0..5]</code>, <code>mt[0..5]</code> ponderados por $\mu_\tau$</td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>Penalización $\Pi_{b}^S$: desviación del centro bayesiano</td>
+    <td>$\chi_\alpha(\alpha-\bar\alpha_{b,\mu})^2+\chi_\gamma(\gamma-\bar\gamma_{b,\mu})^2$</td>
+    <td>Expandida algebraicamente y absorbida en <code>const</code>, <code>b_</code>, <code>q_</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>Centro bayesiano $(\bar\alpha_{b,\mu}, \bar\gamma_{b,\mu})$</td>
+    <td>Eq. belief-weighted-policy: $\sum_\theta\mu_\tau(\theta)\cdot(\alpha_{b}^{\mathrm{bench}}(\theta),\gamma_{b}^{\mathrm{bench}}(\theta))$</td>
+    <td><code>_state_reference_centers(mu)</code> → óptimos por tipo ponderados</td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>$\omega_P R(1-\alpha)$ en VN</td>
+    <td>Eq. negotiation-cost: $\omega_pR - \omega_pR\alpha$</td>
+    <td><code>const += omp*R</code>; <code>b_alpha += -omp*R</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>$\omega_K(1-\bar p_{\mathrm{surv}})$ en VR</td>
+    <td>Eq. state-loss-rescue-branch: esperanza bajo $\mu_\tau$ de la falla letal</td>
+    <td><code>const += omk*(1 - p_surv_exp)</code>; $\bar p_\mathrm{surv}$ logit en $\iota_\tau$</td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>$\omega_K h_2(t|\theta,\mathcal{C}_t)$ en VN</td>
+    <td>Eq. negotiation-cost: $h_2$ depende de $(\alpha_t,\gamma_t)$ <em>actuales</em> via $\mathcal{C}_t$</td>
+    <td><code>p_kill_exp</code> se precalcula con $(\gamma_0, \tilde A_{\tau-1})$ fijos — constante durante la optimización</td>
+    <td style="color:#b8860b">⚠️ Simplificación</td>
+  </tr>
+  <tr>
+    <td>$\Delta H_\tau(\alpha,\gamma)$</td>
+    <td>Eq. expected-information-gain: reducción de entropía esperada bajo riesgos competitivos candidatos</td>
+    <td><code>_t52_expected_entropy_gain</code>: Bayes sobre los 5 desenlaces bajo $(\alpha,\gamma)$ candidato</td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>IR<sup>K</sup></td>
+    <td>Eq. ir-K: $\mathbb{E}_{\mu_\tau}[U_{\mathrm{rel}}-\max(V_{\mathrm{cont}},U_{\mathrm{kill}})] \geq 0$</td>
+    <td><code>_ir_gap = Σ μ(θ)·[U_rel−max(V_cont,U_kill)] ≥ 0</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>IC<sup>K</sup></td>
+    <td>Eq. ic-kidnapper: $\forall\theta_j$: $\mathbb{E}_\mu[V^K(a^*(\theta)|\theta) - V^K(a^*(\theta_j)|\theta)] \geq 0$</td>
+    <td><code>gain_j = Σ μ(θᵢ)·[max_a U_a(θᵢ)−U_{a*(θⱼ)}(θᵢ)] ≥ 0</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>IR<sup>F</sup></td>
+    <td>Eq. ir-family: $\mathcal{U}_t^F(a_{\mathrm{coop}}) \geq \mathcal{U}_t^F(a_{\mathrm{col}})$</td>
+    <td><code>U_coop ≥ U_col</code> vía <code>compute_family_table</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+  <tr>
+    <td>Regla discreta</td>
+    <td>Eq. state-discrete-rule: $a_S^*=R$ si $V_R^*\leq V_N^*$</td>
+    <td><code>_vr_lt_vn = (V_R* ≤ V_N*)</code></td>
+    <td style="color:green">✅ Idéntico</td>
+  </tr>
+</table>
+
+<div class="warn" style="margin-top:18px">
+  <strong>Única discrepancia (⚠️ simplificación en VN):</strong> En Mechanism.tex el término $\omega_k h_2(t|\theta_K,\mathcal{C}_t)$ depende de los instrumentos $(\alpha_t,\gamma_t)$ que se están optimizando a través de $\mathcal{C}_t$ (estado material del período que incluye la política activa). En app.py, $\bar p_\mathrm{kill}$ se precalcula con la tripleta ejecutada del período anterior y $\gamma$ de τ=0, por lo que entra como <strong>constante</strong> en la optimización. Las derivadas $\partial h_2/\partial\alpha$ y $\partial h_2/\partial\gamma$ no se incluyen en las condiciones de primer orden. La dependencia de $h_2$ en $(\alpha,\gamma)$ sí está parcialmente capturada por los coeficientes de $C_{\mathrm{maint}}$, que fueron calibrados para reflejar esa sensibilidad, pero la vinculación directa del hazard competitivo al problema del Estado no está implementada.
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ FASE 1 -->
+<h2 id="fase1">1 · Fase 1 — Implementación MDG (Ley de Implementación, Tabla 7)</h2>
+
+<p>Para cada jugador $i \in \{F,\,K,\,S\}$ y cada período τ, dada la intención óptima $a_i^*$, se sortea la acción ejecutada $\tilde{a}_i$ mediante la <strong>distribución logit de implementación</strong> (<code>eq. logit-hybrid</code>):</p>
+
+<div class="eq-block">
+$$\mathbb{P}_I^i\!\left(\tilde{a}_i = a \;\middle|\; a_i^*\right) = \frac{\exp\!\left(\dfrac{\mathbf{1}\{a = a_i^*\}}{T_i(\tau)}\right)}{\displaystyle\sum_{a' \in \mathcal{A}^i} \exp\!\left(\dfrac{\mathbf{1}\{a' = a_i^*\}}{T_i(\tau)}\right)}$$
+</div>
+
+<div class="note">La intención $a_K^*$ se fija desde Tabla 15 (col. 14) en τ=0 y permanece constante en todos los τ siguientes. Las intenciones $a_F^*$ y $a_S^*$ se recalculan en cada τ usando la creencia actualizada $\mu_\tau$.</div>
+
+<h3>Temperatura híbrida <code>eq. temperatura-piso</code></h3>
+
+<p>La temperatura es <strong>por jugador</strong> y depende del período τ (<em>corregido en app.py</em>):</p>
+
+<div class="boxed">
+$$T_i(\tau) = T_{i,0} \;\cdot\; \underbrace{\frac{H(\mu_\tau)}{H(\mu_0)}}_{\text{ratio entropía}} \;\cdot\; \max\!\left\{e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
+</div>
+
+<p>donde:</p>
+<ul>
+  <li>$H(\mu) = -\displaystyle\sum_{\theta \in \Theta} \mu(\theta)\ln\mu(\theta)$ — entropía de Shannon</li>
+  <li>$T_{i,0}$ — temperatura inicial del jugador $i$ (sesión: <code>mdg_T0_F</code>, <code>mdg_T0_K</code>, <code>mdg_T0_S</code>)</li>
+  <li>$\eta_i$ — tasa de decaimiento calendario (sesión: <code>cal_mdg_eta_cal_by_i[i]</code>)</li>
+  <li>$\bar{c}_i$ — piso de ruido estructural (sesión: <code>mdg_cbar_F</code>, <code>mdg_cbar_K</code>, <code>mdg_cbar_S</code>)</li>
+</ul>
+
+<div class="fixed">
+  <strong>Fix aplicado.</strong> Antes de la corrección, el código tenía <code>t_tau = 1.0</code> hardcodeado, haciendo que el decaimiento siempre fuera $e^{-\eta_i \cdot 1}$ independientemente del τ real. Ahora es <code>t_tau = float(max(0, int(tau)))</code>, por lo que:
+  <ul style="margin:6px 0 0 16px">
+    <li>τ = 0: $e^{-\eta_i \cdot 0} = 1$ → temperatura máxima, sin decaimiento</li>
+    <li>τ = 1: $e^{-\eta_i \cdot 1}$ (igual que antes)</li>
+    <li>τ = 2, 3, …: $e^{-\eta_i \cdot \tau}$ → temperatura más baja, acciones más fieles a $a^*$</li>
+  </ul>
+</div>
+
+<h3>Realización: transformada inversa</h3>
+
+<p>Se sortea $u_i \sim \mathcal{U}[0,1]$ (semillas fijas por <code>dgp_seed</code>) y se toma el tramo del intervalo acumulado donde cae $u_i$:</p>
+
+<div class="eq-block">
+$$\tilde{a}_i = a_k \quad \text{tal que} \quad \sum_{j<k} \mathbb{P}_I^i(a_j) \;\le\; u_i \;<\; \sum_{j\le k} \mathbb{P}_I^i(a_j)$$
+</div>
+
+<div class="note">Los tres sorteos $u_F$, $u_K$, $u_S$ se generan <strong>una sola vez</strong> al inicio de la pestaña con la misma semilla <code>dgp_seed</code> y se reutilizan en todos los τ. Lo que cambia ciclo a ciclo es la distribución $\mathbb{P}_I^i$ (vía la temperatura), no el número sorteado.</div>
+
+<h3>Verosimilitud de implementación $\mathcal{L}_{I,\tau}(\theta)$ (usada en Fase 3)</h3>
+
+<p>La probabilidad conjunta de que los tres agentes ejecuten exactamente la tripleta observada, bajo la creencia $\mu_\tau$:</p>
+
+<div class="eq-block">
+$$\mathcal{L}_{I,\tau}(\theta) = \mathbb{P}_I^F(\tilde{a}_F \mid a_F^*,\,\mu_\tau) \;\cdot\; \mathbb{P}_I^S(\tilde{a}_S \mid a_S^*,\,\mu_\tau) \;\cdot\; \mathbb{P}_I^K(\tilde{a}_K \mid a_K^*,\,\theta,\,\mu_\tau)$$
+</div>
+
+<div class="note">$\mathbb{P}_I^K$ se evalúa condicional en el tipo $\theta$ porque la utilidad del secuestrador y su acción óptima dependen de $\theta_K$. $\mathbb{P}_I^F$ y $\mathbb{P}_I^S$ se calculan con la mezcla bayesiana $\mu_\tau$.</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ FASE 2 -->
+<h2 id="fase2">2 · Fase 2 — Desenlace m (Riesgos Competitivos, Ecs. 28–29)</h2>
+
+<p>Dado el vector ejecutado $\tilde{A}_\tau = (\tilde{a}_K,\,\tilde{a}_S,\,\tilde{a}_F)$, los instrumentos del Estado $(\alpha^*_\tau,\gamma^*_\tau)$ y el tipo real $\theta_K$, se sigue la <strong>ley del desenlace físico</strong>.</p>
+
+<h3>Maduración cuadrática $M(\tau)$</h3>
+
+<div class="eq-block">
+$$M(\tau) = \min\!\left(1,\;\left(\frac{\tau}{\tau_{\mathrm{mad}}}\right)^{\!2}\right)$$
+</div>
+
+<p>$\tau_{\mathrm{mad}}$ es el horizonte de maduración (sesión: <code>cal_T_mad</code>). En τ=0, $M(0)=0$: el episodio es completamente inmaduro y los riesgos son mínimos.</p>
+
+<h3>Intensidades efectivas $\tilde{\lambda}_j(\tau,\,\theta_K)$</h3>
+
+<p>Los cuatro canales competitivos son $j \in \{1:\text{Pago},\;2:\text{Muerte},\;3:\text{Rescate},\;4:\text{Exógeno/Lib.}\}$. Cada intensidad es:</p>
+
+<div class="eq-block">
+$$\tilde{\lambda}_j(\tau,\,\theta_K) = \lambda_{j,0}(\theta_K)\;\exp\!\Bigl[\beta_j(\theta_K) \;+\; \zeta_{\alpha,j}\,\alpha^* \;+\; \zeta_{\gamma,j}\,\gamma^* \;+\; \zeta_{d,j}\,p_{\mathrm{det}} \;+\; \zeta_{R,j}\,R\Bigr]\;\cdot\;M(\tau)$$
+</div>
+
+<p>donde los $\zeta$ son elasticidades calibradas (Tabla 10 / pestaña 2) y $\lambda_{j,0}(\theta_K)$ son las intensidades base del modelo. La cuarta intensidad competitiva es el canal exógeno (fatiga / liberación administrativa):</p>
+
+<div class="eq-block">
+$$\tilde{\lambda}_4 = \lambda_4 \quad \text{(constante, sesión: \code{cal\_lambda\_4})}$$
+</div>
+
+<h3>Probabilidad de continuar $p_{\mathrm{Cont},\tau}$</h3>
+
+<div class="eq-block">
+$$p_{\mathrm{Cont},\tau}(\theta_K) = \exp\!\left(-\sum_{j=1}^{4} \tilde{\lambda}_j(\tau,\,\theta_K)\;\Delta t\right), \qquad \Delta t = 1$$
+</div>
+
+<h3>Probabilidades de desenlace terminal $h_j$</h3>
+
+<div class="eq-block">
+$$q_\tau(\theta_K) = 1 - p_{\mathrm{Cont},\tau}(\theta_K), \qquad \xi_j(\tau,\,\theta_K) = \frac{\tilde{\lambda}_j}{\displaystyle\sum_{\ell=1}^{4}\tilde{\lambda}_\ell}$$
+$$h_j(\tau,\,\theta_K) = q_\tau(\theta_K)\;\cdot\;\xi_j(\tau,\,\theta_K), \qquad j \in \{1,2,3,4\}$$
+</div>
+
+<p>El canal 4 (Exógeno) se registra como <strong>Liberación</strong> en la tabla: $h_{\mathrm{Lib}} = h_4$.</p>
+
+<h3>Sorteo del desenlace $m_\tau$</h3>
+
+<p>Se sortea $v \sim \mathcal{U}[0,1]$ (semilla <code>_t52_m_rng_seed</code>, separada de los $u_i$) y se aplica transformada inversa sobre:</p>
+
+<div class="eq-block">
+$$\{m_\tau = \text{Liberación}: h_4,\quad m_\tau = \text{Rescate}: h_3,\quad m_\tau = \text{Pago}: h_1,\quad m_\tau = \text{Muerte}: h_2,\quad m_\tau = \text{Continuar}: p_{\mathrm{Cont}}\}$$
+</div>
+
+<div class="note"><strong>Modo "Continuar forzado".</strong> Si el selector de modo m está en "Continuar", el sorteo se realiza normalmente y entra en $\mathcal{L}_H$, pero la condición $m_\tau \neq \mathrm{Continuar}$ no detiene la trayectoria. En el modo "Sorteo" (default), el ciclo se detiene cuando $m_\tau \neq \mathrm{Continuar}$.</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ FASE 3 -->
+<h2 id="fase3">3 · Fase 3 — Actualización Bayesiana → $\mu_{\tau+1}$</h2>
+
+<p>Dado $m_\tau$ y $d_\tau$ observados, se actualiza la creencia del Estado sobre el tipo del secuestrador.</p>
+
+<h3>Bloque físico $\mathcal{L}_{H,\tau}(\theta)$ <code>eq. LH-compacta</code></h3>
+
+<div class="eq-block">
+$$\mathcal{L}_{H,\tau}(\theta_K) = \begin{cases} p_{\mathrm{Cont},\tau}(\theta_K) & \text{si } m_\tau = \mathrm{Continuar} \\[6pt] h_j(\tau,\,\theta_K) & \text{si } m_\tau = j \in \{1,2,3,4\} \end{cases}$$
+</div>
+
+<div class="note">Cuando $m_\tau = \mathrm{Continuar}$ y se usa <code>aggregate_unknown_theta=True</code>, la app sustituye $\mathcal{L}_H$ por la esperanza bajo la mezcla: $\mathcal{L}_H = \sum_\theta \mu_\tau(\theta)\,p_{\mathrm{Cont},\tau}(\theta)$, que es común a todos los tipos y no genera aprendizaje en ese período.</div>
+
+<h3>Verosimilitud de detección $\mathcal{L}_{d,\tau}$ <code>eq. Ld-bernoulli</code></h3>
+
+<div class="eq-block">
+$$p_{\mathrm{det},\tau} = \sigma\!\left(\eta_0 + \eta_1\,\alpha^*_\tau + \eta_2\,\gamma^*_\tau\right), \qquad \sigma(x) = \frac{1}{1+e^{-x}}$$
+$$\mathcal{L}_{d,\tau} = p_{\mathrm{det},\tau}^{\,d_\tau}\;\bigl(1 - p_{\mathrm{det},\tau}\bigr)^{1-d_\tau}$$
+</div>
+
+<p>$\eta_0, \eta_1, \eta_2$ son parámetros de sesión (<code>cal_eta0_pdet</code>, <code>cal_eta1_pdet</code>, <code>cal_eta2_pdet</code>). $\mathcal{L}_d$ <strong>no depende de $\theta_K$</strong>: es común a todos los tipos en el paso Bayes.</p>
+
+<h3>Verosimilitud conjunta $\mathcal{L}_{F,\tau}(\theta)$ <code>eq. LH-joint</code></h3>
+
+<div class="eq-block">
+$$\mathcal{L}_{F,\tau}(\theta) = \mathcal{L}_{I,\tau}(\theta) \;\cdot\; \mathcal{L}_{H,\tau}(\theta) \;\cdot\; \mathcal{L}_{d,\tau}$$
+</div>
+
+<h3>Verosimilitud de comunicación $\mathcal{L}_{C,\tau}(\theta)$ <code>eq. LC</code></h3>
+
+<p>Depende de si hubo llamada ($V_\tau = 1$) o silencio ($V_\tau = 0$) en el período, y del peso $\omega_{\mathrm{voz}}$:</p>
+
+<div class="eq-block">
+$$\mathcal{L}_{C,\tau}(\theta) = \begin{cases} \bigl(1 - \pi_{\mathrm{call}}(\theta)\bigr)^{\omega_{\mathrm{voz}}} & \text{si } V_\tau = 0 \text{ (silencio)} \\[6pt] \bigl(\pi_{\mathrm{call}}(\theta)\;\cdot\;\mathcal{L}_{\mathrm{voz},\tau}(\theta)\bigr)^{\omega_{\mathrm{voz}}} & \text{si } V_\tau = 1 \text{ (llamada + rasgos acústicos)} \end{cases}$$
+</div>
+
+<p>$\pi_{\mathrm{call}}(\theta)$ es la probabilidad de llamada por tipo (Tabla 5). Si $\omega_{\mathrm{voz}} = 0$, entonces $\mathcal{L}_{C,\tau} = 1$ para todos los tipos (canal desactivado).</p>
+
+<h3>Regla de Bayes <code>eq. bayes-unif</code></h3>
+
+<div class="boxed">
+$$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\cdot\;\mathcal{L}_{F,\tau}(\theta)\;\cdot\;\mathcal{L}_{C,\tau}(\theta)}{\displaystyle\sum_{\theta' \in \Theta}\,\mu_\tau(\theta')\;\cdot\;\mathcal{L}_{F,\tau}(\theta')\;\cdot\;\mathcal{L}_{C,\tau}(\theta')}$$
+</div>
+
+<div class="note">El denominador $Z_\tau = \sum_{\theta'} \mu_\tau(\theta') \cdot \mathcal{L}_{F,\tau}(\theta') \cdot \mathcal{L}_{C,\tau}(\theta')$ se reporta en la Tabla 14 (columna <code>denom_Z</code>).</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ TAU 0 -->
+<h2 id="tau0">4 · Ciclo τ = 0 (ciclo base)</h2>
+
+<div class="tau-block tau-0">
+  <div class="tau-title">τ = 0 · Escenario base — columna inicial de la Tabla 5.2</div>
+
+  <h3>Condiciones iniciales</h3>
+  <ul>
+    <li>Creencia entrada: $\mu_0$ — prior softmax condicionado en $(z, \theta_V)$ (pestaña 1)</li>
+    <li>Iota: $\iota_0 = \max_\theta \mu_0(\theta)$ (modo de la distribución)</li>
+  </ul>
+
+  <h3>Fase 1 · Temperatura en τ=0</h3>
+
+  <div class="eq-block">
+    $$T_i(0) = T_{i,0} \;\cdot\; \frac{H(\mu_0)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i \cdot 0},\;\bar{c}_i\right\} = T_{i,0} \cdot 1 \cdot \max\{1,\;\bar{c}_i\} = T_{i,0}$$
+  </div>
+
+  <p>En τ=0 el ratio de entropía es 1 y el decaimiento es $e^0 = 1$: la temperatura es exactamente $T_{i,0}$ (máxima). Las acciones óptimas $a_F^*$, $a_K^*$, $a_S^*$ se leen del selector "Escenario base τ=0" en el expander (pestaña 5).</p>
+
+  <h3>Fase 2 · Maduración y desenlace en τ=0</h3>
+
+  <div class="eq-block">
+    $$M(0) = \min\!\left(1,\;\left(\frac{0}{\tau_{\mathrm{mad}}}\right)^2\right) = 0$$
+  </div>
+
+  <p>Con $M(0)=0$, todas las intensidades $\tilde{\lambda}_j(0, \theta_K) = 0$, por lo que $p_{\mathrm{Cont},0} = e^0 = 1$. En la práctica, la app usa <code>allow_zero_time=True</code> que fuerza <code>t_for_mech = 0</code> en vez de <code>max(1, t)</code>, evaluando el modelo en $t=0$.</p>
+
+  <div class="warn">El sorteo de $m_0$ usa una semilla <strong>separada</strong> (<code>_t52_m_rng_seed</code>), derivada de <code>dgp_seed</code> más constantes de versión y un contador de resorteos. Esto permite resortear $m_0$ independientemente sin afectar $u_F$, $u_K$, $u_S$.</div>
+
+  <h3>Fase 3 · Bayes en τ=0 → produce $\mu_1$</h3>
+
+  <p>La actualización usa $t\_eval=0$, las acciones ejecutadas $(\tilde{a}_K, \tilde{a}_S, \tilde{a}_F)$ del ciclo base, y $\alpha_0^*, \gamma_0^*$ de la política del Estado. Produce $\mu_1$ que alimenta τ=1.</p>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ TAU 1 -->
+<h2 id="tau1">5 · Ciclo τ = 1 (primer ciclo dinámico)</h2>
+
+<div class="tau-block tau-1">
+  <div class="tau-title">τ = 1 · Primera columna dinámica de la Tabla 5.2</div>
+
+  <h3>Condiciones</h3>
+  <ul>
+    <li>Creencia entrada: $\mu_1$ (producida por la actualización de τ=0)</li>
+    <li>$a_K^*$ fijo desde τ=0 (no cambia en ningún τ posterior)</li>
+    <li>$a_F^*$ y $a_S^*$ recalculados con $\mu_1$</li>
+  </ul>
+
+  <h3>Fase 1 · Temperatura en τ=1</h3>
+
+  <div class="eq-block">
+    $$T_i(1) = T_{i,0} \;\cdot\; \frac{H(\mu_1)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i},\;\bar{c}_i\right\}$$
+  </div>
+
+  <p>La distribución $\mathbb{P}_I^i$ se calcula <strong>dos veces</strong> en la app para τ=1:</p>
+  <ol>
+    <li><strong>Pre-Bayes</strong> (display inicial): se pasa $\mu_\tau = \mu_0$ como aproximación antes de calcular $\mu_1$</li>
+    <li><strong>Post-Bayes</strong> (display final): se pasa $\mu_\tau = \mu_1$ con la creencia actualizada</li>
+  </ol>
+
+  <h3>Fase 2 · Maduración y desenlace en τ=1</h3>
+
+  <div class="eq-block">
+    $$M(1) = \min\!\left(1,\;\left(\frac{1}{\tau_{\mathrm{mad}}}\right)^2\right)$$
+  </div>
+
+  <p>La app usa <code>t_for_mech = max(1, t_eval) = 1</code>: el modelo se evalúa en $t=1$ (primer período con maduración positiva).</p>
+
+  <h3>Instrumentos del Estado $(\alpha_1^*, \gamma_1^*)$</h3>
+
+  <p>El Estado resuelve los dos problemas cuadráticos descritos en la <a href="#estado">Sección 0</a> con la creencia actualizada $\mu_1$. En τ=1, los pesos $\bar{p}_{\mathrm{surv}}$ y $\bar{p}_{\mathrm{kill}}$ se calculan con las acciones ejecutadas $(\tilde{a}_K, \tilde{a}_S, \tilde{a}_F)$ del ciclo τ=0. El peso $\psi_H$ se controla con el slider "ψ_H · ganancia informacional" en el expander de la pestaña 5.</p>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ TAU N -->
+<h2 id="taun">6 · Ciclos τ ≥ 2 (ciclos dinámicos)</h2>
+
+<div class="tau-block tau-dyn">
+  <div class="tau-title">τ = 2, 3, … · Generados por "Avanzar ciclos"</div>
+
+  <p>Estos ciclos se calculan en el loop interno de <code>_tau_start52</code> y se almacenan en <code>st.session_state["dynamic_cycles52"]</code>. Cada iteración del loop aplica exactamente las mismas tres fases, con los parámetros del período correspondiente.</p>
+
+  <h3>Fase 1 · Temperatura en τ ≥ 2</h3>
+
+  <div class="eq-block">
+    $$T_i(\tau) = T_{i,0} \;\cdot\; \frac{H(\mu_\tau)}{H(\mu_0)} \;\cdot\; \max\!\left\{e^{-\eta_i\,\tau},\;\bar{c}_i\right\}$$
+  </div>
+
+  <p>El decaimiento calendario $e^{-\eta_i\,\tau}$ disminuye con cada período, haciendo que la distribución $\mathbb{P}_I^i$ se concentre más en $a^*$. La creencia $\mu_\tau$ viene del paso Bayes del ciclo anterior.</p>
+
+  <p>Las llamadas en el loop son:</p>
+  <div class="eq-block" style="font-family:monospace; font-size:0.87em;">
+    _pf_c52 = _t52_p1(a_F*, "F", iota, μ₀, μ_τ, tau=τ)<br>
+    _pk_c52 = _t52_p1(a_K*, "K", iota, μ₀, μ_τ, tau=τ)<br>
+    _ps_c52 = _t52_p1_s(agent, a_S*, μ₀, μ_τ, tau=τ)
+  </div>
+
+  <h3>Fase 2 · Maduración en τ ≥ 2</h3>
+
+  <div class="eq-block">
+    $$M(\tau) = \min\!\left(1,\;\left(\frac{\tau}{\tau_{\mathrm{mad}}}\right)^2\right) \xrightarrow{\tau \to \tau_{\mathrm{mad}}} 1$$
+  </div>
+
+  <p>A medida que τ crece, $M(\tau) \to 1$ y las intensidades $\tilde{\lambda}_j$ alcanzan su valor maduro: la probabilidad de desenlace terminal aumenta y la de continuar disminuye.</p>
+
+  <h3>Semillas y sorteos en τ ≥ 2</h3>
+
+  <p>Los sorteos $u_F$, $u_K$, $u_S$ siguen siendo los mismos de τ=0/1 (semilla fija de <code>dgp_seed</code>). El sorteo de $m_\tau$ usa el generador del loop (<code>_rng_m_c52</code>), progresando desde la semilla del ciclo.</p>
+
+  <h3>Condición de parada</h3>
+
+  <div class="eq-block">
+    $$\text{parar} \iff m_\tau \neq \mathrm{Continuar} \quad \text{(modo Sorteo)}$$
+  </div>
+
+  <p>El número máximo de τ proyectados se controla con el slider de la pestaña 1 ("máximo de τ en pestaña 5"). Si se alcanza el límite sin desenlace, la tabla trunca allí.</p>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ RESUMEN -->
+<h2 id="resumen">7 · Tabla resumen — qué cambia en cada ciclo</h2>
+
+<table>
+  <tr>
+    <th>Variable</th>
+    <th>τ = 0 (base)</th>
+    <th>τ = 1</th>
+    <th>τ ≥ 2 (dinámico)</th>
+  </tr>
+  <tr>
+    <td>Creencia entrada</td>
+    <td>$\mu_0$ (prior)</td>
+    <td>$\mu_1$ (de τ=0)</td>
+    <td>$\mu_\tau$ (del ciclo anterior)</td>
+  </tr>
+  <tr>
+    <td>$a_K^*$</td>
+    <td>Backward induction Tabla 15 con $\mu_0$, leída en $t=0$</td>
+    <td>Backward induction Tabla 15 con $\mu_1$ (override $t=0$), leída en $t=0$</td>
+    <td>Backward induction Tabla 15 con $\mu_\tau$ (override $t=0$), leída en $t=0$</td>
+  </tr>
+  <tr>
+    <td>$a_F^*$, $a_S^*$</td>
+    <td>Selector base en expander</td>
+    <td>Recalculados con $\mu_1$</td>
+    <td>Recalculados con $\mu_\tau$</td>
+  </tr>
+  <tr>
+    <td>Temperatura $T_i(\tau)$</td>
+    <td>$T_{i,0} \cdot 1 \cdot 1 = T_{i,0}$</td>
+    <td>$T_{i,0}\cdot\frac{H_1}{H_0}\cdot\max(e^{-\eta_i},\bar c_i)$</td>
+    <td>$T_{i,0}\cdot\frac{H_\tau}{H_0}\cdot\max(e^{-\eta_i\tau},\bar c_i)$</td>
+  </tr>
+  <tr>
+    <td>Maduración $M(\tau)$</td>
+    <td>$0$</td>
+    <td>$(1/\tau_{\mathrm{mad}})^2$</td>
+    <td>$\min(1,(\tau/\tau_{\mathrm{mad}})^2)$</td>
+  </tr>
+  <tr>
+    <td>$\alpha^*_\tau$, $\gamma^*_\tau$</td>
+    <td>Valores τ=0 fijos (pestaña 4)</td>
+    <td>Optimizados con $\mu_1$, $\psi_H$</td>
+    <td>Optimizados con $\mu_\tau$, $\psi_H$</td>
+  </tr>
+  <tr>
+    <td>Semilla $m$</td>
+    <td><code>_t52_m_rng_seed</code> (independiente)</td>
+    <td><code>_t52_m_rng_seed</code></td>
+    <td><code>_rng_m_c52</code> (loop)</td>
+  </tr>
+  <tr>
+    <td>Semillas $u_F, u_K, u_S$</td>
+    <td colspan="3" style="text-align:center">Fijas para todos los τ (generadas una sola vez con <code>dgp_seed</code>)</td>
+  </tr>
+  <tr>
+    <td>allow_zero_time</td>
+    <td><code>True</code> (usa $t=0$ en hazards)</td>
+    <td><code>False</code> (usa $\max(1,t)=1$)</td>
+    <td><code>False</code> (usa $\max(1,\tau)=\tau$)</td>
+  </tr>
+  <tr>
+    <td>Produce</td>
+    <td>$\mu_1$, $m_0$, $(\tilde a_F, \tilde a_K, \tilde a_S)$</td>
+    <td>$\mu_2$, $m_1$, nuevas $\tilde a$</td>
+    <td>$\mu_{\tau+1}$, $m_\tau$, nuevas $\tilde a$</td>
+  </tr>
+</table>
+
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ VARIABLES -->
+<h2 id="vars">8 · Variables por ciclo τ — Cálculo detallado</h2>
+
+<p>Esta sección describe, variable a variable, cómo se calcula cada columna de la Tabla 5.2 en el ciclo τ. El orden sigue el flujo de ejecución en <code>app.py</code>: primero la política del Estado, luego la de la familia, luego la del secuestrador, después la implementación estocástica, y finalmente la actualización de creencias.</p>
+
+<!-- ─────────────────────────────── 8.1 ─── -->
+<h3>8.1 · Creencias de entrada $\mu_\tau$ — columna "μ (DC / PAR / ELN / FARC)"</h3>
+
+<div class="phase phase-B">
+<p><strong>Definición.</strong> $\mu_\tau : \Theta \to [0,1]$ es la distribución de probabilidad del principal sobre el tipo del secuestrador al inicio del ciclo τ. Se satisface $\sum_\theta\mu_\tau(\theta)=1$.</p>
+
+<p><strong>τ = 0.</strong> Prior uniforme o calibrada:</p>
+<div class="eq-block">
+$$\mu_0(\theta) = \frac{1}{|\Theta|} \quad \forall\,\theta \in \{DC, PAR, ELN, FARC\}$$
+</div>
+<p>En la app: <code>_mu0_52 = {θ: 0.25, …}</code> (slider de calibración permite ajustar el prior).</p>
+
+<p><strong>τ ≥ 1.</strong> Posterior del ciclo anterior (ver §8.16):</p>
+<div class="eq-block">
+$$\mu_\tau(\theta) = \mu_\tau^{\text{post}}(\theta) = \frac{\mu_{\tau-1}(\theta)\;\mathcal{L}_\tau(\theta)}{\sum_{\theta'}\mu_{\tau-1}(\theta')\;\mathcal{L}_\tau(\theta')}$$
+</div>
+<p>donde $\mathcal{L}_\tau(\theta) = \mathcal{L}_H\cdot\mathcal{L}_d\cdot\mathcal{L}_{\mathrm{voz}}\cdot\mathcal{L}_F\cdot\mathcal{L}_I$ es la verosimilitud conjunta del ciclo τ−1.</p>
+</div>
+
+<!-- ─────────────────────────────── 8.2 ─── -->
+<h3>8.2 · Precisión bayesiana $\iota_\tau$ — columna "ι"</h3>
+
+<div class="phase phase-F">
+<p><strong>Definición.</strong> $\iota_\tau$ mide la concentración de $\mu_\tau$: vale 0 cuando $\mu_\tau$ es uniforme y 1 cuando $\mu_\tau$ es degenerada.</p>
+<div class="eq-block">
+$$\iota_\tau = 1 - H(\mu_\tau)\,/\,H_{\max}, \qquad H(\mu) = -\sum_\theta\mu(\theta)\ln\mu(\theta), \quad H_{\max}=\ln|\Theta|$$
+</div>
+<div class="note"><code>_iota_52 = 1 - H(μ_τ)/log(4)</code> en app.py. Se usa en la probabilidad de éxito del rescate $\mathbb{P}(s=1|\iota_\tau,\hat\theta_\tau,\theta_K)$ dentro de $V_\tau^R$.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.3 ─── -->
+<h3>8.3 · Instrumentos óptimos del Estado $(\alpha^*_\tau, \gamma^*_\tau, a^*_S)$ — columnas "α*", "γ*", "a*_S"</h3>
+
+<div class="phase phase-m">
+<p><strong>Problema.</strong> El Estado elige $(\alpha,\gamma)\in[0,1]^2$ y $a_S\in\{R,N\}$ para minimizar la pérdida social esperada sujeto a IRIC:</p>
+<div class="boxed">
+$$(a^*_{S,\tau},\alpha^*_\tau,\gamma^*_\tau) = \arg\min_{(a_S,\alpha,\gamma)\in\Gamma_\tau(\mu_\tau)}\left\{\sum_\theta\mu_\tau(\theta)\,V_\tau^{a_S}(\alpha,\gamma;\theta) + \Pi^S_\tau(\alpha,\gamma;\mu_\tau) - \psi_H\,\Delta H_\tau(\alpha,\gamma)\right\}$$
+</div>
+
+<p><strong>Rama Rescate ($a_S = R$).</strong></p>
+<div class="eq-block">
+$$Q^R(\alpha,\gamma) = \underbrace{\omega_K(1-\bar p_{\mathrm{surv}}) + \overline{c_0} + \chi_\alpha\bar\alpha_{R,\mu}^2 + \chi_\gamma\bar\gamma_{R,\mu}^2}_{\texttt{const}} + \underbrace{(\overline{c_1}-2\chi_\gamma\bar\gamma_{R,\mu})}_{\texttt{b\_gamma}}\gamma + \tfrac{1}{2}\underbrace{(\overline{c_2}+2\chi_\gamma)}_{\texttt{q\_gamma}}\gamma^2 + \underbrace{(\overline{c_3}-2\chi_\alpha\bar\alpha_{R,\mu})}_{\texttt{b\_alpha}}\alpha + \tfrac{1}{2}\underbrace{(\overline{c_4}+2\chi_\alpha)}_{\texttt{q\_alpha}}\alpha^2 + \underbrace{\overline{c_5}}_{\texttt{q\_ga}}\gamma\alpha$$
+</div>
+
+<p><strong>Rama Negociación ($a_S = N$).</strong></p>
+<div class="eq-block">
+$$Q^N(\alpha,\gamma) = \underbrace{\omega_P R + \omega_K\bar p_{\mathrm{kill}} + \overline{m_0} + \chi_\alpha\bar\alpha_{N,\mu}^2 + \chi_\gamma\bar\gamma_{N,\mu}^2}_{\texttt{const}} + \underbrace{(\overline{m_1}-2\chi_\gamma\bar\gamma_{N,\mu})}_{\texttt{b\_gamma}}\gamma + \tfrac{1}{2}\underbrace{(\overline{m_2}+2\chi_\gamma)}_{\texttt{q\_gamma}}\gamma^2 + \underbrace{(\overline{m_3}-\omega_P R - 2\chi_\alpha\bar\alpha_{N,\mu})}_{\texttt{b\_alpha}}\alpha + \tfrac{1}{2}\underbrace{(\overline{m_4}+2\chi_\alpha)}_{\texttt{q\_alpha}}\alpha^2 + \underbrace{\overline{m_5}}_{\texttt{q\_ga}}\gamma\alpha$$
+</div>
+
+<p><strong>Score final con ganancia de información.</strong></p>
+<div class="eq-block">
+$$\mathrm{score}^b(\alpha,\gamma) = Q^b(\alpha,\gamma) - \psi_H\,\Delta H_\tau(\alpha,\gamma), \qquad b\in\{R,N\}$$
+</div>
+
+<p><strong>Regla de selección.</strong> Se minimizan $V_\tau^{R,*}$ y $V_\tau^{N,*}$ por separado; gana la rama con menor valor:</p>
+<div class="eq-block">
+$$(a^*_{S,\tau}, \alpha^*_\tau, \gamma^*_\tau) = \begin{cases}(R,\,\alpha^*_R,\,\gamma^*_R) & \text{si } V_\tau^{R,*} \leq V_\tau^{N,*}\\ (N,\,\alpha^*_N,\,\gamma^*_N) & \text{en otro caso}\end{cases}$$
+</div>
+
+<div class="fixed">Implementado en <code>_t52_optimize_state_policy(mu_tau, iota_tau, tau)</code>. Candidatos: (i) interior analítico $\nabla Q=0$; (ii) cuatro bordes de $[0,1]^2$; (iii) grilla $21\times21$. Se retiene el de menor score dentro de $\Gamma_\tau(\mu_\tau)$.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.4 ─── -->
+<h3>8.4 · Acción óptima de la familia $a^*_F$ — columna "a*_F"</h3>
+
+<div class="phase phase-F">
+<p><strong>Definición.</strong> La familia elige entre cooperar ($a_F=C$, i.e., pagar rescate) o colaborar con el Estado ($a_F=\mathrm{Col}$) maximizando su utilidad esperada dada la política del Estado $(\alpha_\tau,\gamma_\tau)$ y las creencias $\mu_\tau$:</p>
+<div class="eq-block">
+$$a^*_F(\tau) = \arg\max_{a_F\in\{C,\,\mathrm{Col}\}}\;\mathcal{U}^F_\tau(a_F;\,\alpha^*_\tau,\gamma^*_\tau,\mu_\tau)$$
+</div>
+
+<div class="eq-block">
+$$\mathcal{U}^F_\tau(C) = -R(1-\alpha^*_\tau)\cdot\mathbb{P}(\mathrm{pago}\mid\mu_\tau,\mathcal{C}_\tau) - \omega_F\,h_{\mathrm{kill}}(\tau\mid\mu_\tau,\mathcal{C}_\tau)$$
+</div>
+<div class="eq-block">
+$$\mathcal{U}^F_\tau(\mathrm{Col}) = -\omega_F\,h_{\mathrm{kill}}(\tau\mid\mu_\tau,\mathcal{C}_\tau,\mathrm{Col}) + B_{\mathrm{col}}$$
+</div>
+
+<div class="note">Computado en <code>compute_family_table(modelo, alpha, gamma, mu_tau, tau, …)</code>. La Tabla 5.2 reporta la acción de la primera fila (período corriente). La restricción IR<sup>F</sup> del Estado verifica que $a^*_F = C$ bajo la política óptima.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.5 ─── -->
+<h3>8.5 · Acción óptima del secuestrador $a^*_K(\tau)$ — columna "a*_K"</h3>
+
+<div class="phase phase-B">
+<p><strong>Cálculo.</strong> En cada ciclo τ se ejecuta una inducción hacia atrás completa de la Tabla 15 con creencias $\mu_\tau$ en $t=0$:</p>
+
+<ol>
+  <li>Se toma el snapshot actual de Tabla 14 (<code>rb_mu_traj_snapshot</code>).</li>
+  <li>Se sobreescribe la fila $t=0$ con los valores del ciclo corriente: $\alpha_\tau^*$, $\gamma_\tau^*$, $\mu_\tau(\theta)$.</li>
+  <li>Se llama <code>kidnapper_backward_induction_k_table(modelo, df_traj_ov, df_k15, …)</code> sin caché.</li>
+  <li>Se lee <code>opcion_BW</code> en $t=0$ del resultado (la decisión óptima del período corriente).</li>
+</ol>
+
+<div class="boxed">
+$$a^*_K(\tau) = \arg\max_{a\in\{\mathrm{Cont},\mathrm{Lib},\mathrm{Mat}\}} V^K_t(a\mid\theta, \alpha^*_\tau, \gamma^*_\tau, \mu_\tau)\Big|_{t=0}$$
+</div>
+
+<p><strong>Valores de continuación.</strong> El loop de inducción recorre $t = T_K \to 1$ calculando:</p>
+<div class="eq-block">
+$$V^K_{\mathrm{cont}}(\theta,t) = \beta_K\Bigl[\sum_{m\neq\mathrm{Cont}}h_m(t\mid\theta,\mathcal{C})\,U^K_m(\theta) + h_{\mathrm{Cont}}(t\mid\theta,\mathcal{C})\,V^K_{\mathrm{cont}}(\theta,t+1)\Bigr]$$
+</div>
+<div class="eq-block">
+$$V^K_{\mathrm{lib}}(\theta) = U^K_{\mathrm{lib}}(\theta), \qquad V^K_{\mathrm{mat}}(\theta) = U^K_{\mathrm{mat}}(\theta)$$
+</div>
+<div class="eq-block">
+$$\mathrm{opcion}_{BW}(t) = \arg\max_{a}\;\mathbb{E}_\mu\Bigl[\hat V^K_a(\theta,t)\Bigr]$$
+</div>
+
+<p><strong>Fila $t=0$ separada.</strong> Usa $V^K_{\mathrm{cont}}(\theta,\tau=1)$ como futuro, $\mathrm{maturity\_mult}=0$, $t_{\mathrm{hazard}}=-1$:</p>
+<div class="eq-block">
+$$a^*_K(\tau) = \arg\max_{a\in\{C,L,M\}}\;\sum_\theta\mu_\tau(\theta)\,\hat V^K_a(\theta,\,t=0)$$
+</div>
+
+<div class="warn"><strong>Importante:</strong> $a^*_K(\tau)$ <em>siempre</em> se lee en $t=0$ del resultado de la inducción (no en $t=\tau$). Esto es consistente con el marco: el secuestrador decide en el período corriente tomando la política del Estado $(\alpha^*_\tau,\gamma^*_\tau)$ como dada.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.6 ─── -->
+<h3>8.6 · Temperatura MDG $T_i(\tau)$ — entrada de la Ley de Implementación</h3>
+
+<div class="phase phase-F">
+<p><strong>Definición.</strong> La "temperatura" del agente $i\in\{F,K,S\}$ controla cuánto se concentra su distribución implementada $\mathbb{P}_I^i$ alrededor de $a^*_i$:</p>
+<div class="eq-block">
+$$T_i(\tau) = T_{i,0}\;\cdot\;\frac{H(\mu_\tau)}{H(\mu_0)}\;\cdot\;\max\!\Bigl\{e^{-\eta_i\,\tau},\;\bar{c}_i\Bigr\}$$
+</div>
+
+<ul>
+  <li>$T_{i,0}$: temperatura base (parámetro de calibración pestaña 4)</li>
+  <li>$H(\mu_\tau)/H(\mu_0)$: factor de entropía — reduce $T$ cuando las creencias son más precisas, haciendo la implementación más determinista a medida que se aprende el tipo</li>
+  <li>$e^{-\eta_i\tau}$: decaimiento calendario con tasa $\eta_i$ (parámetro de calibración)</li>
+  <li>$\bar{c}_i > 0$: piso mínimo de temperatura (evita colapso completo a acción puntual)</li>
+</ul>
+
+<div class="note">
+  <strong>τ=0:</strong> $e^{-\eta\cdot0}=1$, $H(\mu_0)/H(\mu_0)=1$ → $T_i(0) = T_{i,0}$. <br>
+  <strong>τ≥1:</strong> todos los factores activos. Llamada: <code>_t52_p1(a_i*, agente, iota, μ_0, μ_τ, tau=τ)</code>.
+</div>
+</div>
+
+<!-- ─────────────────────────────── 8.7 ─── -->
+<h3>8.7 · Distribución MDG $\mathbb{P}^i_I(\tilde a\mid a^*_i)$ — columna implícita, Tabla 7</h3>
+
+<div class="phase phase-B">
+<p><strong>Definición (Ley de Implementación MDG).</strong> Dado el logit-score del agente $i$ entre opciones $\mathcal{A}_i$:</p>
+<div class="eq-block">
+$$\mathbb{P}^i_I(\tilde a = a \mid a^*_i) = \frac{\exp\!\bigl(\mathbf{1}[a = a^*_i]\,/\, T_i(\tau)\bigr)}{\sum_{a'\in\mathcal{A}_i}\exp\!\bigl(\mathbf{1}[a' = a^*_i]\,/\, T_i(\tau)\bigr)}$$
+</div>
+
+<p>Simplificando, si $|\mathcal{A}_i| = n$:</p>
+<div class="eq-block">
+$$\mathbb{P}^i_I(\tilde a = a^*_i \mid a^*_i) = \frac{e^{1/T_i}}{e^{1/T_i} + (n-1)}, \qquad \mathbb{P}^i_I(\tilde a \neq a^*_i \mid a^*_i) = \frac{1}{e^{1/T_i} + (n-1)}$$
+</div>
+
+<p>Para el Estado $i=S$ con $\mathcal{A}_S = \{R, N\}$ (dos opciones):</p>
+<div class="eq-block">
+$$\mathbb{P}^S_I(a^*_S) = \frac{e^{1/T_S}}{e^{1/T_S}+1}, \qquad \mathbb{P}^S_I(\text{no-}a^*_S) = \frac{1}{e^{1/T_S}+1}$$
+</div>
+
+<div class="note">Implementado en <code>_t52_p1(…)</code> para F y K (tres opciones); <code>_t52_p1_s(…)</code> para S (dos opciones). El vector completo de probabilidades se usa como CDF para el sorteo de $\tilde a_i$.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.8 ─── -->
+<h3>8.8 · Acciones realizadas $\tilde a_F,\,\tilde a_K,\,\tilde a_S$ — columnas "ã_F", "ã_K", "ã_S"</h3>
+
+<div class="phase phase-m">
+<p><strong>Método.</strong> Transformada inversa sobre la CDF acumulada de $\mathbb{P}^i_I$:</p>
+<div class="eq-block">
+$$\tilde a_i = F_i^{-1}(u_i), \qquad u_i \sim \mathrm{Uniform}(0,1)$$
+</div>
+donde $F_i^{-1}$ es la función cuantil de la distribución $\mathbb{P}^i_I(\,\cdot\mid a^*_i)$.
+
+<p><strong>Semillas.</strong> Los uniformes $u_F$, $u_K$, $u_S$ se generan <em>una sola vez</em> al inicio de la sesión con la semilla <code>dgp_seed</code> y se reutilizan en todos los ciclos τ. Esto garantiza que el "azar de implementación" es fijo a lo largo de la trayectoria.</p>
+
+<div class="eq-block" style="font-family:monospace; font-size:0.87em;">
+u_F, u_K, u_S = rng.random(3)   # generados una vez con dgp_seed<br>
+ã_F = inv_cdf(P^F_I, u_F)       # en todo ciclo τ<br>
+ã_K = inv_cdf(P^K_I, u_K)<br>
+ã_S = inv_cdf(P^S_I, u_S)
+</div>
+
+<div class="warn"><strong>Nota:</strong> las probabilidades $\mathbb{P}^i_I$ cambian en cada τ (porque $a^*_i$ y $T_i$ cambian), pero los uniformes $u_i$ son fijos. Por tanto la acción realizada puede cambiar entre ciclos aunque la semilla no cambie.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.9 ─── -->
+<h3>8.9 · Probabilidad de detección $p_{\mathrm{det},\tau}$</h3>
+
+<div class="phase phase-F">
+<p><strong>Definición.</strong> Logit de la probabilidad de que la policía detecte la ubicación del secuestrado:</p>
+<div class="eq-block">
+$$p_{\mathrm{det},\tau} = \sigma\!\left(\beta_0^d + \beta_\alpha\,\alpha^*_\tau + \beta_\gamma\,\gamma^*_\tau + \beta_\iota\,\iota_\tau\right) = \frac{1}{1+e^{-(\beta_0^d + \beta_\alpha\alpha^*_\tau + \beta_\gamma\gamma^*_\tau + \beta_\iota\iota_\tau)}}$$
+</div>
+
+<p>Mayor $\alpha_\tau^*$ (mayor presencia policial) y mayor $\iota_\tau$ (creencias más concentradas) aumentan la probabilidad de detección.</p>
+<div class="note">En app.py: <code>_pdet_52 = modelo.prob_deteccion(alpha=α*, gamma=γ*, iota=ι_τ)</code>. Los coeficientes $\beta$ provienen de la calibración de la Tabla 10.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.10 ─── -->
+<h3>8.10 · Detección realizada $d_\tau$ — columna "det"</h3>
+
+<div class="phase phase-m">
+<p><strong>Sorteo.</strong> $d_\tau$ es un Bernoulli con la probabilidad calculada en §8.9:</p>
+<div class="eq-block">
+$$d_\tau \sim \mathrm{Bernoulli}(p_{\mathrm{det},\tau}), \qquad d_\tau \in \{0,1\}$$
+</div>
+
+<p>Si $d_\tau=1$ y $a^*_S=R$ (rescate), se activa la probabilidad de éxito del rescate $\mathbb{P}(s=1|\iota_\tau,\hat\theta,\theta_K)$, que a su vez puede generar el desenlace $m_\tau=\mathrm{Rescate}$.</p>
+
+<div class="note">Semilla: misma de $u_F,u_K,u_S$ (generada una vez con <code>dgp_seed</code>, componente separada del vector aleatorio inicial).</div>
+</div>
+
+<!-- ─────────────────────────────── 8.11 ─── -->
+<h3>8.11 · Intensidades de riesgo competitivo $\tilde\lambda_j(\tau)$</h3>
+
+<div class="phase phase-B">
+<p><strong>Definición.</strong> Para cada tipo $\theta\in\Theta$ y desenlace $j\in\{1=\mathrm{LibPago},\,2=\mathrm{LibNoP},\,3=\mathrm{Rescate},\,4=\mathrm{Muerte},\,5=\mathrm{Cont}\}$:</p>
+<div class="eq-block">
+$$\tilde\lambda_j(\tau\mid\theta,\mathcal{C}_\tau) = \lambda_j(\tau\mid\theta)\;\cdot\;\underbrace{M(\tau)}_{\text{maduración}}\;\cdot\;\underbrace{f_j(\alpha^*_\tau,\gamma^*_\tau,\tilde a_F,\tilde a_K,\tilde a_S)}_{\text{modulación por acciones}}$$
+</div>
+
+<p><strong>Maduración.</strong> Escala las intensidades de 0 a su valor maduro:</p>
+<div class="eq-block">
+$$M(\tau) = \min\!\left(1,\;\left(\frac{\tau}{\tau_{\mathrm{mad}}}\right)^2\right)$$
+</div>
+
+<p><strong>Desenlace Continuar.</strong> Su intensidad se define residualmente como:</p>
+<div class="eq-block">
+$$\tilde\lambda_{\mathrm{Cont}}(\tau\mid\theta,\mathcal{C}_\tau) = \tilde\lambda_{\mathrm{base,Cont}} - \sum_{j\neq\mathrm{Cont}}\tilde\lambda_j$$
+</div>
+
+<div class="note">Calculadas en <code>modelo.calcular_hazards(alpha, gamma, tau, mu, tilde_a, …)</code>. Las intensidades $\tilde\lambda_j$ representan la tasa del proceso de Poisson subyacente a cada evento.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.12 ─── -->
+<h3>8.12 · Distribución de desenlace $q_\tau,\,\xi_j,\,h_j$ — columna "pm"</h3>
+
+<div class="phase phase-F">
+<p><strong>Probabilidad de salir del estado "Continuar" en τ.</strong></p>
+<div class="eq-block">
+$$q_\tau = 1 - \exp\!\Bigl(-\sum_{j\neq\mathrm{Cont}}\tilde\lambda_j(\tau\mid\theta,\mathcal{C}_\tau)\Bigr)$$
+</div>
+
+<p><strong>Fracción de salida atribuida a cada causa.</strong></p>
+<div class="eq-block">
+$$\xi_j = \frac{\tilde\lambda_j}{\sum_{k\neq\mathrm{Cont}}\tilde\lambda_k}$$
+</div>
+
+<p><strong>Probabilidad del desenlace $j$ en el período τ.</strong></p>
+<div class="eq-block">
+$$h_j(\tau\mid\theta,\mathcal{C}_\tau) = q_\tau\;\cdot\;\xi_j$$
+</div>
+
+<p><strong>Probabilidad de continuar.</strong></p>
+<div class="eq-block">
+$$h_{\mathrm{Cont}}(\tau\mid\theta,\mathcal{C}_\tau) = 1 - q_\tau = \exp\!\Bigl(-\sum_{j\neq\mathrm{Cont}}\tilde\lambda_j\Bigr)$$
+</div>
+
+<p>La columna "pm" de la Tabla 5.2 muestra el vector $(h_1,h_2,h_3,h_4,h_{\mathrm{Cont}})$ bajo el tipo real <code>tipo_real</code> y las acciones realizadas $\tilde a$.</p>
+</div>
+
+<!-- ─────────────────────────────── 8.13 ─── -->
+<h3>8.13 · Desenlace realizado $m_\tau$ — columna "m"</h3>
+
+<div class="phase phase-m">
+<p><strong>Sorteo multinomial.</strong> Se sortea el desenlace usando la distribución de riesgos competitivos:</p>
+<div class="eq-block">
+$$m_\tau \sim \mathrm{Multinomial}\bigl(1;\,h_{\mathrm{Cont}},\,h_1,\,h_2,\,h_3,\,h_4\bigr)$$
+</div>
+
+<p>El sorteo usa la transformada inversa sobre los hazards acumulados evaluados bajo el tipo real <code>tipo_real</code> y el contexto $\mathcal{C}_\tau = (\alpha^*_\tau,\gamma^*_\tau,\tilde a_F,\tilde a_K,\tilde a_S)$.</p>
+
+<div class="fixed">
+<strong>Condición de parada.</strong> Si $m_\tau \neq \mathrm{Continuar}$, el loop se detiene. La Tabla 5.2 reporta la trayectoria hasta y incluyendo el período con $m_\tau \neq C$. En modo "Solo ver" no hay sorteo: se muestra $\mathbb{E}[m_\tau]$.
+</div>
+
+<div class="note">Semilla: <code>_rng_m_c52</code> (loop interno). Para τ=0 y τ=1 se usa una semilla independiente <code>_t52_m_rng_seed</code>, separada del generador del loop para garantizar reproducibilidad en el período base.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.14 ─── -->
+<h3>8.14 · Verosimilitud de implementación $\mathcal{L}_I$ — componente del update bayesiano</h3>
+
+<div class="phase phase-B">
+<p><strong>Definición.</strong> La verosimilitud de las acciones realizadas $(\tilde a_F, \tilde a_K, \tilde a_S)$ dado el tipo $\theta$:</p>
+<div class="eq-block">
+$$\mathcal{L}_I(\tilde a_F,\tilde a_K,\tilde a_S\mid\theta) = \mathbb{P}^F_I(\tilde a_F\mid a^*_F(\theta))\;\cdot\;\mathbb{P}^K_I(\tilde a_K\mid a^*_K(\theta))\;\cdot\;\mathbb{P}^S_I(\tilde a_S\mid a^*_S(\theta))$$
+</div>
+
+<p>donde $\mathbb{P}^i_I(\tilde a\mid a^*_i(\theta))$ es la probabilidad logit calculada en §8.7 con la acción óptima condicional al tipo.</p>
+
+<div class="note">Si el tipo real es $\theta_K$, la acción observada $\tilde a_K$ es más verosímil cuando $\tilde a_K = a^*_K(\theta_K)$ que cuando $\tilde a_K \neq a^*_K(\theta_K)$. Esto genera separación de tipos en la posterior.</div>
+</div>
+
+<!-- ─────────────────────────────── 8.15 ─── -->
+<h3>8.15 · Verosimilitud de desenlace $\mathcal{L}_H\cdot\mathcal{L}_d\cdot\mathcal{L}_{\mathrm{voz}}\cdot\mathcal{L}_F$</h3>
+
+<div class="phase phase-F">
+<p><strong>Componentes de la verosimilitud conjunta.</strong></p>
+
+<p><strong>$\mathcal{L}_H$: hazard de desenlace.</strong> Verosimilitud del desenlace observado $m_\tau$ bajo el tipo $\theta$:</p>
+<div class="eq-block">
+$$\mathcal{L}_H(\theta) = h_{m_\tau}(\tau\mid\theta,\mathcal{C}_\tau)$$
+</div>
+
+<p><strong>$\mathcal{L}_d$: detección.</strong> Verosimilitud de la detección observada $d_\tau$ bajo el tipo $\theta$:</p>
+<div class="eq-block">
+$$\mathcal{L}_d(\theta) = p_{\mathrm{det},\tau}(\theta)^{d_\tau}\,(1-p_{\mathrm{det},\tau}(\theta))^{1-d_\tau}$$
+</div>
+
+<p><strong>$\mathcal{L}_{\mathrm{voz}}$: señal de voz $V_\tau$.</strong> Si se recibe señal de voz (softmax sobre evidencia de comunicación):</p>
+<div class="eq-block">
+$$\mathcal{L}_{\mathrm{voz}}(\theta) = \sigma\!\bigl(\beta_{\mathrm{voz},\theta}\,V_\tau\bigr)$$
+</div>
+
+<p><strong>$\mathcal{L}_F$: acción de la familia.</strong> Verosimilitud de $\tilde a_F$ dado el tipo del secuestrador (tipos con tendencia a negociar hacen más probable la cooperación de la familia):</p>
+<div class="eq-block">
+$$\mathcal{L}_F(\theta) = \mathbb{P}^F_I(\tilde a_F\mid a^*_F,\theta)$$
+</div>
+
+<p><strong>Verosimilitud conjunta:</strong></p>
+<div class="boxed">
+$$\mathcal{L}_\tau(\theta) = \mathcal{L}_H(\theta)\;\cdot\;\mathcal{L}_d(\theta)\;\cdot\;\mathcal{L}_{\mathrm{voz}}(\theta)\;\cdot\;\mathcal{L}_F(\theta)\;\cdot\;\mathcal{L}_I(\theta)$$
+</div>
+</div>
+
+<!-- ─────────────────────────────── 8.16 ─── -->
+<h3>8.16 · Posterior bayesiana $\mu_{\tau+1}$ — columna "μ_{τ+1}"</h3>
+
+<div class="phase phase-m">
+<p><strong>Fórmula de Bayes.</strong> Al cierre de cada ciclo τ se actualiza la distribución de creencias:</p>
+<div class="boxed">
+$$\mu_{\tau+1}(\theta) = \frac{\mu_\tau(\theta)\;\mathcal{L}_\tau(\theta)}{\displaystyle\sum_{\theta'\in\Theta}\mu_\tau(\theta')\;\mathcal{L}_\tau(\theta')}, \qquad \theta\in\{DC, PAR, ELN, FARC\}$$
+</div>
+
+<p>Si la verosimilitud es cero para todos los tipos (evento imposible bajo todos los tipos), la posterior no cambia: $\mu_{\tau+1} = \mu_\tau$.</p>
+
+<div class="note">
+En app.py: <code>_mu_new_52 = _t52_bayes_update(mu_tau, L_theta_dict)</code>. La posterior $\mu_{\tau+1}$ se convierte en la creencia de entrada del ciclo τ+1 y se almacena en <code>_t52_traj_rows52</code> para la actualización post-loop de Tabla 14.
+</div>
+</div>
+
+<!-- ─────────────────────────────── 8.17 ─── -->
+<h3>8.17 · Actualización post-loop de Tablas 14 y 15</h3>
+
+<div class="phase phase-B">
+<p>Una vez que el loop τ=0…N finaliza (por desenlace o por límite de períodos), se ejecuta el siguiente bloque que actualiza las tablas auxiliares con la trayectoria completa:</p>
+
+<p><strong>Paso 1 — Construir Tabla 14 con la trayectoria real.</strong></p>
+<div class="eq-block" style="font-family:monospace; font-size:0.87em;">
+_df_traj14 = pd.DataFrame(_t52_traj_rows52)<br>
+# Contiene filas {t:0, alpha_t, gamma_t, mu_DC, mu_PAR, mu_ELN, mu_FARC}<br>
+# para t = 0, 1, 2, …, N (ciclos ejecutados)
+</div>
+
+<p><strong>Paso 2 — Adjuntar columnas Epi.</strong> <code>_rb_attach_mu_traj_epi_columns</code> agrega la columna <code>Epi_pay_Qcont_mu</code> a la trayectoria:</p>
+<div class="eq-block">
+$$\texttt{Epi\_pay\_Qcont\_mu}(\tau) = \mathbb{E}_{\tilde A}\!\left[\,P(\text{pago}\mid Q^{\mathrm{Cont}},\,K\text{ degenera en Continuar})\,\right]$$
+</div>
+donde la expectativa se toma sobre los hazards bajo $(\alpha^*_\tau,\gamma^*_\tau,\mu_\tau)$.
+
+<p><strong>Paso 3 — Guardar en session_state.</strong></p>
+<div class="eq-block" style="font-family:monospace; font-size:0.87em;">
+st.session_state["rb_mu_traj_snapshot"] = _df_traj14   # Tabla 14 actualizada<br>
+st.session_state["rb_mu_traj_sig"] = _mu_traj_sig       # firma de caché<br>
+_run_kidnapper_backward_induction_cached.clear()         # fuerza recomputo de Tabla 15
+</div>
+
+<p><strong>Efecto.</strong> La próxima vez que se renderice la Tabla 15, la inducción hacia atrás lee la trayectoria real de la Tabla 5.2 (no los valores de la sesión anterior). La columna <code>Epi_pay_Qcont_mu</code> en la Tabla 15 (col. 9, <em>flow_rev</em>) usa los hazards de la trayectoria actualizada para calcular el valor de continuar:</p>
+<div class="eq-block">
+$$\text{flow\_rev}(\tau) = R\;\cdot\;\texttt{Epi\_pay\_Qcont}(\tau) \;\cdot\; h_{\mathrm{Cont}}(\tau)$$
+</div>
+
+<div class="fixed">
+<strong>Cadena de fallback para $\tilde p_{\mathrm{pay}}$ en col. 9.</strong> Si <code>Epi_pay_Qcont_θ</code> no está en Tabla 14, se usa <code>Epi_pay_Qcont_mu</code> (promedio ponderado por $\mu_\tau$); si tampoco está, se usa <code>h_LibPago</code> de Tabla 12; si tampoco, se llama <code>modelo.calcular_hazards()</code> directamente.
+</div>
+</div>
+
+<!-- ─────────────────────────────── RESUMEN ECUACIONES ─── -->
+<h3>Resumen — flujo de ecuaciones por ciclo τ</h3>
+
+<table>
+  <tr>
+    <th>#</th><th>Variable</th><th>Ecuación / Fuente</th><th>Función app.py</th>
+  </tr>
+  <tr><td>1</td><td>$\mu_\tau$</td><td>Prior (τ=0) o posterior Bayes (τ≥1)</td><td><code>_mu0_52</code> / <code>_t52_bayes_update</code></td></tr>
+  <tr><td>2</td><td>$\iota_\tau$</td><td>$1 - H(\mu_\tau)/\ln4$</td><td><code>_iota_52</code></td></tr>
+  <tr><td>3</td><td>$(\alpha^*,\gamma^*,a^*_S)$</td><td>$\arg\min_{\Gamma_\tau} Q^b - \psi_H\Delta H$</td><td><code>_t52_optimize_state_policy</code></td></tr>
+  <tr><td>4</td><td>$a^*_F$</td><td>$\arg\max_{a_F} \mathcal{U}^F(a_F;\alpha^*,\gamma^*,\mu)$</td><td><code>compute_family_table</code></td></tr>
+  <tr><td>5</td><td>$a^*_K(\tau)$</td><td>Inducción hacia atrás Tabla 15, leída en $t=0$ con override $\mu_\tau$</td><td><code>kidnapper_backward_induction_k_table</code></td></tr>
+  <tr><td>6</td><td>$T_i(\tau)$</td><td>$T_{i,0}\cdot H(\mu_\tau)/H(\mu_0)\cdot\max(e^{-\eta_i\tau},\bar c_i)$</td><td><code>_t52_p1</code>, <code>_t52_p1_s</code></td></tr>
+  <tr><td>7</td><td>$\mathbb{P}^i_I(\tilde a\mid a^*_i)$</td><td>Logit MDG, eq. §8.7</td><td><code>_t52_p1</code></td></tr>
+  <tr><td>8</td><td>$\tilde a_F,\tilde a_K,\tilde a_S$</td><td>$F_i^{-1}(u_i)$, uniformes fijos con <code>dgp_seed</code></td><td><code>_t52_draw_action</code></td></tr>
+  <tr><td>9</td><td>$p_{\mathrm{det},\tau}$</td><td>$\sigma(\beta_0+\beta_\alpha\alpha+\beta_\gamma\gamma+\beta_\iota\iota)$</td><td><code>modelo.prob_deteccion</code></td></tr>
+  <tr><td>10</td><td>$d_\tau$</td><td>$\mathrm{Bernoulli}(p_{\mathrm{det},\tau})$</td><td>semilla de <code>dgp_seed</code></td></tr>
+  <tr><td>11</td><td>$\tilde\lambda_j(\tau)$</td><td>$\lambda_j\cdot M(\tau)\cdot f_j(\alpha,\gamma,\tilde a)$</td><td><code>modelo.calcular_hazards</code></td></tr>
+  <tr><td>12</td><td>$h_j(\tau)$</td><td>$q_\tau\cdot\xi_j$; $h_{\mathrm{Cont}}=e^{-\sum\tilde\lambda_j}$</td><td><code>_t52_hazard_dist</code></td></tr>
+  <tr><td>13</td><td>$m_\tau$</td><td>$\mathrm{Multinomial}(1;\,h_j)$, semilla <code>_rng_m_c52</code></td><td><code>_t52_draw_outcome</code></td></tr>
+  <tr><td>14</td><td>$\mathcal{L}_\tau(\theta)$</td><td>$\mathcal{L}_H\cdot\mathcal{L}_d\cdot\mathcal{L}_{\mathrm{voz}}\cdot\mathcal{L}_F\cdot\mathcal{L}_I$</td><td><code>_t52_likelihood</code></td></tr>
+  <tr><td>15</td><td>$\mu_{\tau+1}$</td><td>$\mu_\tau(\theta)\mathcal{L}_\tau(\theta)/\sum_{\theta'}\mu_\tau(\theta')\mathcal{L}_\tau(\theta')$</td><td><code>_t52_bayes_update</code></td></tr>
+  <tr><td>16</td><td>Tabla 14/15 post-loop</td><td>Trayectoria real → <code>rb_mu_traj_snapshot</code>, caché limpiada</td><td><code>_rb_attach_mu_traj_epi_columns</code></td></tr>
+</table>
+
+</body>
+</html>

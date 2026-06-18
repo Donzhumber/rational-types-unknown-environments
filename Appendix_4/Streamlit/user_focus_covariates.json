@@ -1,0 +1,13 @@
+{
+  "1|DC|Andina|Privado|Alta Riqueza|Duro": {
+    "valores_por_termino": {
+      "Tipo secuestrador (θ_K)": -1.5,
+      "Heterogeneidad geográfica": 0.85,
+      "Instrumento α (bloqueo)": 0.24092264250100145,
+      "Instrumento γ (presión)": 0.5450200031654301,
+      "Detección p_det": -0.55,
+      "Familia paga (MDG)": 3.2,
+      "K continúa (MDG)": -1.15
+    }
+  }
+}

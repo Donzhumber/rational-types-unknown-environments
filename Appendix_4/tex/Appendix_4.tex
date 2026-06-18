@@ -1,0 +1,506 @@
+\documentclass[ecta,nameyear,final,supplement]{econsocart}
+
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+
+\startlocaldefs
+\numberwithin{equation}{section}
+\renewcommand{\theequation}{S\arabic{section}.\arabic{equation}}
+\renewcommand{\thesection}{S\arabic{section}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Ind}{\mathbf{1}}
+\newcommand{\calA}{\mathcal{A}}
+\newcommand{\ThetaK}{\Theta_K}
+\newcommand{\thetak}{\theta_K}
+\newcommand{\lambdat}{\widetilde{\lambda}}
+\newcommand{\LH}{\mathcal{L}^{H}}
+\newcommand{\LD}{\mathcal{L}^{d}}
+\newcommand{\LC}{\mathcal{L}^{C}}
+\newcommand{\LI}{\mathcal{L}^{I}}
+\newcommand{\LT}{\mathcal{L}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\endlocaldefs
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Supplement to ``Identifying Rational Types in Unknown Environments''\\
+Appendix 4: Streamlit Calibration Model}
+\runtitle{Streamlit Calibration Supplement}
+
+\begin{aug}
+\author[add1,add2]{\fnms{Humberto}~\snm{Bernal}}
+\address[add1]{%
+\orgdiv{Economics Program},
+\orgname{Universidad Colegio Mayor de Cundinamarca}}
+\address[add2]{%
+\orgdiv{Ph.D. in Economics},
+\orgname{Universidad de los Andes}}
+\ead[label=e1]{hbernal@uniandes.edu.co}
+\ead[label=e2]{hbernalc@universidadmayor.edu.co}
+\end{aug}
+\end{frontmatter}
+
+\section{Scope of This Computational Appendix}
+
+This appendix documents only the equations that are used by the Streamlit
+calibration app in \path{../Streamlit/app.py}. It follows the order of the main
+manuscript: first the empirical objects that discipline priors and hazards,
+then the theoretical mechanism implemented in the app, then the feasibility
+diagnostics, and finally the way in which these equations generate Table 5.2.
+
+The macroeconomic VEC and LLT estimates in the main paper are not reproduced
+here because the Streamlit app does not re-estimate them and does not use them
+directly to compute Table 5.2. The equations below are the active estimated or
+calibrated objects used by the app.
+
+\section{Empirical Inputs Used by the App}
+
+\subsection{Outcome Model and Prior Over Types}
+
+The first empirical input is the multinomial outcome model from the manuscript.
+With payment as the reference outcome, the estimated equation is
+\begin{equation}
+\ln\!\left(
+\frac{\Pr(Y_{i,m}=j\mid \mathbf X_{i,m})}
+{\Pr(Y_{i,m}=1\mid \mathbf X_{i,m})}
+\right)
+=
+\alpha_j+\mathbf G_i'\bm\beta_{1,j}
++\mathbf V_i'\bm\beta_{2,j}
++\mathbf C_{i,m}'\bm\beta_{3,j}
++\mathbf T_i'\bm\beta_{4,j},
+\quad j\in\{0,2,3\}.
+\label{eq:app-mnl}
+\end{equation}
+In the app, this block is used to discipline the initial type probabilities and
+case covariate adjustments. The prior used by the Streamlit state is a softmax:
+\begin{equation}
+\mu_0(\theta\mid z,\theta_V)
+=
+\frac{\exp(\varpi_\theta+\eta_{\theta,z}+\xi_{\theta,\theta_V})}
+{\sum_{\theta'\in\ThetaK}
+\exp(\varpi_{\theta'}+\eta_{\theta',z}+\xi_{\theta',\theta_V})}.
+\label{eq:app-prior}
+\end{equation}
+The inputs are the type baseline $\varpi_\theta$, the region adjustment
+$\eta_{\theta,z}$, and the victim-profile adjustment $\xi_{\theta,\theta_V}$.
+The output is the initial posterior vector $\mu_0$ used by Table 5.2.
+
+\subsection{Cause-Specific Duration Model}
+
+The second empirical input is the Cox competing-risk block. For each cause
+$j$, the manuscript estimates
+\begin{equation}
+h_j(t\mid\mathbf X)
+=
+h_{0j}(t)\exp(\mathbf X'\widetilde{\bm\beta}_j),
+\qquad
+S_j(t\mid\mathbf X)
+=
+\exp\!\left[-H_{0j}(t)\exp(\mathbf X'\widetilde{\bm\beta}_j)\right].
+\label{eq:app-cox}
+\end{equation}
+The app uses this information through baseline risks $\lambda_{j0}$ and
+type-cause coefficients $\beta_{K,j}(\theta)$, stored in the model object and
+updated by the calibration interface. These coefficients feed the structural
+intensities in Section~\ref{sec:app-risk}.
+
+\section{Theoretical Model Implemented in Streamlit}
+
+\subsection{State, History, and Cycle}
+
+The app implements the paper's dynamic history as the period-by-period record
+of instruments, executed actions, physical outcomes, and detection signals:
+\begin{gather}
+h_t=
+\left(
+t,\alpha^\ast_{[0,t-1]},\gamma^\ast_{[0,t-1]},
+\widetilde a^F_{[0,t-1]},\widetilde a^K_{[0,t-1]},
+\widetilde a^S_{[0,t-1]},m_{[0,t-1]},d_{[0,t-1]}
+\right),\label{eq:app-history}\\
+h_{t+1}=
+\left(h_t,\alpha_t^\ast,\gamma_t^\ast,
+\widetilde a_t^F,\widetilde a_t^K,\widetilde a_t^S,m_t,d_t\right).
+\label{eq:app-history-update}
+\end{gather}
+The terminal event is
+\begin{equation}
+\tau=\inf\{t\ge0:m_t\in\mathcal M_{\mathrm{term}}\}.
+\label{eq:app-stopping}
+\end{equation}
+When Table 5.2 runs in realized-draw mode, the simulated event stops after the
+first $m_t\ne\mathrm{cont}$; the diagnostic tables still retain the probability
+vector used to generate the draw.
+
+\subsection{MDG Implementation Kernel}
+
+For each agent $i\in\{K,S,F\}$, the app maps the intended action
+$a_t^{i\ast}$ into an executed action $\widetilde a_t^i$ with the MDG logit
+kernel:
+\begin{equation}
+\Prob_{\mathrm I,i}
+\left(\widetilde a_t^i=a\mid a_t^{i\ast},X_t\right)
+=
+\frac{\exp\{\Ind(a=a_t^{i\ast})/T_t\}}
+{\sum_{a'\in\calA^i}\exp\{\Ind(a'=a_t^{i\ast})/T_t\}}.
+\label{eq:app-mdg}
+\end{equation}
+The temperature used in the app is
+\begin{equation}
+T_t
+=
+T_0\frac{H(\mu_t)}{H(\mu_0)}
+\max\{\exp(-\eta_{\mathrm{cal}}t),\bar c\},
+\qquad
+H(\mu_t)=-\sum_{\theta\in\ThetaK}\mu_t(\theta)\ln\mu_t(\theta).
+\label{eq:app-temperature}
+\end{equation}
+The app also reports the bounded operational noise
+\begin{equation}
+\varepsilon_t=\min\{0.5,\max\{0,\varepsilon_0T_t\}\}.
+\label{eq:app-mdg-eps}
+\end{equation}
+For Table 5.2, the implemented-action likelihood is
+\begin{equation}
+\LI_t(\theta)
+=
+\prod_{i\in\{K,S,F\}}
+\Prob_{\mathrm I,i}
+\left(\widetilde a_t^i\mid a_t^{i\ast},X_t\right),
+\label{eq:app-li}
+\end{equation}
+computed by the implementation-likelihood block in \path{app.py}.
+
+\subsection{Competing-Risk Technology}
+\label{sec:app-risk}
+
+The app evaluates the structural proportional-risk equation
+\begin{equation}
+\lambda_j(t\mid\mathcal C_t,\theta)
+=
+\lambda_{j0}(t)\exp(x_t'\beta_j(\theta)),
+\qquad j\in\{1,2,3\}.
+\label{eq:app-lambda-main}
+\end{equation}
+Operationally, the app uses
+$\lambdat_j(t\mid\thetak)=M(t)\lambda_{j0}\exp(E_j)$, with
+\begingroup\small
+\begin{align}
+E_1
+&=
+\beta_{K,1}(\thetak)+\beta_{z,1}+\beta_{F,1}-\beta_{V,1}
++\beta_{S,1}
+-\zeta_{\alpha,1}\alpha_t-\zeta_{\gamma,1}\gamma_t
+-\zeta_{d,1}p_{\mathrm{det},t}
++\phi_{F,1}\Ind_F+\phi_{K,1}^{cont}\Ind_K^{cont},
+\label{eq:app-exp-pay}\\
+E_2
+&=
+\beta_{K,2}(\thetak)+\beta_{z,2}+\beta_{S,2}
++\zeta_{\alpha,2}\alpha_t+\zeta_{\gamma,2}\gamma_t
+-\zeta_{d,2}p_{\mathrm{det},t}
+-\phi_{F,2}\Ind_F+\phi_{K,2}^{kill}\Ind_K^{kill}
++\phi_{K,2}^{cont}\Ind_K^{cont},
+\label{eq:app-exp-kill}\\
+E_3
+&=
+\beta_{K,3}(\thetak)+\beta_{z,3}-\beta_{S,3}
++\zeta_{\alpha,3}\alpha_t+\zeta_{\gamma,3}\gamma_t
++\zeta_{d,3}p_{\mathrm{det},t}
++\zeta_R\Ind_S^{res}
+-\phi_{F,3}\Ind_F+\phi_{K,3}^{cont}\Ind_K^{cont}.
+\label{eq:app-exp-res}
+\end{align}
+\endgroup
+Equivalently,
+\begin{equation}
+\lambdat_j(t\mid\thetak)=M(t)\lambda_{j0}\exp(E_j),
+\qquad j=1,2,3.
+\label{eq:app-lambda-strategic}
+\end{equation}
+Here
+\begin{equation}
+M(t)=\min\{1,(t/T_{\mathrm{mad}})^2\},
+\qquad
+\lambdat_4(t)=\lambda_4.
+\label{eq:app-maturity-lambda4}
+\end{equation}
+The daily probabilities used by Table 5.2 are computed as
+\begin{align}
+p_{\mathrm{Cont},t\mid\thetak}
+&=
+\exp\!\left[-\Delta t\sum_{j=1}^{4}\lambdat_j(t\mid\thetak)\right],
+\label{eq:app-pcont}\\
+q_t(\thetak)&=1-p_{\mathrm{Cont},t\mid\thetak},
+\label{eq:app-q}\\
+\xi_j(t\mid\thetak)
+&=
+\frac{\lambdat_j(t\mid\thetak)}
+{\sum_{\ell=1}^{4}\lambdat_\ell(t\mid\thetak)},
+\qquad
+h_j(t\mid\thetak)=q_t(\thetak)\xi_j(t\mid\thetak).
+\label{eq:app-xi-h}
+\end{align}
+These calculations are performed by \path{mechanism_competitive_hazards_at_t}.
+The returned vector is
+\[
+\left(
+p_{\mathrm{Cont}},h_{\mathrm{pay}},h_{\mathrm{kill}},
+h_{\mathrm{res}},h_{\mathrm{rel}}
+\right).
+\]
+
+\subsection{Detection and Communication Signals}
+
+The detection probability used by the app is type-specific in its intercept:
+\begin{equation}
+p_{\mathrm{det},t}(\thetak)
+=
+\Lambda\!\left(\eta_0(\thetak)+\eta_1\alpha_t^\ast+\eta_2\gamma_t^\ast\right),
+\qquad
+\Lambda(u)=\frac{1}{1+\exp(-u)}.
+\label{eq:app-detection}
+\end{equation}
+The detection likelihood is Bernoulli:
+\begin{equation}
+\LD_t(d_t\mid\thetak)
+=
+p_{\mathrm{det},t}(\thetak)^{d_t}
+\left[1-p_{\mathrm{det},t}(\thetak)\right]^{1-d_t}.
+\label{eq:app-ld}
+\end{equation}
+When the communication block is active, the app evaluates either a voice
+likelihood or a silence likelihood. The voice signal is
+\begin{equation}
+x_t^{obs}
+=
+x_t^{true}(\thetak)+\varepsilon_L+\varepsilon_S,
+\qquad
+\varepsilon_L\sim N(0,\Sigma_L),\quad
+\varepsilon_S\sim N(0,\Sigma_S),
+\label{eq:app-voice}
+\end{equation}
+with diagonal likelihood
+\begin{equation}
+\mathcal L_{\mathrm{voz},t}(\thetak)
+\propto
+\exp\!\left[-\frac12
+\sum_k
+\left(\frac{x_{t,k}^{obs}-m_k(\thetak)}{\sigma_k(\thetak)}\right)^2
+\right].
+\label{eq:app-voice-likelihood}
+\end{equation}
+If no call is observed, the app uses
+\begin{equation}
+\LC_t(\thetak\mid V_t=0)
+=
+\left[1-\pi_{\mathrm{call}}(\thetak)\right]^{\omega_{\mathrm{voz}}}.
+\label{eq:app-silence}
+\end{equation}
+
+\subsection{Physical Likelihood and Posterior}
+
+Given the competing-risk vector, the physical likelihood is
+\begin{equation}
+\LH_t(m_t\mid\thetak)
+=
+p_{\mathrm{Cont},t\mid\thetak}^{\Ind\{m_t=\mathrm{cont}\}}
+\prod_{j=1}^{4}
+h_j(t\mid\thetak)^{\Ind\{m_t=g(j)\}},
+\label{eq:app-lh}
+\end{equation}
+where $g(1)=\mathrm{pay}$, $g(2)=\mathrm{kill}$,
+$g(3)=\mathrm{res}$, and $g(4)=\mathrm{rel}$. The total likelihood used for
+Table 5.2 is
+\begin{equation}
+\LT_t(\thetak)
+=
+\LI_t(\thetak)\LH_t(m_t\mid\thetak)
+\LD_t(d_t\mid\thetak)\LC_t(\thetak).
+\label{eq:app-total-likelihood}
+\end{equation}
+The posterior update is
+\begin{equation}
+\mu_{t+1}(\thetak)
+=
+\frac{\mu_t(\thetak)\LT_t(\thetak)}
+{\sum_{\theta'\in\ThetaK}\mu_t(\theta')\LT_t(\theta')}.
+\label{eq:app-bayes}
+\end{equation}
+This is computed by \path{build_t0_bayesian_posterior_report} and
+\path{bayesian_posterior_update}. The output is the likelihood decomposition
+and the new belief vector used in the next cycle.
+
+\section{Policy and Feasibility Equations Used by the App}
+
+\subsection{State Objective}
+
+The app computes the state's branch loss as
+\begin{equation}
+L_t(a_t^S,\alpha_t,\gamma_t,\thetak,\iota_t)
+=
+\begin{cases}
+V_t^R(\iota_t,\widehat\theta_t,\thetak,\alpha_t,\gamma_t),
+&a_t^S=a_{\mathrm{res}},\\
+V_t^N(\thetak,\alpha_t,\gamma_t),
+&a_t^S=a_{\mathrm{neg}}.
+\end{cases}
+\label{eq:app-state-loss}
+\end{equation}
+The numerical optimizer for Table 5.2 solves
+\begin{equation}
+\begin{aligned}
+(a_t^{S\ast},\alpha_t^\ast,\gamma_t^\ast)
+&\in
+\argmin_{\Gamma_t(\mu_t)}
+\Biggl[
+\sum_{\theta\in\ThetaK}\mu_t(\theta)
+L_t(a_t^S,\alpha_t,\gamma_t,\theta,\iota_t)\\
+&\qquad
++\Pi_{t,a^S}^S(\alpha_t,\gamma_t;\mu_t)
+-\psi_H\Delta H_t(\alpha_t,\gamma_t)
+\Biggr].
+\end{aligned}
+\label{eq:app-state-objective}
+\end{equation}
+The penalty around the Bayesian benchmark and the entropy gain are
+\begin{align}
+\Pi_{t,b}^S(\alpha_t,\gamma_t;\mu_t)
+&=
+\chi_\alpha(\alpha_t-\alpha_{t,b}^{\mu})^2
++\chi_\gamma(\gamma_t-\gamma_{t,b}^{\mu})^2,
+\label{eq:app-deviation}\\
+\Delta H_t(\alpha_t,\gamma_t)
+&=
+H(\mu_t)
+-\sum_m
+\Prob(m_t=m\mid\mu_t,\alpha_t,\gamma_t)H(\mu_{t+1}^m).
+\label{eq:app-deltaH}
+\end{align}
+The app compares the rescue and negotiation floors and selects rescue when
+$\widetilde V_t^{R,\ast}\le \widetilde V_t^{N,\ast}$.
+
+\subsection{Private-Agent Equations and Diagnostics}
+
+The app evaluates the captor's continuation cost as
+\begin{equation}
+C_t(\gamma_t,\thetak)
+=
+\phi(\thetak)\exp\{\kappa_c(\thetak)\gamma_t\}+\nu(\thetak).
+\label{eq:app-k-cost}
+\end{equation}
+The family compares cooperation with clandestine payment:
+\begin{align}
+\mathcal U_t^F(a_{\mathrm{coop}})
+&=
+\E_{\theta\mid\mathcal I_t^F}
+\left[\widetilde p_{\mathrm{surv},t}(\theta)\right]V_L
+-e_t(\gamma_t,\theta_F),
+\label{eq:app-f-coop}\\
+\mathcal U_t^F(a_{\mathrm{col}})
+&=
+\E_{\theta\mid\mathcal I_t^F}
+\left[\widetilde p_{\mathrm{rel},t}(\theta)\right]V_L
+-R-p_{\mathrm{det},t}F_{\mathrm{col}}.
+\label{eq:app-f-col}
+\end{align}
+The feasibility diagnostics shown with Table 5.2 and Tab 6 are
+\begin{align}
+IC_t^K&:
+\quad
+\E_{\theta\sim\mu_t}
+\left[
+V_t^K(a^\ast(\theta)\mid\theta,\alpha_t,\gamma_t)
+-V_t^K(a^\ast(\theta_j)\mid\theta,\alpha_t,\gamma_t)
+\right]\ge0,
+\label{eq:app-ic-k}\\
+IR_t^K&:
+\quad
+\E_{\theta\sim\mu_t}
+\left[
+U^K_{\mathrm{rel}}(\theta)
+-\max\{V^K_{\mathrm{cont},t}(\theta,\alpha_t,\gamma_t),
+U^K_{\mathrm{kill}}(\theta,\theta_S)\}
+\right]\ge0,
+\label{eq:app-ir-k}\\
+IR_t^F&:
+\quad
+\mathcal U_t^F(a_{\mathrm{coop}})
+\ge
+\mathcal U_t^F(a_{\mathrm{col}}).
+\label{eq:app-ir-f}
+\end{align}
+
+\section{How the App Obtains Table 5.2}
+
+Table 5.2 is produced by iterating the equations above. The sequence implemented
+in \path{app.py} is:
+\begin{equation}
+\mu_t
+\rightarrow
+(a_t^{K\ast},a_t^{S\ast},a_t^{F\ast})
+\rightarrow
+\widetilde A_t
+\rightarrow
+(\lambdat_j,p_{\mathrm{Cont}},h_j,p_{\mathrm{det}})
+\rightarrow
+(m_t,d_t,V_t,x_t^{obs})
+\rightarrow
+\mu_{t+1}.
+\label{eq:app-cycle}
+\end{equation}
+
+At $\tau=0$, the app starts from $\mu_0$ in~\eqref{eq:app-prior}. It computes
+the state policy $(a_0^{S\ast},\alpha_0^\ast,\gamma_0^\ast)$ from
+\eqref{eq:app-state-objective}, computes the private intended actions, applies
+the MDG implementation kernel~\eqref{eq:app-mdg}, evaluates
+$p_{\mathrm{det}}$ using~\eqref{eq:app-detection}, computes the physical
+probabilities through~\eqref{eq:app-pcont}--\eqref{eq:app-xi-h}, and then forms
+the likelihood~\eqref{eq:app-total-likelihood}. The posterior column
+$\mu_1$ is obtained from~\eqref{eq:app-bayes}.
+
+For each subsequent cycle $\tau\ge1$, the posterior inherited from the previous
+cycle becomes the new prior. The same optimizer, implementation kernel,
+hazard block, detection block, likelihood block, and Bayes rule are applied
+again. Thus, every column of Table 5.2 is a repeated application of
+\eqref{eq:app-cycle}.
+
+\begin{table}[t]
+\centering
+\caption{Equation-to-output map for Table 5.2}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.32\textwidth}X}
+\toprule
+Table 5.2 object & Equation used by the app \\
+\midrule
+Prior and posterior beliefs & Prior softmax~\eqref{eq:app-prior} and Bayes
+rule~\eqref{eq:app-bayes}. \\
+Optimal state instruments & State objective~\eqref{eq:app-state-objective},
+penalty~\eqref{eq:app-deviation}, and entropy gain~\eqref{eq:app-deltaH}. \\
+MDG intended/executed actions & Kernel~\eqref{eq:app-mdg} and implementation
+likelihood~\eqref{eq:app-li}. \\
+Physical outcome probabilities & Intensities~\eqref{eq:app-lambda-strategic}
+and probabilities~\eqref{eq:app-pcont}--
+\eqref{eq:app-xi-h}. \\
+Detection signal & Logistic detection~\eqref{eq:app-detection} and Bernoulli
+likelihood~\eqref{eq:app-ld}. \\
+Posterior decomposition & Physical likelihood~\eqref{eq:app-lh}, total
+likelihood~\eqref{eq:app-total-likelihood}, and normalization in
+\eqref{eq:app-bayes}. \\
+Feasibility diagnostics & $IC^K$, $IR^K$, and $IR^F$ in
+\eqref{eq:app-ic-k}--\eqref{eq:app-ir-f}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The resulting objects are stored by the app in the dynamic Table 5.2 session
+state, including \path{dynamic_cycles52}, \path{dynamic_cycles_diag52},
+\path{dynamic_cycles_stop52}, \path{first_cycle_table52}, and
+\path{first_cycle_post54}. Tab 6 reads these same objects; it does not change
+the calculations used to produce Table 5.2.
+
+\end{document}

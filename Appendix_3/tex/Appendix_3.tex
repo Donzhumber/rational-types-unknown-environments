@@ -689,88 +689,156 @@ $\tilde\lambda_j$ introduced in Definition~\ref{def:desenlace-fisico-mt}.
 
 \begin{proposition}[Expected duration of captivity and operational pressure]
 \label{prop:expected-captivity-gamma}
-Define the \textbf{net sensitivity} of type $\theta_K$ to optimal operational
-pressure $\gamma_t^\ast$ as
+Fix a type $\theta_K$ and a period $t$. The following standing assumptions
+govern the comparative static in $\gamma_t^\ast$.
+
+\medskip
+\noindent\textit{Standing assumptions.}
+\textup{(S0)} Baseline hazards satisfy $\lambda_{j0}(s)>0$ for all strategic
+causes $j\in\{1,2,3\}$ and all $s$ in the support, so
+$\mathbb{E}[\tau\mid\theta_K]<\infty$.
+\textup{(S1)} The object $\partial\mathbb{E}[\tau\mid\theta_K]/\partial\gamma_t^\ast$
+is a partial derivative: only $\gamma_t^\ast$ is perturbed at period $t$ while
+$\{\gamma_s^\ast\}_{s\neq t}$ is held fixed. Writing
+$S(s\mid\theta_K):=\prod_{r=1}^{s}p_{\mathrm{Cont},r\mid\theta_K}$ with
+$S(0\mid\theta_K)=1$, expected duration admits the survival representation
+\begin{equation}
+\label{eq:duracion-identidad-prop}
+\mathbb{E}[\tau\mid\theta_K]=\sum_{s=0}^{\infty}S(s\mid\theta_K),
+\end{equation}
+so only factors with $s\ge t$ depend on $\gamma_t^\ast$.
+\textup{(S2)} For each strategic cause $j\in\{1,2,3\}$,
+\[
+\frac{\partial\tilde\lambda_j(t\mid\theta_K)}{\partial\gamma_t^\ast}
+=\eta_{\gamma,j}\,\tilde\lambda_j(t\mid\theta_K),
+\qquad
+\eta_{\gamma,j}:=\frac{\partial\ln\tilde\lambda_j(t\mid\theta_K)}{\partial\gamma_t^\ast};
+\]
+the exogenous cause $j=4$ is invariant to $\gamma_t^\ast$.
+
+\medskip
+\noindent\textit{Net sensitivity.}
+In the main-paper hazard index, payment ($j=1$) is decreasing in $\gamma$ and
+death/state rescue ($j\in\{2,3\}$) are increasing, so $\eta_{\gamma,1}<0$ and
+$\eta_{\gamma,j}>0$ for $j\in\{2,3\}$. Let $\zeta_{\gamma,j}:=|\eta_{\gamma,j}|$
+and define
 \begin{equation}
 \label{eq:kappa-c}
 \kappa_h(\theta_K,t)
-:=\bigl(\zeta_{\gamma,2}\,\tilde\lambda_2(t\mid\theta_K)
-        +\zeta_{\gamma,3}\,\tilde\lambda_3(t\mid\theta_K)\bigr)
-  -\zeta_{\gamma,1}\,\tilde\lambda_1(t\mid\theta_K).
+:=\zeta_{\gamma,2}\,\tilde\lambda_2(t\mid\theta_K)
+ +\zeta_{\gamma,3}\,\tilde\lambda_3(t\mid\theta_K)
+ -\zeta_{\gamma,1}\,\tilde\lambda_1(t\mid\theta_K)
+=\sum_{j=1}^{3}\eta_{\gamma,j}\,\tilde\lambda_j(t\mid\theta_K).
 \end{equation}
-If $\kappa_h(\theta_K,t)>0$ for all $t$, the expected duration of captivity
-$\mathbb{E}[\tau\mid\theta_K]$ is strictly decreasing in $\gamma_t^\ast$.
-If $\kappa_h(\theta_K,t)<0$ for all $t$, it is strictly increasing. The model
-generates the \textbf{testable differential prediction}:
+
+\medskip
+\noindent\textit{Result.}
+Under~\textup{(S0)--(S2)},
+\begin{equation}
+\label{eq:dE-dgamma-prop}
+\frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
+=-\kappa_h(\theta_K,t)\,\Delta t\sum_{s=t}^{\infty}S(s\mid\theta_K).
+\end{equation}
+In particular, whenever $\kappa_h(\theta_K,t)\neq 0$,
 \begin{equation}
 \operatorname{sgn}\!\left(
   \frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
 \right)
-=-\operatorname{sgn}\!\left(\kappa_h(\theta_K,t)\right),
+=-\operatorname{sgn}\!\left(\kappa_h(\theta_K,t)\right).
 \end{equation}
-with the sign varying across types through the structural parameters
-$\beta_{K,j}(\theta_K)$.
+If $\kappa_h(\theta_K,t)>0$, the one-shot perturbation in~\textup{(S1)} lowers
+expected duration; if $\kappa_h(\theta_K,t)<0$, it raises it. Cross-type
+variation in the sign enters through $\beta_{K,j}(\theta_K)$ and the induced
+semi-elasticities $\{\eta_{\gamma,j}\}$.
 \end{proposition}
 
 \begin{proof}
-The proof proceeds in three steps: differentiation of daily survival,
-propagation by the chain rule, and conclusion by dominated convergence.
+The argument has three steps: differentiate the daily continuation probability,
+propagate the perturbation through the survival product, and differentiate the
+duration identity~\eqref{eq:duracion-identidad-prop}.
 
-\paragraph{Step 1. Duration identity and survival.}
-By \textbf{Fubini's theorem} \citep{Fubini1907},
-\begin{equation}
-\label{eq:duracion-identidad}
+\paragraph{Step 0. Survival representation.}
+For a discrete-time competing-risks process with daily continuation probability
+$p_{\mathrm{Cont},s\mid\theta_K}$, the survival function
+$S(t'\mid\theta_K)=\prod_{s=1}^{t'}p_{\mathrm{Cont},s\mid\theta_K}$ satisfies
+$S(t'\mid\theta_K)=\Prob(\tau>t'\mid\theta_K)$. Hence
+\[
 \mathbb{E}[\tau\mid\theta_K]
+=\sum_{t'=0}^{\infty}\Prob(\tau>t'\mid\theta_K)
 =\sum_{t'=0}^{\infty}S(t'\mid\theta_K),
-\end{equation}
-where $S(t'\mid\theta_K):=\prod_{s=1}^{t'}p_{\mathrm{Cont},s\mid\theta_K}$,
-with $S(0\mid\theta_K)=1$. Under the proportional parametrization,
+\]
+which is the discrete-time survival identity (Wald's representation; see, e.g.,
+\citet{KalbfleischPrentice2002}). Finiteness in~\textup{(S0)} makes the sum
+well defined.
+
+\paragraph{Step 1. Daily continuation and $\kappa_h$.}
+By Definition~\ref{def:desenlace-fisico-mt},
 \[
 p_{\mathrm{Cont},s\mid\theta_K}
-=\exp\!\Bigl(-\sum_{j=1}^{4}\tilde\lambda_j(s\mid\theta_K)\,\Delta t\Bigr),
+=\exp\!\Bigl(-\sum_{j=1}^{4}\tilde\lambda_j(s\mid\theta_K)\,\Delta t\Bigr)
+=\exp\!\bigl(-[\Lambda_s(\theta_K)+\tilde\lambda_4(s)]\,\Delta t\bigr),
 \]
-consistent with Definition~\ref{def:desenlace-fisico-mt}. Since only the causes
-$j\in\{1,2,3\}$ respond to operational pressure (cause $j=4$ carries no
-$\beta_{K,4}$ and does not depend on $\gamma_t^\ast$), differentiating with
-respect to $\gamma_t^\ast$:
+where $\Lambda_s(\theta_K):=\sum_{j=1}^{3}\tilde\lambda_j(s\mid\theta_K)$ is the
+strategic hazard total. Only $\Lambda_t$ depends on $\gamma_t^\ast$; the
+exogenous term $\tilde\lambda_4(t)$ is $\gamma$-invariant. By~\textup{(S2)},
+\[
+\frac{\partial\Lambda_t(\theta_K)}{\partial\gamma_t^\ast}
+=\sum_{j=1}^{3}\eta_{\gamma,j}\,\tilde\lambda_j(t\mid\theta_K)
+=\kappa_h(\theta_K,t),
+\]
+using $\eta_{\gamma,1}=-\zeta_{\gamma,1}$ and $\eta_{\gamma,j}=+\zeta_{\gamma,j}$
+for $j\in\{2,3\}$ in~\eqref{eq:kappa-c}. Since
+$p_{\mathrm{Cont},t\mid\theta_K}=\exp(-\Lambda_t\Delta t)\cdot
+\exp(-\tilde\lambda_4(t)\Delta t)$ and the second factor is constant in
+$\gamma_t^\ast$,
 \begin{equation}
 \label{eq:dpCont-dgamma}
 \frac{\partial\,p_{\mathrm{Cont},t\mid\theta_K}}{\partial\gamma_t^\ast}
+=\exp(-\tilde\lambda_4(t)\Delta t)\cdot
+\frac{\partial}{\partial\gamma_t^\ast}\exp(-\Lambda_t\Delta t)
 =-\kappa_h(\theta_K,t)\;p_{\mathrm{Cont},t\mid\theta_K}\;\Delta t.
 \end{equation}
 
 \paragraph{Step 2. Propagation to accumulated survival.}
-For $t'\ge t$, only the factor $s=t$ in the product depends on $\gamma_t^\ast$;
-by the chain rule:
-\begin{equation}
-\label{eq:dS-dgamma}
+Fix $t'\ge t$. Because only the factor $s=t$ in
+$S(t'\mid\theta_K)=\prod_{s=1}^{t'}p_{\mathrm{Cont},s\mid\theta_K}$ depends on
+$\gamma_t^\ast$,
+\[
 \frac{\partial S(t'\mid\theta_K)}{\partial\gamma_t^\ast}
-=-\kappa_h(\theta_K,t)\;S(t'\mid\theta_K)\;\Delta t,\qquad t'\ge t.
-\end{equation}
+=\Bigl(\prod_{\substack{s=1\\s\neq t}}^{t'}p_{\mathrm{Cont},s\mid\theta_K}\Bigr)
+\frac{\partial\,p_{\mathrm{Cont},t\mid\theta_K}}{\partial\gamma_t^\ast}
+=-\kappa_h(\theta_K,t)\;S(t'\mid\theta_K)\;\Delta t.
+\]
 For $t'<t$, the derivative is zero.
 
-\paragraph{Step 3. Expected duration.}
-Differentiating~\eqref{eq:duracion-identidad} and applying
-\eqref{eq:dS-dgamma} gives
-\begin{equation}
-\label{eq:dE-dgamma}
-\frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
-=-\kappa_h(\theta_K,t)\,\Delta t\sum_{t'=t}^{\infty}S(t'\mid\theta_K).
-\end{equation}
-The interchange of sum and derivative is justified by the \textbf{dominated
-convergence theorem}: the bound
-$|\partial S(t')/\partial\gamma_t^\ast|\le|\kappa_h|\,S(t')\,\Delta t$ is
-summable because $\mathbb{E}[\tau\mid\theta_K]<\infty$, guaranteed by the
-uniform positivity of the baseline hazards.
-
-As $S(t'\mid\theta_K)\ge 0$ and the tail $\sum_{t'\ge t}S(t')>0$:
+\paragraph{Step 3. Expected duration and sign.}
+Differentiating~\eqref{eq:duracion-identidad-prop} term by term under~\textup{(S1)}
+and applying Step~2 yields~\eqref{eq:dE-dgamma-prop}. The interchange of sum and
+derivative is justified by dominated convergence: for $t'\ge t$,
+$|\partial S(t'\mid\theta_K)/\partial\gamma_t^\ast|
+\le|\kappa_h(\theta_K,t)|\,S(t'\mid\theta_K)\,\Delta t$, and
 \[
-\operatorname{sgn}\!\left(
-  \frac{\partial\,\mathbb{E}[\tau\mid\theta_K]}{\partial\gamma_t^\ast}
-\right)
-=-\operatorname{sgn}\!\left(\kappa_h(\theta_K,t)\right).\qedhere
+\sum_{t'=t}^{\infty}S(t'\mid\theta_K)
+\le\sum_{t'=0}^{\infty}S(t'\mid\theta_K)
+=\mathbb{E}[\tau\mid\theta_K]<\infty
 \]
+by~\textup{(S0)}. Because $S(t'\mid\theta_K)\ge 0$ and the tail
+$\sum_{t'=t}^{\infty}S(t'\mid\theta_K)>0$ whenever continuation has positive
+mass on $t'\ge t$, the sign of~\eqref{eq:dE-dgamma-prop} is the opposite of the
+sign of $\kappa_h(\theta_K,t)$.
 \end{proof}
+
+\begin{remark}[Local comparative static and testable content]
+\label{rem:captivity-local-cs}
+Proposition~\ref{prop:expected-captivity-gamma} is a \emph{local} comparative
+static: it evaluates a one-period perturbation of $\gamma_t^\ast$ holding the
+remaining policy path fixed. It does not claim global monotonicity of
+$\mathbb{E}[\tau\mid\theta_K]$ as a function of the entire sequence
+$\{\gamma_s^\ast\}_{s\ge 0}$. The empirical content is the sign prediction:
+types with larger $\kappa_h$ respond differently to operational pressure because
+the Cox coefficients $\beta_{K,j}(\theta_K)$ shift the semi-elasticities
+$\{\eta_{\gamma,j}\}$ and the levels $\{\tilde\lambda_j\}$.
+\end{remark}
 
 % ============================================================================
 \section{Policy implications}
@@ -1320,9 +1388,14 @@ identification argument, and makes every classical input explicit.
   logit axioms (A1)~full support and (A2)~plan dominance of
   Remark~\ref{rem:axiomas-logit}.
   \item \textbf{Section~\ref{sec:riesgos}.}
-  Sign certificate of Proposition~\ref{prop:expected-captivity-gamma}:
-  negativity of~\eqref{eq:dE-dgamma} and the sign identity under
-  $\kappa_h\gtrless 0$.
+  Proposition~\ref{prop:expected-captivity-gamma}: compact and signed forms of
+  $\kappa_h$ (\texttt{kappa\_h\_signed}, \texttt{dLambda\_eq\_kappa});
+  continuation factorization and~\eqref{eq:dpCont-dgamma}
+  (\texttt{dContProb\_eq}); sign certificate
+  of~\eqref{eq:dE-dgamma-prop} with explicit $\Delta t$ and survival tail
+  (\texttt{prop\_expected\_captivity\_gamma},
+  \texttt{prop\_expected\_captivity\_sgn}). Wald identity and DCT remain
+  analytic.
   \item \textbf{Section~\ref{sec:id-asintotica}.}
   Logical assembly of Lemma~\ref{lem:hazard-separation}: conditions (a)/(b)
   imply Definition~\ref{def:asymptotic-id}; packaging of recurrent uniform TV
@@ -1396,14 +1469,25 @@ $\ProbC{\theta}(\mathcal{T})=0$ $\Rightarrow$ collapse
   & \texttt{zeroMass\-Posterior\-Collapse} & Hyp. \\
 Remark~\ref{rem:axiomas-logit}, axiom (A3)
   & \texttt{logitProb\-\_max\-Entropy\-\_hyp} & Hyp. \\
+Proposition~\ref{prop:expected-captivity-gamma}, eq.~\eqref{eq:kappa-c}
+  (signed form)
+  & \texttt{kappa\_h\_signed}, \texttt{dLambda\_eq\_kappa} & Proved \\
+Proposition~\ref{prop:expected-captivity-gamma}, eq.~\eqref{eq:dpCont-dgamma}
+  & \texttt{dContProb\_eq} & Proved \\
+Proposition~\ref{prop:expected-captivity-gamma}, eq.~\eqref{eq:dE-dgamma-prop}
+  (sign)
+  & \texttt{prop\-\_expected\-\_captivity\-\_gamma},
+    \texttt{prop\-\_expected\-\_captivity\-\_sgn} & Part. \\
 Proposition~\ref{prop:optimal-gamma-beliefs}
   & \texttt{prop\-\_optimal\-\_gamma\-\_beliefs} & Hyp. \\
 Theorem~\ref{thm:ebp-implementabilidad}
   & \texttt{conditional\-Implementability} & Hyp. \\
 \bottomrule
 \end{tabular}
-\tabnote\ \texttt{[Proved]}: machine-checked in Lean~4. \texttt{[Hyp.]}:
-declared interface; proved analytically in this supplement or cited literature.
+\tabnote\ \texttt{[Proved]}: machine-checked in Lean~4. \texttt{[Part.]}:
+partial certificate (sign of~\eqref{eq:dE-dgamma-prop} given the analytic
+chain). \texttt{[Hyp.]}: declared interface; proved analytically in this
+supplement or cited literature.
 \tabsource
 \end{table}
 

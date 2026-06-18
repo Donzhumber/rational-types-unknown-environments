@@ -1,0 +1,9 @@
+# Matemáticas en markdown ($...$) y column_config mejoran a partir de ~1.30;
+# usar una versión reciente evita fallos con \mathbb, \mathrm, etc. en KaTeX.
+streamlit>=1.32.0
+numpy
+pandas
+plotly
+scipy
+reportlab
+kaleido
