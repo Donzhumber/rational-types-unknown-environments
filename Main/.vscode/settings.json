@@ -1,8 +1,20 @@
 {
+  "workbench.externalBrowser": "chrome",
+  "latex-workshop.view.autoFocus.enabled": true,
+  "latex-workshop.latex.watch.pdf.delay": 250,
+  "latex-workshop.view.outline.sync.viewer": true,
   "latex-workshop.latex.outDir": "%DIR%/out",
   "latex-workshop.latex.auxDir": "%DIR%/out",
   "latex-workshop.latex.recipe.default": "first",
   "latex-workshop.latex.autoBuild.run": "onFileChange",
+  "latex-workshop.latex.autoBuild.interval": 1200,
+  "latex-workshop.latex.build.enableMagicComments": true,
+  "latex-workshop.latex.search.rootFiles.include": ["Bernal_H.tex"],
+  "latex-workshop.latex.build.rootfileInStatus": true,
+  "latex-workshop.view.pdf.viewer": "browser",
+  "latex-workshop.view.pdf.tab.editorGroup": "current",
+  "latex-workshop.view.pdf.reload.transition": "none",
+  "latex-workshop.synctex.afterBuild.enabled": true,
   "latex-workshop.latex.tools": [
     {
       "name": "latexmk",
@@ -53,7 +65,5 @@
     { "name": "latexmk (TinyTeX)", "tools": ["latexmk"] },
     { "name": "latexmk: forzar recompilación (-g)", "tools": ["latexmk-force"] },
     { "name": "latexmk: limpiar auxiliares (-c)", "tools": ["latexmk-clean"] }
-  ],
-  "latex-workshop.latex.search.rootFiles.include": ["Bernal_H.tex"],
-  "latex-workshop.view.pdf.viewer": "tab"
+  ]
 }

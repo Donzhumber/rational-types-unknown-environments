@@ -8027,7 +8027,7 @@ with tab_mdg:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("## MDG (Mano de Dios–Guadalupe)")
+    st.markdown("## The Mano de Dios–Guadalupe (MDG)")
 
     _mu_mdg_tab = {
         t: float(st.session_state.final_priors[i]) / 100.0

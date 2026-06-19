@@ -239,7 +239,7 @@ class ModeloSecuestro:
 
     def simular_proceso_mdg(self, intencion_S, intencion_F, intencion_K, precision_iota):
         """
-        Simula el proceso Mano de Dios-Guadalupe (Transformada Inversa).
+        Simula el proceso MDG (transformada inversa).
         Transforma intenciones en desenlaces físicos estocásticos.
         """
         # Versión simplificada con soporte exhaustivo
