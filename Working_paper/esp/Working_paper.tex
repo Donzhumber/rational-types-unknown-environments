@@ -648,15 +648,15 @@ Un examen conjunto de las tendencias estimadas, a saber, la obtenida de la desco
 \begin{corollary}[Equivalencia de tendencias estocásticas]\footnote{La prueba formal de este corolario figura en el Apéndice A del presente documento.}.
 \label{cor:trend_equivalence}
 \\
-Vamos. $\{y_t\}$ denota una serie de tiempo integrada del orden uno, $I(1)$. Asumir la existencia de dos descomposiciones válidas definidas como:
+Sea $\{y_t\}$ una serie de tiempo integrada del orden uno, $I(1)$. Supóngase la existencia de dos descomposiciones válidas:
 \begin{equation*}
     y_t = P_t^{(1)} + u_t^{(1)} = P_t^{(2)} + u_t^{(2)},
 \end{equation*}
-Donde $P_t^{(1)}$ y $P_t^{(2)}$ son procesos integrados del orden uno, y $u_t^{(1)}, u_t^{(2)}$ son estacionarios $I(0)$ procesos. De ahí que:
+donde $P_t^{(1)}$ y $P_t^{(2)}$ son procesos integrados del orden uno, y $u_t^{(1)}, u_t^{(2)}$ son procesos estacionarios $I(0)$. Entonces:
 \begin{equation*}
     P_t^{(1)} - P_t^{(2)} \sim I(0).
 \end{equation*}
-En consecuencia, todas las tendencias estocásticas válidas derivadas de la misma serie observada equivalen a un componente estacionario.
+En consecuencia, todas las tendencias estocásticas válidas derivadas de la misma serie observada son equivalentes salvo un componente estacionario $I(0)$.
 \end{corollary}
 
 
@@ -1447,12 +1447,7 @@ quede definido como un objeto aleatorio que incorpora las perturbaciones operati
 \begin{enumerate}
   \item[\textup{(i)}] \textbf{Dominancia del plan y soporte de error.} Para todo $t < \tau$, la distribución $\ProbI{i}$ concentra la mayor parte de su masa en $a_t^{i\ast}$, asignando probabilidad estrictamente positiva a acciones alternativas tratadas como \emph{fricciones de implementación}. \textbf{Refuerzo técnico.} Bajo la hipótesis de \textbf{soporte completo}, se asume que $\ProbI{i}(\tilde{a}_t^i=a \mid a_t^{i\ast}, X_t) > 0$ para todo $a \in \mathcal{A}^i$, garantizando que ninguna etiqueta sea informativamente nula para el cálculo de verosimilitudes.
   
-  \item[\textup{(ii)}] \textbf{Convergencia institucional.} El ruido de implementación puede ser no estacionario. En un régimen de \textbf{horizonte largo}, se puede imponer que la probabilidad de error se desvanezca conforme el sistema acumula información.
-  \begin{equation}
-  \label{eq:mano-dios-evanescente}
-  \lim_{t\to\infty}{\ProbE}\bigl(\tilde{a}_t^i=a_t^{i\ast}\bigm|\mathcal{F}_t^{\mathrm{pub}}\bigr)=1, \quad \forall\,i.
-  \end{equation}
-  Esta condición se satisface cuando $H(\mu_t)\to 0$ \textup{(}posterior concentrada\textup{)}, pues entonces $T_t\to 0$ vía el factor de entropía en~\eqref{eq:temperatura-piso} ---definida a continuación---, con independencia del piso $\underline{c}>0$, el cual solo limita la componente $e^{-\eta_{\mathrm{cal}}t}$. No debe interpretarse como convergencia por mero decaimiento calendario.
+  \item[\textup{(ii)}] \textbf{Maduración institucional acotada.} La componente informacional $[H(\mu_t)/H(\mu_0)]\,e^{-\eta_{\mathrm{cal}}t}$ decrece conforme la incertidumbre posterior disminuye, mientras que el piso estructural $\underline{c}$ persiste en~\eqref{eq:temperatura-piso}. Cuando $\underline{c}>0$, incluso si $H(\mu_t)\to 0$ se tiene $T_t\ge T_0\,\underline{c}$ y $\ProbI{i}(\tilde{a}_t^i=a_t^{i\ast}\mid a_t^{i\ast},X_t)<1$, de modo que el soporte completo sobre $\mathcal{A}^i$ se preserva en el largo plazo. El caso límite $\underline{c}=0$ permite $T_t\to 0$ cuando $H(\mu_t)\to 0$ y la probabilidad de la acción óptima puede converger a $1$, pero sacrifica ese soporte persistente.
 \end{enumerate}
 \end{definition}
 
@@ -1884,15 +1879,16 @@ donde $S(t'\mid\theta_K):=\prod_{s=1}^{t'}p_{\mathrm{Cont},s\mid\theta_K}$ es la
 de supervivencia acumulada hasta el inicio del día $t'$, definida
 en~\eqref{eq:longitudinal-system}, con $S(0\mid\theta_K)=1$ por convención (producto
 vacío). La probabilidad de continuación en el día $s$ adopta la especificación de
-riesgos proporcionales
+riesgos proporcionales con cuatro causas competitivas:
 \[
 p_{\mathrm{Cont},s\mid\theta_K}
-= \exp\!\Bigl(-\sum_{j=1}^{3}\tilde{\lambda}_j(s\mid\theta_K)\,\Delta t\Bigr),
-\quad
-\tilde{\lambda}_j(s\mid\theta_K)
-= \lambda_{j0}(s)\exp\!\bigl(\beta_{K,j}(\theta_K)\cdot z+\zeta_{\gamma,j}\,\gamma_s^\ast\bigr),
+= \exp\!\Bigl(-\sum_{j=1}^{4}\tilde{\lambda}_j(s\mid\theta_K)\,\Delta t\Bigr)
+= \exp\!\bigl(-[\Lambda_s(\theta_K)+\tilde{\lambda}_4(s)]\,\Delta t\bigr),
 \]
-de modo que, diferenciando respecto a $\gamma_t^\ast$,
+donde $\Lambda_s(\theta_K):=\sum_{j=1}^{3}\tilde{\lambda}_j(s\mid\theta_K)$ agrupa las
+intensidades estratégicas con $\tilde{\lambda}_j(s\mid\theta_K)=\lambda_{j0}(s)\exp\bigl(\beta_{K,j}(\theta_K)\cdot z+\zeta_{\gamma,j}\gamma_s^\ast\bigr)$,
+y $\tilde{\lambda}_4(s)$ es el riesgo exógeno que satisface $\partial\tilde{\lambda}_4/\partial\gamma_t^\ast=0$.
+Dado que solo $\Lambda_t$ depende de $\gamma_t^\ast$, diferenciando respecto a $\gamma_t^\ast$,
 \begin{equation}
 \label{eq:dpCont-dgamma}
 \frac{\partial\,p_{\mathrm{Cont},t\mid\theta_K}}{\partial\gamma_t^\ast}
@@ -3145,6 +3141,7 @@ Considérese un juego bayesiano en tiempo discreto con horizonte $\mathbb{T}=\{0
   \Bigl\{
   \sum_{\theta_K\in\Theta_K}\mu_t(\theta_K)\,L_t(a_t^S,\alpha_t,\gamma_t,\theta_K,\iota_t)
   +\Pi_{t,a^S}^S(\alpha_t,\gamma_t;\mu_t)
+  -\psi_H\Delta H_t(\alpha_t,\gamma_t)
   \Bigr\},
   \]
   con la regla de selección $a_t^{S\ast}=\text{Rescate}$ si el costo esperado de rescate no supera al de negociación, y $a_t^{S\ast}=\text{Negociar}$ en caso contrario, coherente con la regla discreta~\eqref{eq:state-discrete-rule}.\footnote{La regla de selección opera sobre las dos ramas del mínimo y se enuncia separadamente del argmín para no confundir la condición de optimalidad con el criterio de desempate.} Para cada agente privado $i\in\{K,F\}$:
@@ -3325,6 +3322,7 @@ En el punto fijo, la estrategia de $S$ resuelve en cada nodo de la senda el prog
 \left\{
 \sum_{\theta_K\in\Theta_K}\mu_t^\ast(\theta_K)\,L_t(a_t^S,\alpha_t,\gamma_t,\theta_K,\iota_t)
 +\Pi_{t,a^S}^S(\alpha_t,\gamma_t;\mu_t^\ast)
+-\psi_H\Delta H_t(\alpha_t,\gamma_t)
 \right\},
 \]
 que tiene solución por Weierstrass: el objetivo es continuo en $(\alpha_t,\gamma_t)$ por~(iv), el componente discreto $a_t^S$ toma solo dos valores y $\Gamma_t(\mu_t^\ast)$ es compacto y no vacío por~(v). Esta solución coincide con el programa~\eqref{eq:state-expected-loss} sujeto a IR/IC y la regla~\eqref{eq:state-discrete-rule}; definiendo $f_t(\mathcal{I}_t^S):=\chi_t^\ast(h_t)$, la política de equilibrio implementa la regla de elección social en la senda.
