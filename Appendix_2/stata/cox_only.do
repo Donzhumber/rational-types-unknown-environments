@@ -14,72 +14,114 @@ if _rc {
 include _setup_paths.do
 
 use "`datadir'/Data_merge.dta", clear
-destring Año Mes Día, replace force
-gen Fecha = mdy(Mes, Día, Año)
-drop if missing(Fecha)
-drop if Año == 0
 
-replace TipodeLiberación = strtrim(TipodeLiberación)
-gen Grupo_Responsable = .
-replace Grupo_Responsable = 1 if strpos(DescripciónPresuntoResponsable, "FARC") > 0
-replace Grupo_Responsable = 2 if strpos(DescripciónPresuntoResponsable, "ELN") > 0 | DescripciónPresuntoResponsable == "ERG"
-replace Grupo_Responsable = 3 if PresuntoResponsable == "GRUPO PARAMILITAR" | PresuntoResponsable == "GRUPO POSDESMOVILIZACIÓN"
-replace Grupo_Responsable = 4 if Grupo_Responsable == .
-replace Ocupación = strtrim(Ocupación)
-gen Perfil_Victima = .
-replace Perfil_Victima = 1 if inlist(Ocupación, "GANADERO/HACENDADO", "COMERCIANTE", "EMPRESARIO - INDUSTRIAL")
-replace Perfil_Victima = 2 if inlist(Ocupación, "EMPLEADO", "PROFESIONAL", "ESTUDIANTE", "ADMINISTRADOR DE FINCA", "PERSONAL DE SALUD") | Ocupación == "PENSIONADO"
-replace Perfil_Victima = 3 if inlist(Ocupación, "CAMPESINO", "CONDUCTOR/MOTORISTA", "AMA DE CASA", "OBRERO", "TRABAJADOR DE FINCA") | inlist(Ocupación, "MINERO", "PESCADOR", "SEGURIDAD PRIVADA", "RELIGIOSO")
-replace Perfil_Victima = 4 if inlist(Ocupación, "FUNCIONARIO PÚBLICO", "FUERZA PÚBLICA")
-replace Perfil_Victima = 5 if Perfil_Victima == .
-replace Departamento = strtrim(Departamento)
-replace Municipio = strtrim(Municipio)
-gen Zona_Geografica = .
-replace Zona_Geografica = 2 if inlist(Departamento, "ANTIOQUIA", "BOYACA", "CALDAS", "CUNDINAMARCA", "HUILA") | inlist(Departamento, "QUINDIO", "RISARALDA", "SANTANDER", "TOLIMA")
-replace Zona_Geografica = 3 if inlist(Departamento, "ATLANTICO", "BOLIVAR", "CESAR", "CORDOBA", "LA GUAJIRA") | inlist(Departamento, "MAGDALENA", "SUCRE", "SAN ANDRES")
-replace Zona_Geografica = 4 if inlist(Departamento, "CAUCA", "CHOCO", "NARIÑO", "VALLE DEL CAUCA","NORTE DE SANTANDER")
-replace Zona_Geografica = 5 if inlist(Departamento, "AMAZONAS", "ARAUCA", "CAQUETA", "CASANARE", "GUAINIA") | inlist(Departamento, "GUAVIARE", "META", "PUTUMAYO", "VAUPES", "VICHADA")
-replace Zona_Geografica = 1 if inlist(Municipio, "BOGOTA, D.C.", "SOACHA", "MEDELLIN", "BELLO", "ENVIGADO") | inlist(Municipio, "SABANETA", "SANTIAGO DE CALI", "BARRANQUILLA", "BUCARAMANGA", "CUCUTA")
-replace Zona_Geografica = 1 if inlist(Municipio, "FLORIDABLANCA", "CARTAGENA DE INDIAS","PEREIRA", "MANIZALES")
-replace Modalidad = strtrim(Modalidad)
+* Rename raw variables to English
+rename Año                            Year
+rename Mes                            Month
+rename Día                            Day
+rename TipodeLiberación               Release_Type
+rename DescripciónPresuntoResponsable Suspect_Description
+rename PresuntoResponsable            Suspect_Group
+rename Ocupación                      Occupation
+rename Departamento                   Department
+rename Municipio                      Municipality
+rename Modalidad                      Modality
+rename ModalidaddeSecuestro           Kidnap_Modality
+rename GAULA                          GAULA_Group
+rename Sexo                           Sex
+rename TotaldeVíctimasdelCaso         Total_Victims
+rename TipodeSecuestro                Kidnap_Type
+rename DíasdeCautiverio               Days_Captivity
+capture rename SituaciónActualdelaVíctima Victim_Status
+
+destring Year Month Day, replace force
+gen Event_Date = mdy(Month, Day, Year)
+drop if missing(Event_Date)
+drop if Year == 0
+
+replace Release_Type = strtrim(Release_Type)
+gen Captor_Group = .
+replace Captor_Group = 1 if strpos(Suspect_Description, "FARC") > 0
+replace Captor_Group = 2 if strpos(Suspect_Description, "ELN") > 0 | Suspect_Description == "ERG"
+replace Captor_Group = 3 if Suspect_Group == "GRUPO PARAMILITAR" | Suspect_Group == "GRUPO POSDESMOVILIZACIÓN"
+replace Captor_Group = 4 if Captor_Group == .
+replace Occupation = strtrim(Occupation)
+gen Victim_Profile = .
+replace Victim_Profile = 1 if inlist(Occupation, "GANADERO/HACENDADO", "COMERCIANTE", "EMPRESARIO - INDUSTRIAL")
+replace Victim_Profile = 2 if inlist(Occupation, "EMPLEADO", "PROFESIONAL", "ESTUDIANTE", "ADMINISTRADOR DE FINCA", "PERSONAL DE SALUD") | Occupation == "PENSIONADO"
+replace Victim_Profile = 3 if inlist(Occupation, "CAMPESINO", "CONDUCTOR/MOTORISTA", "AMA DE CASA", "OBRERO", "TRABAJADOR DE FINCA") | inlist(Occupation, "MINERO", "PESCADOR", "SEGURIDAD PRIVADA", "RELIGIOSO")
+replace Victim_Profile = 4 if inlist(Occupation, "FUNCIONARIO PÚBLICO", "FUERZA PÚBLICA")
+replace Victim_Profile = 5 if Victim_Profile == .
+replace Department = strtrim(Department)
+replace Municipality = strtrim(Municipality)
+gen Geographic_Zone = .
+replace Geographic_Zone = 2 if inlist(Department, "ANTIOQUIA", "BOYACA", "CALDAS", "CUNDINAMARCA", "HUILA") | inlist(Department, "QUINDIO", "RISARALDA", "SANTANDER", "TOLIMA")
+replace Geographic_Zone = 3 if inlist(Department, "ATLANTICO", "BOLIVAR", "CESAR", "CORDOBA", "LA GUAJIRA") | inlist(Department, "MAGDALENA", "SUCRE", "SAN ANDRES")
+replace Geographic_Zone = 4 if inlist(Department, "CAUCA", "CHOCO", "NARIÑO", "VALLE DEL CAUCA","NORTE DE SANTANDER")
+replace Geographic_Zone = 5 if inlist(Department, "AMAZONAS", "ARAUCA", "CAQUETA", "CASANARE", "GUAINIA") | inlist(Department, "GUAVIARE", "META", "PUTUMAYO", "VAUPES", "VICHADA")
+replace Geographic_Zone = 1 if inlist(Municipality, "BOGOTA, D.C.", "SOACHA", "MEDELLIN", "BELLO", "ENVIGADO") | inlist(Municipality, "SABANETA", "SANTIAGO DE CALI", "BARRANQUILLA", "BUCARAMANGA", "CUCUTA")
+replace Geographic_Zone = 1 if inlist(Municipality, "FLORIDABLANCA", "CARTAGENA DE INDIAS","PEREIRA", "MANIZALES")
+replace Modality = strtrim(Modality)
 gen Modus_Operandi = .
-replace Modus_Operandi = 1 if inlist(Modalidad, "INTERCEPTACIÓN", "ASALTO", "PERSECUCIÓN")
-replace Modus_Operandi = 2 if inlist(Modalidad, "RETÉN", "PESCA MILAGROSA", "RUTA")
-replace Modus_Operandi = 3 if inlist(Modalidad, "INCURSIÓN", "ACCIÓN BÉLICA", "RETENCIÓN/EJECUCIÓN")
-replace Modus_Operandi = 4 if inlist(Modalidad, "ENGAÑO", "CITACIÓN", "CANJE/INTERCAMBIO")
+replace Modus_Operandi = 1 if inlist(Modality, "INTERCEPTACIÓN", "ASALTO", "PERSECUCIÓN")
+replace Modus_Operandi = 2 if inlist(Modality, "RETÉN", "PESCA MILAGROSA", "RUTA")
+replace Modus_Operandi = 3 if inlist(Modality, "INCURSIÓN", "ACCIÓN BÉLICA", "RETENCIÓN/EJECUCIÓN")
+replace Modus_Operandi = 4 if inlist(Modality, "ENGAÑO", "CITACIÓN", "CANJE/INTERCAMBIO")
 replace Modus_Operandi = 5 if Modus_Operandi == .
-gen Estructura_Secuestro = (ModalidaddeSecuestro != "INDIVIDUAL") + 1
-gen Intervencion_GAULA = (GAULA == "GAULA")
-gen Sexo_Victima = 1
-replace Sexo_Victima = 2 if Sexo == "MUJER"
-replace Sexo_Victima = 3 if Sexo == "SIN INFORMACION"
-gen ln_TotalVictimas = ln(TotaldeVíctimasdelCaso)
-gen Periodo_Historico = .
-replace Periodo_Historico = 1 if Año <= 1997
-replace Periodo_Historico = 2 if Año >= 1998 & Año <= 2002
-replace Periodo_Historico = 3 if Año >= 2003 & Año <= 2010
-replace Periodo_Historico = 4 if Año >= 2011
+gen Kidnap_Structure   = (Kidnap_Modality != "INDIVIDUAL") + 1
+gen GAULA_Intervention = (GAULA_Group == "GAULA")
+gen Victim_Sex = 1
+replace Victim_Sex = 2 if Sex == "MUJER"
+replace Victim_Sex = 3 if Sex == "SIN INFORMACION"
+gen ln_Victims = ln(Total_Victims)
+gen Historical_Period = .
+replace Historical_Period = 1 if Year <= 1997
+replace Historical_Period = 2 if Year >= 1998 & Year <= 2002
+replace Historical_Period = 3 if Year >= 2003 & Year <= 2010
+replace Historical_Period = 4 if Year >= 2011
 
-keep if TipodeSecuestro == "EXTORSIVO"
-drop if inlist(TipodeLiberación, "ND", "OTRO", "NA") | missing(TipodeLiberación)
-gen Y_Resultado = .
-replace Y_Resultado = 1 if inlist(TipodeLiberación, "PAGO", "CANJE", "PAGO - POR PRESIÓN/INTERMEDIACIÓN", "CANJE - PAGO")
-replace Y_Resultado = 3 if TipodeLiberación == "RESCATE"
-replace Y_Resultado = 0 if inlist(TipodeLiberación, "FUGA", "POR PRESIÓN/INTERMEDIACIÓN")
-capture confirm variable SituaciónActualdelaVíctima
+keep if Kidnap_Type == "EXTORSIVO"
+drop if inlist(Release_Type, "ND", "OTRO", "NA") | missing(Release_Type)
+gen Y_Outcome = .
+replace Y_Outcome = 1 if inlist(Release_Type, "PAGO", "CANJE", "PAGO - POR PRESIÓN/INTERMEDIACIÓN", "CANJE - PAGO")
+replace Y_Outcome = 3 if Release_Type == "RESCATE"
+replace Y_Outcome = 0 if inlist(Release_Type, "FUGA", "POR PRESIÓN/INTERMEDIACIÓN")
+capture confirm variable Victim_Status
 if _rc == 0 {
-    replace Y_Resultado = 2 if inlist(SituaciónActualdelaVíctima, "MUERTO EN CAUTIVERIO", "ASESINADO")
+    replace Y_Outcome = 2 if inlist(Victim_Status, "MUERTO EN CAUTIVERIO", "ASESINADO")
 }
-gen Duracion_Categ = 4
-replace Duracion_Categ = 1 if DíasdeCautiverio <= 2
-replace Duracion_Categ = 2 if DíasdeCautiverio > 2 & DíasdeCautiverio <= 30
-replace Duracion_Categ = 3 if DíasdeCautiverio > 30 & DíasdeCautiverio != .
-drop if missing(Zona_Geografica) | missing(Y_Resultado) | missing(Grupo_Responsable) ///
-    | missing(Perfil_Victima) | missing(Modus_Operandi) | missing(Estructura_Secuestro) ///
-    | missing(Intervencion_GAULA) | missing(Sexo_Victima) | missing(Duracion_Categ) ///
-    | missing(ln_TotalVictimas) | missing(Periodo_Historico)
+gen Duration_Categ = 4
+replace Duration_Categ = 1 if Days_Captivity <= 2
+replace Duration_Categ = 2 if Days_Captivity > 2 & Days_Captivity <= 30
+replace Duration_Categ = 3 if Days_Captivity > 30 & Days_Captivity != .
+drop if missing(Geographic_Zone)  | missing(Y_Outcome)       | missing(Captor_Group) ///
+    | missing(Victim_Profile)     | missing(Modus_Operandi)  | missing(Kidnap_Structure) ///
+    | missing(GAULA_Intervention) | missing(Victim_Sex)      | missing(Duration_Categ) ///
+    | missing(ln_Victims)         | missing(Historical_Period)
 
-drop if missing(DíasdeCautiverio) | DíasdeCautiverio <= 0
+drop if missing(Days_Captivity) | Days_Captivity <= 0
+
+* Value labels for factor variables
+label define Lab_Group     1 "FARC" 2 "ELN" 3 "Paramilitaries" 4 "Common_delinquency", replace
+label define Lab_Profile   1 "High_income" 2 "Middle_class" 3 "Vulnerable" 4 "Public_sector" 5 "Unknown", replace
+label define Lab_Zone      1 "Metropolis" 2 "Andean" 3 "Caribbean" 4 "Pacific" 5 "East_Jungle", replace
+label define Lab_Modus     1 "Direct_attack" 2 "Checkpoint" 3 "Military_incursion" 4 "Deception" 5 "Unknown", replace
+label define Lab_Structure 1 "Individual" 2 "Collective", replace
+label define Lab_GAULA     0 "No_GAULA" 1 "GAULA", replace
+label define Lab_Sex       1 "Male" 2 "Female" 3 "Unknown", replace
+label define Lab_Period    1 "Pre_1998" 2 "1998_2002" 3 "2003_2010" 4 "Post_2011", replace
+label define Lab_Y         0 "Escape_or_Release" 1 "Payment" 2 "Death" 3 "Rescue", replace
+
+label values Captor_Group       Lab_Group
+label values Victim_Profile     Lab_Profile
+label values Geographic_Zone    Lab_Zone
+label values Modus_Operandi     Lab_Modus
+label values Kidnap_Structure   Lab_Structure
+label values GAULA_Intervention Lab_GAULA
+label values Victim_Sex         Lab_Sex
+label values Historical_Period  Lab_Period
+label values Y_Outcome          Lab_Y
+
 quietly count
 local N_cox = r(N)
 display "Cox sample N = `N_cox'"
@@ -91,33 +133,33 @@ forvalues k = 1/4 {
     local cause : word `k' of `causes'
     local code  : word `k' of `codes'
     display _n "=== COX `cause' ==="
-    stset DíasdeCautiverio, failure(Y_Resultado==`code')
-    stcox i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-          i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-          i.Sexo_Victima ln_TotalVictimas i.Periodo_Historico, robust
+    stset Days_Captivity, failure(Y_Outcome==`code')
+    stcox i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+          i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+          i.Victim_Sex ln_Victims i.Historical_Period, robust
     estimates store Cox_`cause'
 }
 
 * Export appendix rows
 file open fh using "`outdir'/cox_appendix_rows.txt", write replace
 local coefs ///
-    "2.Grupo_Responsable ELN" ///
-    "3.Grupo_Responsable Paramilitaries" ///
-    "4.Grupo_Responsable CommonDel" ///
-    "2.Perfil_Victima MiddleClass" ///
-    "3.Perfil_Victima Vulnerable" ///
-    "4.Perfil_Victima PublicSector" ///
-    "2.Zona_Geografica Andean" ///
-    "3.Zona_Geografica Caribbean" ///
-    "5.Zona_Geografica EastJungle" ///
+    "2.Captor_Group ELN" ///
+    "3.Captor_Group Paramilitaries" ///
+    "4.Captor_Group CommonDel" ///
+    "2.Victim_Profile MiddleClass" ///
+    "3.Victim_Profile Vulnerable" ///
+    "4.Victim_Profile PublicSector" ///
+    "2.Geographic_Zone Andean" ///
+    "3.Geographic_Zone Caribbean" ///
+    "5.Geographic_Zone EastJungle" ///
     "2.Modus_Operandi Roadblock" ///
     "4.Modus_Operandi Deception" ///
-    "2.Estructura_Secuestro GroupStruct" ///
-    "1.Intervencion_GAULA GAULA" ///
-    "ln_TotalVictimas lnTotal" ///
-    "2.Periodo_Historico Crisis" ///
-    "3.Periodo_Historico DemSec" ///
-    "4.Periodo_Historico Post2011"
+    "2.Kidnap_Structure GroupStruct" ///
+    "1.GAULA_Intervention GAULA" ///
+    "ln_Victims lnTotal" ///
+    "2.Historical_Period Crisis" ///
+    "3.Historical_Period DemSec" ///
+    "4.Historical_Period Post2011"
 
 forvalues k = 1/4 {
     local cause : word `k' of `causes'

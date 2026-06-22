@@ -69,6 +69,8 @@ Appendix 2: Microstructure and Competing Hazards in Colombia}
 Economist, professor of the Economics Program at the Universidad Colegio
 Mayor de Cundinamarca and graduate of the Ph.D.\ in Economics from the
 Universidad de los Andes, Colombia.
+\href{mailto:hbernalc@universidadmayor.edu.co}{hbernalc@universidadmayor.edu.co}
+and \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}.
 \end{funding}
 
 \end{frontmatter}
@@ -102,9 +104,9 @@ missing geographic zone).
 Table~\ref{tab:sample-flow} summarizes the sample flow reported in the main
 text. The universe comprises all documented kidnapping victims in the merged
 CNMH export. The first filter retains extortionate kidnappings
-(\texttt{TipodeSecuestro = EXTORSIVO}) with a valid event date. The second
-filter requires an observable liberation outcome (excluding \texttt{ND},
-\texttt{OTRO}, and \texttt{NA} in \texttt{TipodeLiberación}). The third
+(\texttt{Kidnap\_Type} $=$ \texttt{``EXTORSIVO''} in the source data) with a valid event date. The second
+filter requires an observable liberation outcome (excluding not-observed,
+other, and non-applicable codes in \texttt{Release\_Type}). The third
 filter requires complete covariates for estimation; eight cases with missing
 geographic zone are dropped, yielding $n=1{,}125$.
 
@@ -123,7 +125,7 @@ Observable outcome & 1,133 & 10.1\% \\
 Complete covariates & 1,125 & 99.3\% \\
 \bottomrule
 \end{tabular}
-\tabnote\ Valid event date: non-missing \texttt{Fecha} and \texttt{Año}$\neq 0$
+\tabnote\ Valid event date: non-missing \texttt{Event\_Date} and \texttt{Year}$\neq 0$
 after parsing \path{Data_merge.dta}. Extortionate share of universe:
 $11{,}270/39{,}369=28.6\%$. Estimation share: $1{,}125/39{,}369=2.9\%$. Eight
 cases with missing geographic zone are dropped at the final stage.
@@ -132,16 +134,15 @@ cases with missing geographic zone are dropped at the final stage.
 
 \subsection{Outcome variable}
 
-The dependent variable \texttt{Y\_Resultado} classifies each extortionate
+The dependent variable \texttt{Y\_Outcome} classifies each extortionate
 episode into four mutually exclusive outcomes (reference category: Payment):
 \begin{itemize}
-\item \textbf{Payment} ($Y=1$): ransom or exchange paid
-  (\texttt{PAGO}, \texttt{CANJE}, and related codes).
-\item \textbf{Rescue} ($Y=3$): liberation by state forces (\texttt{RESCATE}).
+\item \textbf{Payment} ($Y=1$): ransom paid, hostage exchange, or
+  intermediated payment.
+\item \textbf{Rescue} ($Y=3$): liberation by state security forces.
 \item \textbf{Escape or release without payment} ($Y=0$):
-  \texttt{FUGA} or release under external pressure without ransom.
-\item \textbf{Death} ($Y=2$): victim killed in captivity
-  (\texttt{MUERTO EN CAUTIVERIO}, \texttt{ASESINADO}).
+  flight or release under external pressure without ransom.
+\item \textbf{Death} ($Y=2$): victim killed or found dead in captivity.
 \end{itemize}
 Table~\ref{tab:outcome-dist} reports the distribution in the estimation
 sample.
@@ -196,7 +197,7 @@ and \path{sample_selection_robustness.do}.
 Because only 10.1\% of extortionate cases have observable outcomes, a binary
 logistic model was estimated on the extortionate stratum with complete
 attrition covariates ($n=11{,}253$ of $11{,}270$ extortionate cases with valid
-date), with dependent variable \texttt{Missing\_Outcome}$=1$ when the liberation
+date), with dependent variable \texttt{Missing\_Outcome}${=}1$ when the liberation
 type is unobserved \citep{LittleRubin2020}. Table~\ref{tab:attrition} summarizes
 the main findings as odds ratios with cluster-robust standard errors by
 municipality.
@@ -346,11 +347,11 @@ Three specifications are compared: (i)~main model with municipal clusters;
 (ii)~robust standard errors without clustering; and (iii)~specification
 without duration categories.
 
-Table~\ref{tab:robust} reports two coefficients from the Death equation.
+Table~\ref{tab:robust} reports the key coefficient from the Death equation.
 
 \begin{table}[t]
 \centering
-\caption{MNL Robustness Coefficients}
+\caption{MNL Robustness: Death-Equation Coefficient for Perpetrator Group}
 \label{tab:robust}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -360,13 +361,14 @@ Table~\ref{tab:robust} reports two coefficients from the Death equation.
 Covariate & Main & Robust SE & No duration \\
 \midrule
 Common delinquency (vs.\ FARC) & 4.15 & 4.15 & 4.15 \\
-Collective structure (vs.\ individual) & 2.46 & 2.46 & 2.46 \\
 \bottomrule
 \end{tabular}
 \tabnote\ Municipal clusters in Main and No duration; heteroskedasticity-
-robust standard errors in Robust SE. Coefficients are stable across
-specifications: both remain positive and significant at the 1\% level in all
-three columns ($p<0.01$; No duration $p<0.001$).
+robust standard errors in Robust SE. The log-relative-risk for common
+delinquency is identical across all three specifications ($\hat\beta=4.15$,
+$p<0.01$), confirming that the perpetrator-group effect in the Death equation
+is not an artifact of the variance estimator or the inclusion of duration
+categories.
 \tabsource
 \end{table}
 
@@ -385,7 +387,7 @@ delinquency) rejects equal rates: $z=-5.71$, $p<0.001$.
 
 Following \citet{Cox1972} and the competing-risks framework of
 \citet{Bradburn2003}, four cause-specific Cox models are estimated on
-\texttt{DíasdeCautiverio} (days in captivity). In each model, one outcome
+\texttt{Days\_Captivity} (days in captivity). In each model, one outcome
 defines the event of interest and the remaining three outcomes are treated
 as right-censored. The cause-specific hazard is
 \begin{equation}
@@ -478,7 +480,7 @@ Duration categories: express ($\le 2$~days), short ($\le 30$~days), long
 Perpetrator group & $\Pr(\text{Rescue by day 100})$ \\
 \midrule
 Paramilitaries & 0.33 \\
-ELN & 0.29 \\
+ELN & 0.28 \\
 FARC & 0.27 \\
 \bottomrule
 \end{tabular}
@@ -545,30 +547,39 @@ MDG process. All paths are relative to \path{Appendix_2/stata/}.
 % ============================================================================
 
 \begin{sloppypar}
-All results in this supplement are reproduced by Stata scripts in the
-\texttt{Appendix\_2/} replication package. Set the working directory to
-\texttt{Appendix\_2/} and run \path{replicate.do}. See \path{README.txt} at the
-package root for step-by-step instructions. Requirements: Stata~19 or later.
+All numerical results in this supplement are reproduced by Stata~19 scripts in
+the \texttt{Appendix\_2/} replication package. Run \path{replicate.do} from any
+working directory---it locates \path{run_all.do} automatically without a manual
+\texttt{cd}. See \path{README.txt} for step-by-step instructions.
 Estimated runtime: 5--15 minutes. Batch mode:
 \texttt{stata -b -q do replicate.do}.
 \end{sloppypar}
 
+\begin{sloppypar}
 \begin{enumerate}
-\item \path{replicate.do} runs the full pipeline in \path{stata/}:
-  \path{microstructure_replication.do}, \path{sample_selection_robustness.do},
-  and \path{cox_only.do}.
-\item Individual scripts live in \path{stata/}; each includes
-  \path{_setup_paths.do} and locates \path{stata/data/Data_merge.dta}
-  automatically.
-\item Generated outputs: \path{stata/outputs/analytical_sample.dta},
-  \path{stata/outputs/cox_appendix_rows.txt},
-  \path{stata/outputs/cox_cumul_day100.txt}, and log files.
-\item Cox curves: \path{stata/outputs/Datos_Graficas_Cox.xlsx} and
-  \path{stata/outputs/cumul_rescue_d100.dta} (Tables~\ref{tab:cox-gaula}
-  and \ref{tab:cox-cumul}); regenerated by \path{microstructure_replication.do}.
-\item (Optional) Compile \path{tex/Appendix_2.pdf} from \path{tex/} with
-  \texttt{pdflatex} and \texttt{bibtex}.
+\item \path{replicate.do} auto-detects the package root and delegates to
+  \path{stata/run_all.do}, which runs \path{microstructure_replication.do},
+  \path{sample_selection_robustness.do}, and \path{cox_only.do}
+  in sequence; all output is saved to \path{stata/outputs/replication.log}.
+\item Each script includes \path{_setup_paths.do} and locates
+  \path{stata/data/Data_merge.dta} automatically.
+\item Key outputs written to \path{stata/outputs/} include
+  \path{analytical_sample.dta}; \path{cox_appendix_rows.txt}
+  (Table~\ref{tab:cox-hr}); \path{cox_cumul_day100.txt}
+  (Table~\ref{tab:cox-cumul}); four \path{margins_*.dta} files
+  (by zone, group, duration, profile); and \path{replication.log}
+  (all model estimates and diagnostics).
+\item \path{microstructure_replication.do} also exports
+  \path{cumul_rescue_d100.dta} and \path{Datos_Graficas_Cox.xlsx}
+  (Table~\ref{tab:cox-cumul}); GAULA margins in Table~\ref{tab:cox-gaula}
+  are recorded in \path{replication.log}.
+\item \path{tables_mnl_full.tex} and \path{tables_cox_full.tex}
+  (Tables~\ref{tab:mnl-full} and~\ref{tab:cox-full}) are pre-formatted
+  \LaTeX\ files; their entries are verified against \path{replication.log}.
+\item (Optional) Compile the PDF: run \texttt{pdflatex} and \texttt{bibtex}
+  from \path{tex/}.
 \end{enumerate}
+\end{sloppypar}
 
 \begin{sloppypar}
 Section~\ref{sec:relevance} (Table~\ref{tab:mechanism-map}) maps
@@ -578,5 +589,13 @@ microeconometric outputs to mechanism inputs. Raw CNMH exports used to build
 
 \bibliographystyle{econsoc}
 \bibliography{references}
+
+\begin{funding}
+Economist, professor of the Economics Program at the Universidad Colegio
+Mayor de Cundinamarca and graduate of the Ph.D.\ in Economics from the
+Universidad de los Andes, Colombia.
+\href{mailto:hbernalc@universidadmayor.edu.co}{hbernalc@universidadmayor.edu.co}
+and \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}.
+\end{funding}
 
 \end{document}

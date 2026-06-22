@@ -10,13 +10,13 @@
 \RequirePackage{float}
 \RequirePackage{graphicx}
 \RequirePackage{subcaption}
-\captionsetup[figure]{skip=2pt}
-\captionsetup[subfigure]{skip=1pt,font=footnotesize}
-\setlength{\abovecaptionskip}{2pt}
-\setlength{\belowcaptionskip}{0pt}
-\setlength{\intextsep}{4pt plus 1pt minus 1pt}
-\setlength{\textfloatsep}{6pt plus 2pt minus 2pt}
-\setlength{\floatsep}{3pt plus 1pt minus 1pt}
+\captionsetup[figure]{skip=6pt}
+\captionsetup[subfigure]{font=footnotesize,aboveskip=3pt,belowskip=2pt}
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{4pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{16pt plus 2pt minus 4pt}
+\setlength{\floatsep}{12pt plus 2pt minus 2pt}
 \newlength{\subfigheight}
 \setlength{\subfigheight}{4.2cm}
 \newlength{\mapfigheight}
@@ -34,13 +34,11 @@
 \newlength{\calpathheight}
 \setlength{\calpathheight}{5.1cm}
 \newcommand{\panelgraphic}[2]{%
-  \parbox[t][#1][t]{\linewidth}{\centering\includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}\par}%
+  \parbox[t][#1][t]{\linewidth}{\centering\includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}}%
 }
 \newcommand{\figurenote}[1]{%
-  \par\vspace{-2pt}%
-  \begin{minipage}{\linewidth}%
-  \footnotesize #1%
-  \end{minipage}%
+  \par\vspace{3pt}%
+  \begingroup\footnotesize #1\par\endgroup
 }
 \RequirePackage{amsmath,amssymb,mathtools}
 \RequirePackage{booktabs}
@@ -142,13 +140,13 @@ Observed criminal behavior often pools at exactly the point where public policy 
 
 The central question is how a planner can design an active screening mechanism when observable actions fall into pooling regions, a difficulty analogous to bargaining problems under private information in \citet{Fearon1995Rationalist}. The planner is the state. Its instruments are continuous: financial interdiction $\alpha_t\in[0,1]$ and operational pressure $\gamma_t\in[0,1]$. The adversary has a private type $\theta_K\in\ThetaK$. The policy problem consists not only of choosing between rescue and negotiation, but of tuning $(\alpha_t,\gamma_t)$ so that the induced law of daily signals becomes informative about the latent criminal technology. Colombia provides the empirical basis for this analysis, not as a historical narrative. Its kidnapping episodes offer an exceptional setting where long-run macro dynamics, micro duration, and perpetrator heterogeneity jointly reveal the informational limits of deterrence.
 
-This article is situated at the open frontier of dynamic mechanism design. \citet{Gibbard1973} and \citet{Myerson1979IC,Myerson1981} demonstrated that any indirect mechanism can be represented as a direct and truthful mechanism, a result known as the Revelation Principle, which reduces design to constraints of Incentive Compatibility ($IC$) and Individual Rationality ($IR$). \citet{MyersonSatterthwaite1983}, \citet{Rochet1987}, and \citet{RochetChone1998} delimited the achievable frontiers in the static case, motivating the turn toward dynamic mechanisms by \citet{CourtyLi2000}, \citet{EsoSzentes2007}, and \citet{PavanSegalToikka2014}. This literature requires two structural extensions for its application in adversarial institutional settings: the guarantee of off-path robustness, which preserves a well-defined Bayes' rule under unexpected equilibrium deviations, and the incorporation of active informational exploration (\textit{active learning}), in line with the optimal dynamic acquisition of information of \citet{Zhong2022}, which prevents a myopic policy from freezing incentives and blocking identification of the adversary's type. The economics of crime by \citet{Becker1968} and \citet{Ehrlich1973}, extended to kidnapping by \citet{Selten1977Kidnapping}, \citet{Iqbal2017Kidnapping}, and \citet{Mejia2000Secuestro}, and prolonged by recent empirical works such as \citet{Detotto2014Ransom} on the duration of captivity through survival analysis, \citet{Forest2012Kidnapping} on the ideological and organizational heterogeneity of perpetrators, and \citet{Shortland2019Kidnap} on the private governance of the ransom market, documents the operational dynamics of crime with increasing detail but does not bridge the gap toward the Bayesian architecture of type identification required by an active planner. The present article occupies exactly this gap and makes three interconnected contributions. The first is stochastic implementation through the Mano de Dios-Guadalupe (MDG) process. Unlike conventional mechanisms that assume deterministic realizations, the model adopts an indirect approach that models the state's instruments as they are deployed in institutional reality. In the base specification with a positive residual floor, the MDG filter, axiomatically justified as the unique law compatible with full support, dominance, and maximum entropy under the characterization theorem of \citet{Jaynes1957Information}, introduces a logit noise with a hybrid temperature between the latent strategic intention and the action materialized on the ground. This stochastic layer shares the analytical purpose of the classical refinements of \citet{Selten1975Perfectness}, \citet{KrepsWilson1982}, and \citet{FudenbergTirole1991} by guaranteeing full support on the branches of the game and keeping the Bayesian operator well defined off the equilibrium path (\textit{off-path}). However, compared to those approaches, the MDG process constitutes an intrinsically endogenous friction and a necessary condition for the materialization of the operational branch.
+This article is situated at the open frontier of dynamic mechanism design. \citet{Gibbard1973} and \citet{Myerson1979IC,Myerson1981} demonstrated that any indirect mechanism can be represented as a direct and truthful mechanism, a result known as the Revelation Principle, which reduces design to constraints of Incentive Compatibility ($IC$) and Individual Rationality ($IR$). \citet{MyersonSatterthwaite1983}, \citet{Rochet1987}, and \citet{RochetChone1998} delimited the achievable frontiers in the static case; \citet{KadanRenySwinkels2017} established the general existence conditions for optimal mechanisms in principal-agent settings, providing the topological foundation for the feasibility hypotheses that follow. These results motivate the turn toward dynamic mechanisms by \citet{CourtyLi2000}, \citet{EsoSzentes2007}, and \citet{PavanSegalToikka2014}. This literature requires two structural extensions for its application in adversarial institutional settings: the guarantee of off-path robustness, which preserves a well-defined Bayes' rule under unexpected equilibrium deviations, and the incorporation of active informational exploration (\textit{active learning}), in line with the optimal dynamic acquisition of information of \citet{Zhong2022}, which prevents a myopic policy from freezing incentives and blocking identification of the adversary's type. The economics of crime by \citet{Becker1968} and \citet{Ehrlich1973}, extended to kidnapping by \citet{Selten1977Kidnapping}, \citet{Iqbal2017Kidnapping}, and \citet{Mejia2000Secuestro}, and prolonged by recent empirical works such as \citet{Detotto2014Ransom} on the duration of captivity through survival analysis, \citet{Forest2012Kidnapping} on the ideological and organizational heterogeneity of perpetrators, and \citet{Shortland2019Kidnap} on the private governance of the ransom market, documents the operational dynamics of crime with increasing detail but does not bridge the gap toward the Bayesian architecture of type identification required by an active planner. The present article occupies exactly this gap and makes three interconnected contributions. The first is stochastic implementation through the Mano de Dios-Guadalupe (MDG) process. Unlike conventional mechanisms that assume deterministic realizations, the model adopts an indirect approach that models the state's instruments as they are deployed in institutional reality. In the base specification with a positive residual floor, the MDG filter, axiomatically justified as the unique law compatible with full support, dominance, and maximum entropy under the characterization theorem of \citet{Jaynes1957Information}, introduces a logit noise with a hybrid temperature between the latent strategic intention and the action materialized on the ground. This stochastic layer shares the analytical purpose of the classical refinements of \citet{Selten1975Perfectness}, \citet{KrepsWilson1982}, and \citet{FudenbergTirole1991} by guaranteeing full support on the branches of the game and keeping the Bayesian operator well defined off the equilibrium path (\textit{off-path}). However, compared to those approaches, the MDG process constitutes an intrinsically endogenous friction and a necessary condition for the materialization of the operational branch.
 
 The second contribution is the fusion of competing risks with learning and dual control. The article embeds the empirical law of motion in a discrete-time proportional competing risks structure inspired by \citet{Cox1972}, separating duration and the mode of termination as distinct but jointly informative objects. The operator $\xi_j(t)$ acts as the market share of each risk and orthogonalizes the governance of \emph{when} from the governance of \emph{how}, so that the high-frequency Bayesian likelihoods are updated without distorting the underlying persistence of captivity. To avoid informational stagnation, the article adapts the dual control intuition of \citet{Feldbaum1965} and incorporates an active exploration motive through Shannon's entropy \citet{Shannon1948} and the optimal dynamic acquisition of information of \citet{Zhong2022}. The state internalizes that its present actions alter future information and accepts a short-term loss penalty to apply an informational subsidy that forces the captor to reveal its structural fingerprint.
 
 The third contribution is the Type Identification Theorem for Rational Types in Unknown Environments. The result establishes that if the structural fingerprint $\beta_{K,j}(\theta_K)$ of each type induces uniform separation in total variation between daily observation laws, then the criterion of \citet{Kakutani1948} for products of probability measures implies mutual singularity of trajectory laws and, in the prolonged-captivity event $\mathcal{T}=\{\tau=\infty\}$, the vector of Bayesian beliefs $\mu_t$ converges almost surely to the Dirac measure over the true type, $\Dirac_{\theta_K^\ast}$, in accordance with the axioms of \citet{BlackwellDubins1962}. The proof starts from the asymptotic stability of a bounded martingale in the sense of \citet{Doob1953Stochastic} and appeals to the criterion of \citet{Kakutani1948} to close identification. The theorem converts a local daily separation condition into global posterior identification conditional on $\mathcal{T}$. The Conditional Mechanism Implementability Theorem in Perfect Bayesian Equilibrium (PBE) complements this result: under the hypothesis that the feasible set $\Gamma_t(\mu_t)$ remains non-empty, there exists a perfect Bayesian equilibrium in which the state's optimal rule simultaneously satisfies $IC^K$, $IR^K$, and $IR^F$.
 
-The rest of the article proceeds as follows. Section~\ref{sec:institutional} translates the Colombian evidence into constraints on types and costs; Section~\ref{sec:pertinencia} shows how the empirical models anchor the prior of the mechanism; Section~\ref{sec:model} develops the dynamic model, the state's program, and the identification theorem; and Section~\ref{sec:calibracion} presents the calibration and the ELN--PAR simulations. The Supplemental Appendices (\citet{BernalSupp1,BernalSupp2,BernalSupp3}) contain detailed macroeconometric results, microstructure and competing hazards, and formal proofs with Lean~4 verification.
+The rest of the article proceeds as follows. Section~\ref{sec:institutional} translates the Colombian evidence into constraints on types and costs; Section~\ref{sec:pertinencia} shows how the empirical models anchor the prior of the mechanism; Section~\ref{sec:model} develops the dynamic model, the state's program, and the identification theorem; and Section~\ref{sec:calibracion} presents the calibration and the ELN--PAR simulations. The Supplemental Appendices contain detailed macroeconometric results, microstructure and competing hazards, and formal proofs with Lean~4 verification.
 
 
 \section{Institutional Framework and Data Stylized Facts}\label{sec:institutional}
@@ -159,7 +157,6 @@ The rest of the article proceeds as follows. Section~\ref{sec:institutional} tra
 UNODC records \citet{unodc_Data} for 145 countries in 2023--2024 register 1,514,546 kidnapping cases and reveal a distributional asymmetry with direct implications for the analysis of the phenomenon. The median of the annual average per country stands at 46 cases, while the mean reaches 1,153; a mean-to-median ratio of approximately 25 to 1 rules out the existence of a representative country and indicates that the distribution of annual averages at the country level exhibits a heavy tail. The 75th percentile of this distribution is situated at 109 cases, meaning that three-quarters of the countries report volumes below this threshold, yet the top quarter concentrates the dominant proportion of the global total. This extreme concentration structure, analogous to that observed in income or firm-size distributions, invalidates interpretations based on average behavior and requires treating institutional, legal, and criminological heterogeneity among countries as a structural attribute of the phenomenon, which motivates the heterogeneous types approach adopted in this paper.
 
 The global map presented in Figure~\ref{fig:global-colombia} indicates that several developed countries are among those with the highest absolute numbers of kidnappings, in some cases surpassing countries typically associated with lower levels of quality of life, high income inequality, elevated poverty rates, and prolonged armed conflicts, such as India, Pakistan, Afghanistan, Somalia, Haiti, Ecuador, Venezuela, and Colombia. However, this configuration does not necessarily reflect a higher risk of physical violence for the general population; instead, it is explained by substantive differences in the legal definition of kidnapping, the institutional capacity for registration, and the propensity to report, as documented by \citet{UNODC2006Manual} and \citet{UNODC2016ICCS}. In developed jurisdictions, statistics encompass conducts such as parental abduction, unlawful deprivation of liberty in family contexts, and certain forms of criminal exploitation, which substantially expands the statistical universe compared to countries where only kidnappings for ransom are registered.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -176,9 +173,7 @@ The global map presented in Figure~\ref{fig:global-colombia} indicates that seve
 \label{fig:global-colombia}
 \figurenote{\textit{Note:} Panel (a) presents the global distribution of kidnapping cases based on UNODC data, 2003--2024. Panel (b) shows the evolution of the kidnapping rate in Colombia per 100,000 inhabitants, 1964--2025. \textit{Source:} Author's calculations based on \citet{unodc_Data} and the National Center for Historical Memory \citet{cnmh_datos}.}
 \end{figure}
-
 Between 1964 and 2025, Colombia registered a total of 61,341 kidnapping cases, positioning the country among the most affected by this phenomenon globally \citet{cnmh_datos}. Figure~\ref{fig:evolucion-geo} (left panel) displays the non-linear dynamics of this evolution with identifiable structural changes. Until the late 1970s, annual records remained at low levels, with fewer than 100 cases, followed by a first structural break in the early 1980s, when the number of kidnappings exceeded 1,000 annual cases. During the 1980s and 1990s, the volume grew steadily but volatilely, reaching a historical peak of approximately 3,700 annual cases in the late 1990s and early 2000s, in a context of expansion of the armed conflict and illegal economies \citet{pinto2004}. From 2002 onward, a persistent reduction in the crime is observed, with annual records below 500 cases during the 2010s, followed by a slight rebound in the most recent years, though still far below the critical levels of the past.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -195,7 +190,6 @@ Between 1964 and 2025, Colombia registered a total of 61,341 kidnapping cases, p
 \label{fig:evolucion-geo}
 \figurenote{\textit{Note:} Panel (a) shows the evolution of the total number of kidnapping cases in Colombia, 1964--2025, highlighting the main phases of escalation and decline. Panel (b) presents the geographic distribution of kidnapping cases by Colombian municipalities, 1964--2025. \textit{Source:} Author's calculations based on \citet{cnmh_datos}.}
 \end{figure}
-
 The temporal trajectory is reflected spatially in the municipal distribution presented in Figure~\ref{fig:evolucion-geo} (right panel), where kidnappings occur across most of the national territory but are heavily concentrated in a small number of municipalities with high urban centrality or strategic value. Santafé de Bogotá D.C. registers the highest number of cases (1,437), followed by Cali (784) and Medellín (652). Additionally, intermediate cities and strategic municipalities stand out, such as Valledupar (530), Argelia (452), Villavicencio (436), Aguachica (436), Ocaña (348), Bucaramanga (304), and Santa Marta (291). Collectively, these patterns indicate that kidnapping in Colombia has been a temporally and spatially concentrated phenomenon, shaped by differentiated criminal opportunities, strategic corridors, and persistent limitations in state capacity, in line with the crime triangle framework proposed by \citet{Pires2014}.
 
 Regarding the per capita dimension, the rates of kidnapping for ransom and non-extortionate kidnapping per 100,000 inhabitants follow the same non-linear trajectory between 1964 and 2025, reflecting the interaction between the dynamics of the armed conflict, illegal economies, economic activity, and state capacity, as shown in Figure~\ref{fig:global-colombia} (right panel). During the initial decades, the rate remained low and relatively stable, between 0{,}2 and 0{,}5 kidnappings per 100,000 inhabitants. From the late 1970s, a structural break is identified with an increase that exceeded 4 kidnappings per 100,000 inhabitants in the early 1980s. Throughout the 1980s and 1990s, growth was steady but volatile, associated with the consolidation of guerrilla groups, the expansion of drug trafficking, and the use of kidnapping as a mechanism for financing and political coercion \citet{Zarate2007}. The trajectory reached its historical peak, close to 9{,}6 kidnappings per 100,000 inhabitants, in the late 1990s and early 2000s, coinciding with the weakening of state control and the escalation of the armed conflict. From 2002 onward, a persistent reversal of the trend is observed, with the rate falling to levels near 3 kidnappings per 100,000 inhabitants by the mid-2000s and below 1 during the 2010s, reaching historical lows after the signing of the Peace Agreement in 2016. The recent moderate rebound, still far below the critical levels of the past, is consistent with the fragmentation of armed actors and persistent territorial heterogeneity.
@@ -203,7 +197,6 @@ Regarding the per capita dimension, the rates of kidnapping for ransom and non-e
 Driven by the increase in kidnapping during the 1990s, the creation of the Unified Action Groups for Personal Liberty (GAULA), promulgated by the Congress of the Republic of Colombia through \citet{ley282_1996}, marked a strategic transition from the fragmented Antikidnapping and Antiextortion Units (UNASE) toward a doctrine of Unified Action, consolidated with the creation of the Antikidnapping Directorate of the Police \citet{decreto864_1998}. This geographically targeted approach effectively covered the municipalities with the highest historical levels of kidnapping, including Bogotá, Cali, Villavicencio, Medellín, and Santa Marta, establishing a network of 34 units nationwide. The model prioritized strategic urban nodes and, in several complex jurisdictions like Medellín, Valledupar, and Cartagena, maintained a double institutional presence. However, spatial analysis reveals significant operational gaps in peripheral regions: municipalities with high kidnapping intensity, such as Argelia, Buenaventura, and Ocaña, lack local GAULA units, evidencing a disconnect between the state's reactive capacity and the persistence of the crime.
 
 The efficiency of GAULA units in urban areas is evident, although the phenomenon of kidnapping for ransom continues to require reinforced prevention strategies and targeted enforcement actions. Figure~\ref{fig:gaula} (right panel) presents the distribution of 3,949 arrests of individuals implicated in kidnapping for ransom between 2010 and 2025, revealing that a substantial proportion is concentrated in cities with established GAULA presence: Bogotá (15{,}93\%), Medellín (9{,}29\%), Cali (7{,}39\%), Villavicencio (2{,}38\%), and Cúcuta (2{,}36\%) lead the ranking. This correspondence between a high number of captures and the presence of specialized units suggests greater operational, investigative, and prosecutorial capacity in these urban centers. Conversely, although some intermediate municipalities also host GAULA units, the comparatively lower volume of captures does not imply a lack of institutional action; rather, it reinforces the argument that higher institutional density and metropolitan infrastructure amplify the state's operational effectiveness.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -220,9 +213,7 @@ The efficiency of GAULA units in urban areas is evident, although the phenomenon
 \label{fig:gaula}
 \figurenote{\textit{Note:} Panel (a) shows the geographic distribution of GAULA units; dark areas indicate GAULA presence, and stars mark the five main municipalities and locations with a double unit. Panel (b) presents the municipal distribution of captures related to kidnapping for ransom, 2010--2025; darker tones indicate a higher number of captures per municipality. \textit{Source:} GAULA location data from the National Police of Colombia; incidence data from \citet{cnmh_datos}.}
 \end{figure}
-
 Kidnapping in Colombia has been closely linked to the evolution of the internal armed conflict and the emergence and consolidation of illegal armed actors, including guerrilla organizations, drug trafficking groups, and paramilitary forces. Figure~\ref{fig:evolucion-historica} offers an integrated synthesis of this dynamic across successive presidential administrations, connecting changes in kidnapping patterns with different phases of the conflict and the main policy, legal, and institutional milestones that shaped the state's response. During the 1960s and 1970s, kidnapping appeared as a low-intensity, predominantly rural phenomenon. This pattern is consistent with the initial formation phase of insurgent groups and a still-limited state capacity, despite the early existence of legal frameworks such as \citet{ley95_1936}, which established a legal distinction between kidnapping for ransom and non-extortionate forms. Beginning with the administration of Julio César Turbay Ayala and more clearly under the governments of Belisario Betancur and Virgilio Barco, a phase of steady escalation became evident, coinciding with the expansion of guerrilla organizations, the emergence of drug trafficking actors, and the rise of self-defense groups. This period was accompanied by more targeted regulatory responses, including \citet{Decreto1923_1978} and subsequent decrees in the late 1980s, which increased prison sentences for this type of crime, reflecting growing institutional recognition of kidnapping as a distinct threat to security.
-
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{Fig_4.pdf}
@@ -230,7 +221,6 @@ Kidnapping in Colombia has been closely linked to the evolution of the internal 
 \label{fig:evolucion-historica}
 \figurenote{\textit{Note:} The figure presents the total number of kidnappings per presidential term in Colombia from 1962 to 2025. Each bar corresponds to a presidential administration; the final period corresponds to partial data from the Gustavo Petro administration. Shading distinguishes phases of the armed conflict, and annotations highlight developments related to armed groups, legal reforms, and security policies. The total reported in this period amounts to 61,341 cases. \textit{Source:} Author's elaboration based on \citet{cnmh_datos} and \citet{pinto2004}.}
 \end{figure}
-
 This trajectory culminated in a phase of massification during the administrations of César Gaviria, Ernesto Samper, and especially Andrés Pastrana, when kidnapping reached its highest levels, exceeding 13,000 cases in the 1998--2002 period, as illustrated in Figure~\ref{fig:evolucion-historica}. This critical moment coincided with the promulgation of the 1991 Constitution, pressures from drug cartels, the consolidation of paramilitary structures, and the Caguán demilitarized zone, as well as key legislative measures such as \citet{ley40_1993} and \citet{ley282_1996}, which created a comprehensive regulatory framework and gave birth to the GAULA. From 2002 onward, under the administrations of Álvaro Uribe Vélez, a containment phase is identified, associated with a more assertive security policy and the strengthening of military and police capabilities; laws such as \citet{ley733_2002}, \citet{ley890_2004}, and \citet{ley1200_2008} constituted a framework of criminal toughening aimed at substantially increasing the costs of kidnapping. During the administrations of Juan Manuel Santos, a realignment phase was observed with low levels of kidnapping in the context of the peace process and the signing of the Final Agreement with the FARC; \citet{ley1957_2019} introduced conditional sentence reductions for kidnapping crimes in cases of submission to the Special Jurisdiction for Peace (JEP). In the most recent period, under the government of Gustavo Petro, a moderate resurgence is observed, associated with the fragmentation of armed actors, the re-emergence of dissident groups, and the evolution of conflict dynamics, in a regulatory environment shaped by \citet{ley2272_2022}, which provides for the suspension of arrest warrants for leaders and members of illegal armed groups, including those responsible for serious crimes such as kidnapping. Taken together, the figure suggests that the evolution of kidnapping in Colombia has systematically responded to changes in the political, institutional, and legal environment, indicating that this crime does not follow an autonomous path but is closely tied to the cycles of the armed conflict and the state's capacity to adapt its regulatory and operational framework.
 
 \subsection{Macroeconomic analysis: stochastic trend}
@@ -287,7 +277,6 @@ and the long-run representation of the system is
 \label{eq:gg}
 \end{equation}
 The factor $f_{1,t}$ captures persistent coercive capacity, dominated by $K^{NE}$, while $f_{2,t}$ reflects permanent macro-financial conditions, as illustrated in Figure~\ref{fig:common-trends}. The loading coefficients of $K^E_t$ (1{,}60 on $f_1$ and 1{,}09 on $f_2$) exceed unity, indicating that $K^E$ amplifies both permanent forces.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -304,7 +293,6 @@ The factor $f_{1,t}$ captures persistent coercive capacity, dominated by $K^{NE}
 \label{fig:common-trends}
 \figurenote{\textit{Note:} Panel (a) shows the Gonzalo--Granger common factors ($f_{1,t}$, $f_{2,t}$), July 1954--December 2025. Panel (b) reports the observed series of kidnapping for ransom and the VEC--GG long-run trend, July 1954--December 2025 (estimation sample, $T=858$). \textit{Source:} Author's calculations based on \citet{cnmh_datos} and the National Police of Colombia.}
 \end{figure}
-
 % ── LLT ──────────────────────────────────────────────────────────────────────
 
 As an independent contrast, a Local Linear Trend (LLT) model is estimated, which decomposes kidnapping for ransom into a stochastic level trend, a persistent slope, and a cyclical component:
@@ -328,7 +316,6 @@ As an independent contrast, a Local Linear Trend (LLT) model is estimated, which
 The significance of $\hat{\sigma}_\eta$ confirms that permanent shocks dominate the long-run level of kidnapping for ransom. The autoregressive structure of order 8 in the slope evidences gradual changes in the growth rate, consistent with slow adjustments in criminal capacity rather than abrupt breaks. The stationary cycle of order 5 captures medium-term fluctuations without distorting the permanent trend. Taken together, the LLT results show that kidnapping for ransom is characterized by a dominant stochastic trend with persistent slope dynamics, complemented by mean-reverting cyclical movements.
 
 The long-run trend estimated by the LLT reproduces the broad movements of kidnapping for ransom: the steady increase prior to the late 1990s, the peak associated with the intensification of the armed conflict, and the subsequent stabilization phase. The quantitative comparison with the VEC--GG trend is shown in Figure~\ref{fig:llt-vec}.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -345,9 +332,7 @@ The long-run trend estimated by the LLT reproduces the broad movements of kidnap
 \label{fig:llt-vec}
 \figurenote{\textit{Note:} Panel (a) compares the trends estimated by LLT and VEC--GG, July 1954--December 2025 ($T=858$). Panel (b) shows the difference $d_t$ over the same period. \textit{Source:} Author's calculations based on \citet{cnmh_datos} and the National Police of Colombia.}
 \end{figure}
-
 The sustained coherence between both trends is not accidental. The difference between the VEC--GG trend and the LLT trend generates an $I(0)$ stationary residual: the ADF test rejects a unit root at the 1\% level ($p<0{,}01$) and the KPSS test with twelve lags does not reject stationarity at the 5\% level ($p=0{,}07$). Thus, the two estimates do not systematically diverge in the long run and provide the empirical counterpart of the following corollary, proved in Appendix~3:
-
 
 \begin{corollary}[Equivalence of stochastic trends]\label{cor:equiv-trend}
 Let $\{y_t\}$ be a time series integrated of order one, $I(1)$. Suppose the existence of two valid decompositions defined as:
@@ -401,7 +386,6 @@ The Multinomial Logit identifies the determinants of each outcome. With the refe
 The vector $X_{i,m}\in\mathbb{R}^{26}$ comprises indicators of armed group ($G_i$, reference FARC), victim profile ($V_i$, reference high income), geographic zone and historical period ($C_{i,m}$, reference metropolis and pre-1998), and operational modality and captivity duration ($T_i$). Standard errors are clustered at the municipal level (373 units). The model is jointly significant: Wald $\chi^2(78)=5.250{,}34$, $p<0.001$, Pseudo $R^2=0.18$. The complete estimation is reported in Appendix~2.
 
 The MNL produces three findings that structure the type heterogeneity required by the mechanism; in each case, the magnitude is expressed via the relative risk ratio (RRR), which compares the probability of an alternative outcome against Payment as the reference category. \textit{First}, in the post-2011 period, the RRR of Escape without payment is 11.28 times higher than in the pre-1998 period ($p<0.01$), reflecting the collapse of the retention value given the accumulated deterrent capacity of the GAULA \citet{Mejia2000Secuestro}: as state intervention is consolidated, kidnapping for ransom loses economic viability, and the captor releases the victim without demanding ransom. \textit{Second}, for public sector victims, the RRR of Escape is 3.92 times higher than for high-income victims ($p<0.01$); the state policy of non-negotiation renders this segment a financially unviable asset for the captor, who faces a low probability of collection and a persistent risk of intervention without economic counterpart. \textit{Third}, the RRR of Rescue declines monotonically with the duration of captivity, from 0.18 in short-duration captivities to 0.08 in prolonged ones ($p<0.01$): short captivities reach only 18\% and prolonged ones only 8\% of the relative probability of Rescue observed in express kidnappings, which confirms that the state loses operational effectiveness as the captor consolidates its position, and that the tactical intervention window is concentrated in the initial phases of the event. Figure~\ref{fig:mnl-a} illustrates these three patterns simultaneously.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -418,9 +402,7 @@ The MNL produces three findings that structure the type heterogeneity required b
 \label{fig:mnl-a}
 \figurenote{\textit{Note:} Panel (a) reports the probability of state Rescue by captivity duration category. Panel (b) shows the probability of Escape or release without payment by victim profile. \textit{Source:} Author's calculations based on \citet{cnmh_datos}, Stata~19.}
 \end{figure}
-
 The geographic dimension and the identity of the perpetrator group provide two additional sources of structural heterogeneity with direct implications for the mechanism design model. In the territorial dimension, the Rescue probability decreases from 0.465 in metropolitan areas and 0.447 in the Andean region to 0.414 in the Pacific, 0.424 in the East/Jungle, and 0.343 in the Caribbean, a gradient that reflects differences in institutional density, logistical accessibility, and the permanent presence of the GAULA in the territory. In the organizational dimension, the unconditional margins of the MNL show that the probability of Death in captivity follows an ordering determined by the logistical retention capacity of each organization: 0.002 for the FARC, 0.007 for the ELN, 0.026 for the paramilitaries, and 0.071 for common delinquency. This gradient confirms that the risk of execution is inversely proportional to such capacity; actors with lesser infrastructure face a shorter time horizon before the failure of the negotiation translates into violence. Figure~\ref{fig:mnl-b} presents both patterns.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -437,7 +419,6 @@ The geographic dimension and the identity of the perpetrator group provide two a
 \label{fig:mnl-b}
 \figurenote{\textit{Note:} Panel (a) reports the probability of state Rescue by geographic zone. Panel (b) shows the probability of Death in captivity by responsible group. \textit{Source:} Author's calculations based on \citet{cnmh_datos}, Stata~19.}
 \end{figure}
-
 % ── COX MODEL ────────────────────────────────────────────────────────────────
 
 The second complementary model applies the proportional hazards model of \citet{Cox1972}, estimated under a competing risks framework. Since the outcome can be Payment, Rescue, Death, or Escape/Release, four independent cause-specific models are estimated: in each, the event of interest defines the failure, and the remaining three outcomes are treated as right-censored observations \citet{Bradburn2003}. For event $j\in\{\text{Payment, Rescue, Death, Escape}\}$, the cause-specific hazard is specified as
@@ -450,7 +431,6 @@ S_j(t \mid X) = \exp\!\left(-H_{0j}(t)\exp\!\left(X'\tilde{\beta}_j\right)\right
 where $h_j(t\mid X)$ is the instantaneous cause-specific hazard for outcome $j$ at time $t$; $h_{0j}(t)$ is its non-parametric baseline component; $\exp(X'\tilde{\beta}_j)$ is the proportional risk factor; $H_{0j}(t)$ is the cumulative baseline hazard; and $S_j(t\mid X)$ is the probability of not having observed $j$ up to $t$. The vector $X$ replicates the perpetrator, victim, context, and tactics blocks of the MNL, excludes captivity-duration categories, which are collinear with the time axis when resolution time is the dependent variable, and is estimated on the subsample with positive and observed duration ($N=461$). The hazard ratio (HR) quantifies the relative resolution speed of each group with respect to the FARC, which acts as the reference category: HR$>1$ indicates a higher resolution rate than the FARC, and HR$<1$ a lower rate.
 
 The results reveal three findings. \textit{Heterogeneity in retention technologies}: paramilitaries exhibit HR$=4.28$ for Payment ($p<0.001$), that is, they collect the ransom at a rate four times higher than the FARC; common delinquency registers HR$=1.71$ ($p=0.021$), reflecting short negotiation horizons and high turnover. The ELN does not differ significantly ($p=0.317$), confirming operational symmetry with the FARC. \textit{Operational paralysis in public sector victims}: HR of Payment$=0.20$ ($p<0.001$) and of Rescue$=0.24$ ($p=0.001$); values less than one indicate slower resolution than the reference group, rendering this segment an asset with negative expected value for the captor. \textit{Institutional efficiency scissor}: post-2011, the Payment speed falls by 49\% (HR$=0.51$, $p=0.035$) while that of Rescue is multiplied by 4.86 ($p<0.001$), collapsing the profitability of kidnapping for ransom. Figure~\ref{fig:cox-a} shows the amplifying effect of the GAULA: the Rescue probability shifts from 0.64, 0.28, and 0.14 without intervention to 0.72, 0.35, and 0.19 with intervention for express, short, and long captivities.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -467,9 +447,7 @@ The results reveal three findings. \textit{Heterogeneity in retention technologi
 \label{fig:cox-a}
 \figurenote{\textit{Note:} Panel (a) reports the probability of Rescue by GAULA intervention and duration category. Panel (b) presents the survival curves of captivity duration by perpetrator group. \textit{Source:} Author's calculations based on \citet{cnmh_datos}, Stata~19.}
 \end{figure}
-
-The cumulative Rescue dynamics confirm that state effectiveness varies with the organizational structure of the perpetrator. Toward day 100, the cumulative Rescue probability reaches 0.33 for paramilitaries, 0.29 for the ELN, and 0.27 for the FARC: the greater territorial exposure and more urban operational positioning of paramilitary groups increase their vulnerability to state intervention in the long run. The dynamic mortality profile (Cox margins in Figure~\ref{fig:cox-b}) reproduces the MNL hierarchy: the probability of Death reaches 0.079 in common delinquency and 0.002 in the FARC (approximately forty times higher), compared with the static MNL margins reported above (0.071 and 0.002, approximately thirty-five times), a difference that reflects that the Cox model additionally captures the temporal speed at which the lethal outcome materializes. Figure~\ref{fig:cox-b} presents these patterns.
-
+The cumulative Rescue dynamics confirm that state effectiveness varies with the organizational structure of the perpetrator. Toward day 100, the cumulative Rescue probability reaches 0.33 for paramilitaries, 0.28 for the ELN, and 0.27 for the FARC: the greater territorial exposure and more urban operational positioning of paramilitary groups increase their vulnerability to state intervention in the long run. The dynamic mortality profile (Cox margins in Figure~\ref{fig:cox-b}) reproduces the MNL hierarchy: the probability of Death reaches 0.079 in common delinquency and 0.002 in the FARC (approximately forty times higher), compared with the static MNL margins reported above (0.071 and 0.002, approximately thirty-five times), a difference that reflects that the Cox model additionally captures the temporal speed at which the lethal outcome materializes. Figure~\ref{fig:cox-b} presents these patterns.
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -486,7 +464,6 @@ The cumulative Rescue dynamics confirm that state effectiveness varies with the 
 \label{fig:cox-b}
 \figurenote{\textit{Note:} Panel (a) shows the cumulative state Rescue probability by armed group, 1964--2025. Panel (b) reports the probability of Death in captivity by perpetrator group. \textit{Source:} Author's calculations based on \citet{cnmh_datos}, Stata~19.}
 \end{figure}
-
 \section{Relevance of the Empirical Framework for the Mechanism Model}\label{sec:pertinencia}
 
 The theoretical model in Section~\ref{sec:model} requires two empirical inputs so as not to depend on ad hoc assumptions: a persistent macroeconomic environment that disciplines retention costs and a type structure with differentiated priors, technologies, and hazards. The VEC system, the Gonzalo--Granger decomposition, and Corollary~\ref{cor:equiv-trend} provide the first input. The cointegration among $K^E$, $K^{NE}$, and $r$ establishes that kidnapping for ransom does not evolve as an isolated series, but as part of a long-run system in which coercive capacity and macro-financial conditions act as permanent forces. The equivalence between the VEC--GG trend and the LLT trend prevents calibration from depending on a single econometric specification, while the adjustment structure of the VEC shows that $K^E$ is the margin that absorbs disequilibria. Therefore, the state vector of the mechanism, the feasible set $\Gamma_t(\mu_t)$, and the constraints $IC^K$ and $IR^{K,F}$ are anchored in persistent regularities, not in a purely theoretical normalization.
@@ -1118,7 +1095,7 @@ The simultaneous compatibility of this constraint with $IC^K$ and $IR^K$ is not 
 IC^K,\;IR^K,\;IR^F
 \text{ are satisfied}\Bigr\}.
 \end{equation}
-Its non-emptiness, as a condition of robust feasibility, is the primitive hypothesis of Theorem~\ref{thm:ebp-implementabilidad} that guarantees the existence of the implementable PBE. The proof of the theorem is presented in Appendix~3.
+Building on the existence framework of \citet{KadanRenySwinkels2017}, Theorem~\ref{thm:ebp-implementabilidad} treats the non-emptiness of $\Gamma_t(\mu_t)$ as the primitive robust-feasibility condition ensuring the existence of an implementable PBE. The proof is presented in Appendix~3.
 \end{definition}
 
 \begin{theorem}[Conditional implementability of the mechanism in PBE]\label{thm:ebp-implementabilidad}
@@ -1133,7 +1110,7 @@ Consider the mechanism of Definition~\ref{def:pbe-mechanism} under the following
   \[
   \Gamma_t^{a^S}(\mu_t):=\{(\alpha_t,\gamma_t):(a_t^S,\alpha_t,\gamma_t)\in\Gamma_t(\mu_t)\}
   \]
-  is convex, and the correspondence $\mu_t\mapsto\Gamma_t(\mu_t)$ is continuous \textup{(}upper and lower hemicontinuous\textup{)} and compact-valued in $\Delta(\ThetaK)$. Non-emptiness is a primitive condition of simultaneous compatibility among $IC^K$, $IR^K$, and $IR^F$.
+  is convex, and the correspondence $\mu_t\mapsto\Gamma_t(\mu_t)$ is continuous \textup{(}upper and lower hemicontinuous\textup{)} and compact-valued in $\Delta(\ThetaK)$. Non-emptiness is a primitive condition of simultaneous compatibility among $IC^K$, $IR^K$, and $IR^F$ \citep{KadanRenySwinkels2017}.
   \item[\textup{(vi)}] Parametric separability. For all $t\in\mathbb{T}$, the captor's value function admits the representation
   \[
     V^K_t\!\bigl(a^\ast(\theta')\mid\theta_K,\alpha_t,\gamma_t\bigr)
@@ -1220,11 +1197,10 @@ If $\kappa_h(\theta_K, t) > 0$ for all $t$, the expected duration of captivity $
 with the sign varying across types through the structural parameters $\beta_{K,j}(\theta_K)$.
 \end{proposition}
 \section{Calibration of the mechanism and simulations}\label{sec:calibracion}
-\vspace{-\smallskipamount}\normalfont\normalsize
+\normalfont\normalsize
 This section calibrates the dynamic mechanism of Section~\ref{sec:model} in two simulated episodes of finite horizon. The exercise combines macro and microeconometric priors and diagnostics to study four objects: the evolution of beliefs $\mu_\tau(\theta)$, the signals observed by the state, the response of the instruments $(\alpha_t,\gamma_t)$, and compliance with the IR and IC constraints. \emph{Scenario~I} corresponds to ELN, with $\theta_K^\ast=\mathrm{ELN}$, lax state, low-wealth family, public victim, and Caribbean location; \emph{Scenario~II} corresponds to PAR, with $\theta_K^\ast=\mathrm{PAR}$, lax state, high-wealth family, private victim, and East--Jungle location. Both are simulated over a fixed horizon $\bar{T}=150$ periods---a calibration parameter distinct from the endogenous stopping time $\tau$ defined in~\eqref{eq:stopping-time}---and optimal policy is computed from the state's minimization of social cost. In the order $(\mathrm{DC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC})$, the initial priors are $\mu_0^{\mathrm{ELN}}=(0.25,0.35,0.05,0.35)$ and $\mu_0^{\mathrm{PAR}}=(0.55,0.05,0.35,0.05)$. In the figures, the gray bar marks the realized stopping time $\tau$ (the first period with $m_\tau\in\mathcal{M}_{\mathrm{term}}$); the trajectory after that bar is a counterfactual extension under an absorbing state---the mechanism law conditioned on non-absorption---that illustrates learning and identification dynamics independently of the closure moment, without constituting a real episode trajectory.
 
 The posterior of the true type allows evaluating the capability of the mechanism to separate types from the sequence of signals. In the ELN scenario, reported in Figure~\ref{fig:cal-eln-par-mu}, posterior mass shifts gradually toward ELN until reaching $\mu_{150}(\mathrm{ELN})\approx 1{,}000$; this implies that the mechanism accumulates identification even in an environment with lower family wealth and a public victim. In PAR, the posterior of the true type starts from $\mu_0(\mathrm{PAR})=0{,}050$ and reaches $\mu_{150}(\mathrm{PAR})\approx 1{,}000$; the trajectory is not monotone in the initial phase, because the event combines early signals compatible with other types and then shifts mass toward PAR. The gray bars mark the realized stopping time ($\tau=16$ in ELN, $\tau=5$ in PAR); the subsequent counterfactual extension shows that the speed of learning and the absorption moment are distinct objects of the model. Taken together, the figure illustrates finite-horizon behavior: posterior mass shifts toward the true type as signals accumulate separation, in the direction predicted by Theorem~\ref{thm:posterior-consistency} under $\mathcal{T}$, without constituting direct evidence for the asymptotic result; the speed of convergence depends on the institutional, territorial, and case-visibility environment.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1241,9 +1217,7 @@ The posterior of the true type allows evaluating the capability of the mechanism
 \label{fig:cal-eln-par-mu}
 \figurenote{\textit{Note:} Panel (a) corresponds to Scenario~I: $\theta_K^\ast=\mathrm{ELN}$, lax $\theta_S$, low-wealth $\theta_F$, public $\theta_V$, and Caribbean $z$. Panel (b) corresponds to Scenario~II: $\theta_K^\ast=\mathrm{PAR}$, lax $\theta_S$, high-wealth $\theta_F$, private $\theta_V$, and East--Jungle $z$. The gray band marks $\tau^{\mathrm{hyp}}$, the first period in which the mechanism outcome differs from continuation.}
 \end{figure}
-
 The optimal operational pressure allows evaluating how the state adjusts the intensity of intervention as it learns about the captor's type. Figure~\ref{fig:cal-eln-par-gamma} compares the trajectory of $\gamma_t^\ast$ with the Rescue benchmark $\gamma^R$, which takes the value $\gamma^R=0{,}92$ in ELN and $\gamma^R=0{,}86$ in PAR. In the ELN scenario, $\gamma_t^\ast$ is located on average around $\bar\gamma^\ast\approx 0{,}908$ and remains close, though below, the Rescue benchmark, consistent with a Caribbean environment and lax state. In PAR, pressure remains near the Rescue benchmark and reaches $\bar\gamma^\ast\approx 0{,}868$, consistent with an East--Jungle environment and lax state where intervention retains value even when the focal outcome of the event is payment. In both cases, $\gamma_t^\ast$ does not mechanically replicate either the Rescue or the Negotiate branch: dual control combines exploitation of the instrument and expected information, so the series fluctuates between benchmarks according to the material risk of the episode and the value of separating types.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1260,9 +1234,7 @@ The optimal operational pressure allows evaluating how the state adjusts the int
 \label{fig:cal-eln-par-gamma}
 \figurenote{\textit{Note:} Panel (a) shows the operational pressure trajectory in Scenario~I (ELN). Panel (b) shows the equivalent trajectory in Scenario~II (PAR). The dashed line corresponds to the Rescue benchmark $\gamma^R$. The gray band marks $\tau^{\mathrm{hyp}}$.}
 \end{figure}
-
 The optimal financial interdiction summarizes the intensity with which the state restricts payment capacity and economic coordination during the episode. Figure~\ref{fig:cal-eln-par-alpha} compares the trajectory of $\alpha_t^\ast$ with the Rescue benchmark $\alpha^R$, which takes the value $\alpha^R=0{,}90$ in ELN and $\alpha^R=0{,}84$ in PAR. In ELN, $\bar\alpha^\ast\approx 0{,}908$ and the instrument remains at elevated levels, compatible with a public victim and low-wealth case where the block operates more as strategic containment than as closure of a high payment capacity. In PAR, $\bar\alpha^\ast\approx 0{,}901$ and the trajectory remains elevated over much of the support, indicating that the block retains high strategic value when the state is lax, the family has high wealth, and the East--Jungle region opens room for payments. Thus, $\alpha_t^\ast$ does not mechanically replicate a pure branch: it moves between Rescue and Negotiate benchmarks according to accumulated information, family payment capacity, and the value of inducing separation among types.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1279,9 +1251,7 @@ The optimal financial interdiction summarizes the intensity with which the state
 \label{fig:cal-eln-par-alpha}
 \figurenote{\textit{Note:} Panel (a) presents the optimal financial interdiction in Scenario~I (ELN). Panel (b) presents the same instrument in Scenario~II (PAR). The dashed line corresponds to the Rescue benchmark $\alpha^R$. The gray band marks $\tau^{\mathrm{hyp}}$.}
 \end{figure}
-
 The posterior precision, defined as $\iota_t=\max_{\theta\in\ThetaK}\mu_t(\theta)$, allows observing how operational pressure changes when the state gains confidence about the identity of the true type. Figure~\ref{fig:cal-eln-par-iota-gamma} reorders the simulation on the plane $(\iota_t,\gamma_t^\ast)$; the arrows indicate the advance of $\tau$ and avoid interpreting the observations as a linear interpolation. In ELN, posterior precision increases gradually while operational pressure remains high but contained, reflecting learning without immediate collapse toward a single dominant signal. In PAR, the trajectory concentrates in a zone of high pressure and rising precision, consistent with an episode in which information requires a longer window before resolving the captor's identity.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1298,9 +1268,7 @@ The posterior precision, defined as $\iota_t=\max_{\theta\in\ThetaK}\mu_t(\theta
 \label{fig:cal-eln-par-iota-gamma}
 \figurenote{\textit{Note:} Panel (a) corresponds to Scenario~I (ELN) and panel (b) to Scenario~II (PAR). Each trajectory shows 20 arrows traced over homogeneous intervals of $\tau$; the circle identifies the end point of the simulation, $\tau=150$.}
 \end{figure}
-
 Financial interdiction against posterior precision allows evaluating whether learning reduces or reinforces the need to restrict payment capacity. In the ELN scenario, reported in Figure~\ref{fig:cal-eln-par-iota-alpha}, $\alpha_t^\ast$ remains high while $\iota_t$ increases, indicating that identifying the insurgent type does not eliminate the value of maintaining preventive interdiction in a public-victim, low-wealth case. Something similar occurs in PAR: although the posterior accumulates precision, $\alpha_t^\ast$ remains at high levels over much of the support. This pattern is consistent with environments where the state is lax and financial interdiction retains relevance as an instrument of control, payment containment, and induction of separation among types.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1317,9 +1285,7 @@ Financial interdiction against posterior precision allows evaluating whether lea
 \label{fig:cal-eln-par-iota-alpha}
 \figurenote{\textit{Note:} Panel (a) corresponds to Scenario~I (ELN) and panel (b) to Scenario~II (PAR). Each trajectory shows 20 arrows traced over homogeneous intervals of $\tau$; the circle identifies the end point of the simulation, $\tau=150$.}
 \end{figure}
-
 The constraints diagnostic confirms that the strategic feasibility of the mechanism is preserved in both scenarios. As Figure~\ref{fig:cal-eln-par-iric} shows, the captor's incentive constraint ($\mathrm{IC}^K$), the captor's participation constraint ($\mathrm{IR}^K$), and the family's participation constraint ($\mathrm{IR}^F$) are satisfied in all 150 simulated cycles in ELN and PAR. The verification is \emph{a posteriori} with respect to the true type $\theta_K^\ast$: the optimal instruments $(a_S^\ast,\alpha_t^\ast,\gamma_t^\ast)$ are evaluated directly on the utilities of the true type, without weighting by the belief $\mu_t$. The mechanism is therefore feasible in an ex-post sense: given $\theta_K^\ast$, optimal policy satisfies incentive compatibility and participation without abandoning the informational component.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1336,9 +1302,7 @@ The constraints diagnostic confirms that the strategic feasibility of the mechan
 \label{fig:cal-eln-par-iric}
 \figurenote{\textit{Note:} Panel (a) summarizes compliance with the captor's incentive compatibility, the captor's participation, and the family's participation in Scenario~I (ELN). Panel (b) presents the same diagnostic for Scenario~II (PAR). Percentages are computed over the simulated cycles of each scenario.}
 \end{figure}
-
 The expected informational gain $\Delta H_t$ quantifies the anticipated reduction in entropy induced by the state's instruments, in the sense of the optimal dynamic acquisition of information of \citet{Zhong2022}. That informational subsidy concentrates at the start of the simulation, as illustrated in Figure~\ref{fig:cal-eln-par-dh}: in ELN it reaches its maximum at $\tau=10$ with $\Delta H_{10}\approx 0{,}043$, and in PAR at $\tau=6$ with $\Delta H_6\approx 0{,}035$. As $\Delta H_t$ converges to zero, additional observations cease to reduce posterior uncertainty and optimal decision comes to be governed by material losses and a belief already concentrated on the true type.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1355,9 +1319,7 @@ The expected informational gain $\Delta H_t$ quantifies the anticipated reductio
 \label{fig:cal-eln-par-dh}
 \figurenote{\textit{Note:} Panel (a) corresponds to Scenario~I (ELN) and panel (b) to Scenario~II (PAR). The series reports the expected entropy reduction induced by the state's optimal policy in each simulated cycle.}
 \end{figure}
-
 In both scenarios and for all types, $\kappa_h(\theta_K^\ast,t)>0$ in 100\,\% of simulated cycles, as shown in Figure~\ref{fig:cal-eln-par-kh}. By the relation $\operatorname{sgn}(\partial\,\mathbb{E}[\tau\mid\theta_K]/\partial\gamma_t^\ast)=-\operatorname{sgn}(\kappa_h)$, this implies $\partial\,\mathbb{E}[\tau\mid\theta_K]/\partial\gamma_t^\ast<0$: higher operational pressure \emph{reduces} expected captivity duration without exception. The mechanism does not face a trade-off between exploiting the instrument and learning: operational pressure shortens captivity and, by modifying closure hazards, simultaneously generates signals that separate the likelihoods of rival types and accelerate posterior convergence.
-
 \begin{figure}[H]
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
@@ -1374,7 +1336,6 @@ In both scenarios and for all types, $\kappa_h(\theta_K^\ast,t)>0$ in 100\,\% of
 \label{fig:cal-eln-par-kh}
 \figurenote{\textit{Note:} Each panel traces $\kappa_h(\theta_K^\ast,t)$ for the true type of the scenario. A constant value of $+1$ implies $-\operatorname{sgn}(\kappa_h)=-1$ in 100\,\% of cycles, that is, $\partial\,\mathbb{E}[\tau\mid\theta_K]/\partial\gamma_t^\ast<0$: operational pressure $\gamma_t^\ast$ \emph{reduces} expected captivity duration over the entire support; the horizontal dashed line marks the reference zero.}
 \end{figure}
-
 The hypothetical terminal outcomes differ across scenarios: \emph{Release} in ELN ($\tau^{\mathrm{hyp}}=16$) and \emph{Death} in PAR ($\tau^{\mathrm{hyp}}=5$). In both cases the posterior starts from $\mu_0(\theta^\ast)=0{,}050$ and converges to $\mu_{150}(\theta^\ast)\approx 1{,}000$, with $\bar\alpha^\ast$ and $\bar\gamma^\ast$ above 0{,}86 in all scenarios. These results are summarized in Table~\ref{tab:calibracion-resumen}.
 
 \begin{table}[htbp]

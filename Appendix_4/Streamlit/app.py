@@ -59,13 +59,13 @@ from rational_behavior import (
 
 
 # Horizonte trayectoria bayesiana Tabla 14 / inducción secuestrador (K)
-_TAB14_TRAJ_TMAX = 100
+_TAB14_TRAJ_TMAX = 300
 _TAB14_LIKELIHOOD_VERSION = 8
 _TAB15_SWITCH_TARGETS = {
-    "DC": 12,
-    "PAR": 25,
-    "ELN": 50,
-    "FARC": 80,
+    "DC": 40,
+    "PAR": 80,
+    "ELN": 160,
+    "FARC": 250,
 }
 _TAB15_FIXED_COST_COEFFS = {
     # C(γ_t, θ_K)=ϕ(θ_K) exp(κ_c(θ_K) γ_t)+ν(θ_K).
@@ -1120,7 +1120,7 @@ def render_tab15_switch_summary_katex(summary: dict[str, Any]) -> None:
 
 def _katex_label_html(expr: str, element_id: str = "lbl") -> str:
     """HTML seguro: LaTeX en ``textContent`` (evita que ``\\t`` de ``\\text`` rompa en JS)."""
-    safe = html.escape(str(expr), quote=False)
+    safe = html.escape(_translate_latex_expression(str(expr)), quote=False)
     return (
         f'<span class="math" id="{element_id}">{safe}</span>'
         f"<script>\n"
@@ -1198,7 +1198,7 @@ def rb_katex_grid_header(
     if not labels:
         return
     try:
-        payload = json.dumps([str(x) for x in labels])
+        payload = json.dumps([_translate_latex_expression(str(x)) for x in labels])
     except (TypeError, ValueError):
         return
     if wide:
@@ -1265,7 +1265,7 @@ html,body{{margin:0;padding:0;overflow-x:auto;overflow-y:visible;background:tran
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="Tablero Bayesiano (Golden Edition)", 
+    page_title="Identification of Rational Types",
     page_icon="⚖️", 
     layout="wide"
 )
@@ -1340,6 +1340,697 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+
+# --- IDIOMA / LANGUAGE ---
+_LANG_OPTIONS = ["English", "Español"]
+if "app_language" not in st.session_state:
+    st.session_state["app_language"] = "English"
+if st.session_state.get("app_language") not in _LANG_OPTIONS:
+    st.session_state["app_language"] = "English"
+
+
+def _ui_text(en: str, es: str) -> str:
+    """Texto de la interfaz mínima controlada por la app."""
+    return en if st.session_state.get("app_language", "English") == "English" else es
+
+
+def _inject_page_translator() -> None:
+    """Traduce el DOM completo entre español e inglés con el widget de Google Translate.
+
+    La app original está escrita mayoritariamente en español. Esta capa conserva el
+    contenido fuente y aplica traducción de página cuando el usuario selecciona inglés.
+    """
+    target_lang = "en" if st.session_state.get("app_language", "English") == "English" else "es"
+    components.html(
+        f"""
+<script>
+(function() {{
+  const targetLang = {json.dumps(target_lang)};
+  const parentWindow = window.parent;
+  const parentDocument = parentWindow.document;
+
+  function setCookie(name, value) {{
+    const expires = 'expires=' + new Date(Date.now() + 365*24*60*60*1000).toUTCString();
+    const host = parentWindow.location.hostname;
+    parentDocument.cookie = name + '=' + value + ';' + expires + ';path=/';
+    if (host && host.indexOf('.') >= 0) {{
+      parentDocument.cookie = name + '=' + value + ';' + expires + ';path=/;domain=' + host;
+    }}
+  }}
+
+  setCookie('googtrans', '/es/' + targetLang);
+
+  let root = parentDocument.getElementById('google_translate_element');
+  if (!root) {{
+    root = parentDocument.createElement('div');
+    root.id = 'google_translate_element';
+    root.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;';
+    parentDocument.body.appendChild(root);
+  }}
+
+  const styleId = 'app-language-google-translate-css';
+  if (!parentDocument.getElementById(styleId)) {{
+    const style = parentDocument.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .goog-te-banner-frame.skiptranslate,
+      iframe.goog-te-banner-frame,
+      .goog-te-balloon-frame,
+      #goog-gt-tt {{ display:none !important; visibility:hidden !important; }}
+      body {{ top:0 !important; }}
+    `;
+    parentDocument.head.appendChild(style);
+  }}
+
+  function applySelection() {{
+    protectMath();
+    const combo = parentDocument.querySelector('.goog-te-combo');
+    if (!combo) return false;
+    const desired = targetLang === 'es' ? 'es' : 'en';
+    if (combo.value !== desired) {{
+      combo.value = desired;
+      combo.dispatchEvent(new Event('change'));
+    }}
+    return true;
+  }}
+
+  function protectMath() {{
+    parentDocument
+      .querySelectorAll('.katex, .katex-html, .katex-mathml, .math, [data-katex], [data-latex], script, style')
+      .forEach(function(el) {{
+        el.classList && el.classList.add('notranslate');
+        el.setAttribute && el.setAttribute('translate', 'no');
+      }});
+  }}
+
+  if (!parentWindow.__rationalTypesMathObserver) {{
+    parentWindow.__rationalTypesMathObserver = new MutationObserver(function() {{
+      protectMath();
+    }});
+    parentWindow.__rationalTypesMathObserver.observe(parentDocument.body, {{
+      childList: true,
+      subtree: true
+    }});
+  }}
+
+  function keepApplying() {{
+    let attempts = 0;
+    const timer = parentWindow.setInterval(function() {{
+      attempts += 1;
+      applySelection();
+      if (attempts >= 12) parentWindow.clearInterval(timer);
+    }}, 1000);
+  }}
+
+  parentWindow.googleTranslateElementInit = function() {{
+    new parentWindow.google.translate.TranslateElement({{
+      pageLanguage: 'es',
+      includedLanguages: 'en,es',
+      autoDisplay: false,
+      multilanguagePage: true
+    }}, 'google_translate_element');
+    setTimeout(applySelection, 300);
+    setTimeout(applySelection, 900);
+    keepApplying();
+  }};
+
+  if (!parentDocument.getElementById('google-translate-script')) {{
+    const script = parentDocument.createElement('script');
+    script.id = 'google-translate-script';
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    parentDocument.head.appendChild(script);
+  }} else {{
+    if (parentWindow.google && parentWindow.google.translate && !parentDocument.querySelector('.goog-te-combo')) {{
+      parentWindow.googleTranslateElementInit();
+    }}
+    applySelection();
+    setTimeout(applySelection, 500);
+    keepApplying();
+  }}
+}})();
+</script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
+_ES_EN_REPLACEMENTS = [
+    ("Español", "Spanish"),
+    ("Sistema de Análisis Dinámico de Mecanismos", "Dynamic Mechanism Analysis System"),
+    ("Identificación de tipos racionales", "Identification of Rational Types"),
+    ("Elaborado por", "Prepared by"),
+    ("en Economía", "in Economics"),
+    ("Simulación e Incidente", "Simulation and Incident"),
+    ("Simulación diaria y proceso MDG", "Daily Simulation and MDG Process"),
+    ("Configuración e Inicio", "Setup and Start"),
+    ("Distribución ex-ante", "Ex-ante Distribution"),
+    ("Fundamentación", "Rationale"),
+    ("Parámetros para la selección actual", "Parameters for the Current Selection"),
+    ("Selección de priors", "Prior Selection"),
+    ("Configuración Manual de Probabilidades", "Manual Probability Configuration"),
+    ("Mapa regional por municipio", "Regional Map by Municipality"),
+    ("Probabilidades efectivas", "Effective Probabilities"),
+    ("Probabilidad de supervivencia", "Survival Probability"),
+    ("Probabilidad de captura", "Capture Probability"),
+    ("Medición de voz", "Voice Measurement"),
+    ("Trayectoria de voz del incidente", "Incident Voice Trajectory"),
+    ("Verosimilitudes de voz", "Voice Likelihoods"),
+    ("Verosimilitud física", "Physical Likelihood"),
+    ("Verosimilitud conjunta observable", "Observable Joint Likelihood"),
+    ("Actualización de creencias", "Belief Updating"),
+    ("Comportamiento racional", "Rational Behavior"),
+    ("Conjuntos de Información y Espacios del Modelo", "Information Sets and Model Spaces"),
+    ("Espacios de Acción y Resultados", "Action and Outcome Spaces"),
+    ("Estructura del mecanismo", "Mechanism Structure"),
+    ("Problema de los 3 jugadores", "Three-Player Problem"),
+    ("Optimización formal y valores calibrados", "Formal Optimization and Calibrated Values"),
+    ("Solución Mecanismo", "Mechanism Solution"),
+    ("Visualización dinámica del mecanismo", "Dynamic Mechanism Visualization"),
+    ("Gráficas dinámica", "Dynamic Charts"),
+    ("Creencias", "Beliefs"),
+    ("Política óptima", "Optimal Policy"),
+    ("Frecuencia de decisiones óptimas", "Frequency of Optimal Decisions"),
+    ("Frecuencia de la señal de voz", "Voice Signal Frequency"),
+    ("Frecuencia de la señal de detección", "Detection Signal Frequency"),
+    ("Ganancia esperada de información", "Expected Information Gain"),
+    ("Verificación IR / IC", "IR / IC Verification"),
+    ("Informe PDF e infografía", "PDF Report and Infographic"),
+    ("Bitácora de semillas dinámicas", "Dynamic Seed Log"),
+    ("Riesgos competitivos y maduración", "Competing Risks and Maturation"),
+    ("Sorteo MDG", "MDG Draw"),
+    ("Voz y silencio", "Voice and Silence"),
+    ("Aprendizaje y convergencia", "Learning and Convergence"),
+    ("Justificación empírica", "Empirical Justification"),
+    ("Resultado posterior", "Posterior Result"),
+    ("Iniciar proceso", "Start Process"),
+    ("Avanzar ciclos", "Advance Cycles"),
+    ("Sortear m", "Draw m"),
+    ("Aplicar parámetros", "Apply Parameters"),
+    ("Guardar urgencia", "Save Urgency"),
+    ("Guardar captura", "Save Capture"),
+    ("Restablecer captura", "Reset Capture"),
+    ("Generar informe e infografía", "Generate Report and Infographic"),
+    ("Descargar infografía", "Download Infographic"),
+    ("Exportar figuras APA", "Export APA Figures"),
+    ("Cargar gráficas", "Load Charts"),
+    ("Simular trayectoria", "Simulate Trajectory"),
+    ("GENERAR SORTEO", "GENERATE DRAW"),
+    ("Regla de Cierre", "Closure Rule"),
+    ("Grupo secuestrador", "Kidnapper Group"),
+    ("Capacidad de pago", "Payment Capacity"),
+    ("Tipo de Estado", "State Type"),
+    ("Región de cautiverio", "Captivity Region"),
+    ("Perfil de la víctima", "Victim Profile"),
+    ("Desenlace focal", "Focal Outcome"),
+    ("bloqueo financiero", "financial blockade"),
+    ("presión operativa", "operational pressure"),
+    ("Número de corridas", "Number of Runs"),
+    ("Horizonte máximo", "Maximum Horizon"),
+    ("Semillas", "Seeds"),
+    ("Semilla visible", "Visible Seed"),
+    ("Semilla efectiva", "Effective Seed"),
+    ("Corrida dinámica actual", "Current Dynamic Run"),
+    ("corrida dinámica", "dynamic run"),
+    ("ciclos dinámicos", "dynamic cycles"),
+    ("Presione", "Press"),
+    ("Seleccione", "Select"),
+    ("Edite", "Edit"),
+    ("parámetros actuales", "current parameters"),
+    ("parámetros", "parameters"),
+    ("mecanismo", "mechanism"),
+    ("incidente", "incident"),
+    ("trayectoria", "trajectory"),
+    ("señal", "signal"),
+    ("voz", "voice"),
+    ("silencio", "silence"),
+    ("detección", "detection"),
+    ("colusión", "collusion"),
+    ("familia", "family"),
+    ("secuestrador", "kidnapper"),
+    ("Estado", "State"),
+    ("estado", "state"),
+    ("víctima", "victim"),
+    ("cautiverio", "captivity"),
+    ("desenlace", "outcome"),
+    ("desenlaces", "outcomes"),
+    ("resultado", "result"),
+    ("resultados", "results"),
+    ("acción ejecutada", "executed action"),
+    ("acción óptima", "optimal action"),
+    ("acciones", "actions"),
+    ("probabilidad", "probability"),
+    ("probabilidades", "probabilities"),
+    ("creencia", "belief"),
+    ("creencias", "beliefs"),
+    ("verosimilitud", "likelihood"),
+    ("verosimilitudes", "likelihoods"),
+    ("implementación", "implementation"),
+    ("materialización", "materialization"),
+    ("maduración", "maturation"),
+    ("supervivencia", "survival"),
+    ("captura", "capture"),
+    ("rescate", "rescue"),
+    ("muerte", "death"),
+    ("pago", "payment"),
+    ("liberación", "release"),
+    ("continuar", "continue"),
+    ("Continuar", "Continue"),
+    ("Rescate", "Rescue"),
+    ("Muerte", "Death"),
+    ("Pago", "Payment"),
+    ("Liberación", "Release"),
+    ("Tabla", "Table"),
+    ("tabla", "table"),
+    ("Pestaña", "Tab"),
+    ("pestaña", "tab"),
+    ("Gráfica", "Chart"),
+    ("gráfica", "chart"),
+    ("gráficas", "charts"),
+    ("dinámica", "dynamic"),
+    ("dinámico", "dynamic"),
+    ("dinámicas", "dynamic"),
+    ("óptima", "optimal"),
+    ("óptimo", "optimal"),
+    ("teórico", "theoretical"),
+    ("teórica", "theoretical"),
+    ("empírica", "empirical"),
+    ("empírico", "empirical"),
+    ("ilustrativo", "illustrative"),
+    ("actual", "current"),
+    ("guardada", "saved"),
+    ("guardado", "saved"),
+    ("borrada", "deleted"),
+    ("borrado", "deleted"),
+    ("Guardar", "Save"),
+    ("Borrar", "Delete"),
+    ("Restablecer", "Reset"),
+    ("Cargar", "Load"),
+    ("Generar", "Generate"),
+    ("Simular", "Simulate"),
+    ("No hay", "There are no"),
+    ("Valores", "Values"),
+    ("Valor", "Value"),
+    ("Término", "Term"),
+    ("Coeficiente", "Coefficient"),
+    ("Origen del valor", "Value Source"),
+    ("Parámetro", "Parameter"),
+    ("Observado", "Observed"),
+    ("Período", "Period"),
+    ("Día", "Day"),
+    ("Motivo", "Reason"),
+    ("Familia-Secuestrador", "Family-Kidnapper"),
+    ("Familia", "Family"),
+    ("Secuestrador", "Kidnapper"),
+    ("Duro", "Hard"),
+    ("Laxo", "Soft"),
+    ("Alta Riqueza", "High Wealth"),
+    ("Baja Riqueza", "Low Wealth"),
+    ("Público", "Public"),
+    ("Sí", "Yes"),
+    ("No", "No"),
+    ("Comunicación", "Communication"),
+    ("comunicación", "communication"),
+    ("Capturar", "Capture"),
+    ("Grupo", "Group"),
+    ("Nueva semilla", "New Seed"),
+    ("Parámetros aplicados", "Parameters Applied"),
+    ("Valores Prior", "Prior Values"),
+    ("Valores Observado", "Observed Values"),
+    ("Trayectoria", "Trajectory"),
+    ("Señal", "Signal"),
+    ("señales públicas", "public signals"),
+    ("Voz", "Voice"),
+    ("Silencio", "Silence"),
+    ("Acción", "Action"),
+    ("Implementación", "Implementation"),
+    ("Materialización", "Materialization"),
+    ("Maximización", "Maximization"),
+    ("Minimización", "Minimization"),
+    ("Bloque", "Block"),
+    ("bloque", "block"),
+    ("Pulse", "Click"),
+    ("Use", "Use"),
+    ("parámetro", "parameter"),
+    ("sesión", "session"),
+    ("restablecidos", "reset"),
+    ("restablecido", "reset"),
+    ("guardados", "saved"),
+    ("guardado", "saved"),
+    ("aplicada", "applied"),
+    ("aplicado", "applied"),
+    ("activa", "active"),
+    ("ajustado", "adjusted"),
+    ("ajustará", "will be adjusted"),
+    ("recalcular", "recalculate"),
+    ("recalcula", "recalculates"),
+    ("visualizarlo", "view it"),
+    ("acumulados", "accumulated"),
+    ("municipios", "municipalities"),
+    ("municipio", "municipality"),
+    ("datos", "data"),
+    ("Dato", "Data"),
+    ("Causa", "Cause"),
+    ("Covariables foco", "Focus Covariates"),
+    ("foco", "focus"),
+    ("Propensión", "Propensity"),
+    ("referencia archivada", "archived reference"),
+    ("referencia", "reference"),
+    ("Frecuencia alta", "High Frequency"),
+    ("Frecuencia baja", "Low Frequency"),
+    ("frecuencia", "frequency"),
+    ("Urgencia", "Urgency"),
+    ("urgencia", "urgency"),
+    ("Osciloscopio", "Oscilloscope"),
+    ("visor", "viewer"),
+    ("ilustración", "illustration"),
+    ("rasgo", "feature"),
+    ("alta", "high"),
+    ("baja", "low"),
+    ("por tipo", "by type"),
+    ("tipo", "type"),
+    ("tecnología", "technology"),
+    ("Pesos", "Weights"),
+    ("pesos", "weights"),
+    ("Peso", "Weight"),
+    ("piso de ruido", "noise floor"),
+    ("temperatura base", "base temperature"),
+    ("decaimiento", "decay"),
+    ("modelo teórico", "theoretical model"),
+    ("transformada inversa", "inverse transform"),
+    ("panel superior", "top panel"),
+    ("resultado de", "result of"),
+    ("Historia pública inicial", "Initial Public History"),
+    ("historia pública", "public history"),
+    ("información", "information"),
+    ("Información", "Information"),
+    ("espacios", "spaces"),
+    ("estructuras", "structures"),
+    ("Rama", "Branch"),
+    ("rama", "branch"),
+    ("cooperación", "cooperation"),
+    ("preferida", "preferred"),
+    ("utilidades esperadas", "expected utilities"),
+    ("fila", "row"),
+    ("filas", "rows"),
+    ("No se pudo construir", "Could not build"),
+    ("compartido", "shared"),
+    ("arriba", "above"),
+    ("columna", "column"),
+    ("alimenta", "feeds"),
+    ("convergencia", "convergence"),
+    ("Bitácora", "Log"),
+    ("última corrida", "last run"),
+    ("terminal observado", "observed terminal state"),
+    ("umbral", "threshold"),
+    ("pruebe otra semilla", "try another seed"),
+    ("más días", "more days"),
+    ("masa", "mass"),
+    ("supera", "exceeds"),
+    ("alcanza", "is reached"),
+    ("actualización", "updating"),
+    ("normalización", "normalization"),
+    ("restricción", "constraint"),
+    ("restricciones", "constraints"),
+    ("cumple", "satisfied"),
+    ("nota", "note"),
+    ("pérdida", "loss"),
+    ("centros bayesianos", "Bayesian centers"),
+    ("penalización", "penalty"),
+    ("ganancia informacional", "information gain"),
+    ("programa global", "global program"),
+    ("regla discreta", "discrete rule"),
+    ("factible", "feasible"),
+    ("auditoría", "audit"),
+    ("posición", "position"),
+    ("presión operacional", "operational pressure"),
+    ("informe", "report"),
+    ("infografía", "infographic"),
+    ("Construyendo", "Building"),
+    ("Descargar", "Download"),
+    ("instale", "install"),
+    ("disponible", "available"),
+    ("Activar cálculo de log-verosimilitud", "Enable log-likelihood calculation"),
+    ("cálculo", "calculation"),
+    ("log-verosimilitud", "log-likelihood"),
+    ("desenlaces absorbentes", "absorbing outcomes"),
+    ("Cierre ciclo base", "Base Cycle Closure"),
+    # --- short phrases missing from earlier entries ---
+    ("fuerza prior Beta", "prior Beta strength"),
+    ("Llamada", "Call"),
+    ("Sí", "Yes"),
+    ("con el mismo", "with the same"),
+    ("para recalcular", "to recalculate"),
+    ("Controles actuales", "Current controls"),
+    ("aleatoria", "random"),
+    ("únicamente al presionar", "only by pressing"),
+    ("semilla", "seed"),
+    ("realizada", "realized"),
+    ("pestaña 2", "tab 2"),
+    ("modelo vs manual", "model vs manual"),
+    ("origen de los Priors para la simulación", "source of Priors for the simulation"),
+    ("Selecciona el", "Select the"),
+    ("Ingresa los valores para los primeros 3 grupos", "Enter the values for the first 3 groups"),
+    ("se ajustará automáticamente para que la suma sea 100", "will be automatically adjusted so the sum is 100"),
+    ("Todos los valores deben ser estrictamente mayores a 0", "All values must be strictly greater than 0"),
+    ("ya es el 100% o más", "is already 100% or more"),
+    ("lo cual no es válido", "which is not valid"),
+    ("Reduce los valores", "Reduce the values"),
+    ("Configuración Manual Activa", "Manual Configuration Active"),
+    ("se ha ajustado a", "has been adjusted to"),
+    ("Cada polígono es un", "Each polygon is a"),
+    ("el color muestra la", "the color shows the"),
+    ("provienen de la misma base de casos que usa la aplicación", "come from the same case database used by the application"),
+    ("no cargado en el inicio para acelerar la app", "not loaded at startup to speed up the app"),
+    ("Use el botón para visualizarlo", "Use the button to view it"),
+    ("Total de secuestros acumulados", "Total accumulated kidnappings"),
+    ("suma de todos los municipios con datos", "sum of all municipalities with data"),
+    ("Cobertura temporal del panel municipal", "Temporal coverage of the municipal panel"),
+    ("Primer año con registro", "First year with records"),
+    ("Último año con registro", "Last year with records"),
+    ("Total Secuestros", "Total Kidnappings"),
+    ("Primer Año", "First Year"),
+    ("Último Año", "Last Year"),
+    ("Total de secuestros", "Total kidnappings"),
+    ("Departamento", "Department"),
+    ("No se pudo cargar el mapa municipal", "Could not load the municipal map"),
+    ("o no hay datos para graficar", "or there are no data to plot"),
+    ("Comprueba que el archivo", "Check that the file"),
+    ("esté en la misma carpeta que", "is in the same folder as"),
+    ("tenga registros", "has records"),
+    ("luego reinicia la aplicación", "then restart the application"),
+    ("Desenlace focal en Tabla 1", "Focal Outcome in Table 1"),
+    ("Editar valores Prior", "Edit Prior Values"),
+    ("guardados en la sesión", "saved in the session"),
+    ("Vuelve a los valores base", "Resets to base values"),
+    ("restablecidos", "reset"),
+    ("Mide la probabilidad técnica de captura dado el entorno y las políticas aplicadas", "Measures the technical capture probability given the environment and applied policies"),
+    ("Es fundamental para la verosimilitud de supervivencia del captor", "It is fundamental for the captor's survival likelihood"),
+    ("Editar captura", "Edit Capture"),
+    ("Frecuencia alta", "High Frequency"),
+    ("Frecuencia baja", "Low Frequency"),
+    ("Aplica", "Applies"),
+    ("Escala aplicada en ambos modos", "Scale applied in both modes"),
+    ("La frecuencia baja es el 20% de la alta", "Low frequency is 20% of the high"),
+    ("Pulse", "Press"),
+    ("para generar una señal de ejemplo", "to generate a sample signal"),
+    ("Agente a analizar", "Agent to analyze"),
+    ("Resetear al modelo teórico", "Reset to theoretical model"),
+    ("Desenlace físico a calibrar", "Physical outcome to calibrate"),
+    ("Pesos del vector de tecnología", "Technology vector weights"),
+    ("Materialización", "Materialization"),
+    ("Arquitectura estocástica del", "Stochastic architecture of the"),
+    ("Transforma la", "Transforms the"),
+    ("intención estratégica", "strategic intention"),
+    ("realizaciones observables", "observable realizations"),
+    ("Fase 1", "Phase 1"),
+    ("Fase 2", "Phase 2"),
+    ("Implementación de la Intención", "Implementation of Intention"),
+    ("Materialización del Desenlace", "Outcome Materialization"),
+    ("los intervalos se construyen con la ley física activa", "the intervals are built with the active physical law"),
+    ("Los corchetes en negrita indican la caída del sorteo", "Bold brackets indicate the draw outcome"),
+    ("Historia pública y conjuntos de información", "Public history and information sets"),
+    ("Edita la fila inicial", "Edit the initial row"),
+    ("comprueba el resultado en la tabla pública", "check the result in the public table"),
+    ("Acciones iniciales", "Initial actions"),
+    ("Historia pública inicial", "Initial public history"),
+    ("Estado ($S$): minimización en", "State ($S$): minimization in"),
+    ("Los valores calibrados provienen del", "The calibrated values come from the"),
+    ("Abra la pestaña", "Open tab"),
+    ("desplácese hasta", "scroll to"),
+    ("para generar los valores calibrados", "to generate the calibrated values"),
+    ("Pestaña 6", "Tab 6"),
+    ("Visualización dinámica del mecanismo", "Dynamic mechanism visualization"),
+    ("Paneles construidos a partir de", "Panels built from"),
+    ("Cada gráfica va seguida de una lectura breve", "Each chart is followed by a brief reading"),
+    ("anclada en los números de la corrida", "anchored in the run numbers"),
+    ("No hay ciclos dinámicos", "No dynamic cycles"),
+    ("tras", "after"),
+    ("Cargar gráficas de pestaña 6", "Load tab 6 charts"),
+    ("Renderiza las gráficas usando los ciclos ya calculados", "Renders the charts using the already-computed cycles"),
+    ("No recalcula ni modifica los resultados del mecanismo", "Does not recalculate or modify the mechanism results"),
+    ("Para acelerar el flujo después de", "To speed up the workflow after"),
+    ("las gráficas pesadas no se renderizan automáticamente", "the heavy charts are not rendered automatically"),
+    ("Use el botón para ver la pestaña 6 completa", "Use the button to view the full tab 6"),
+    ("con los mismos resultados guardados", "with the same saved results"),
+    ("Creencias", "Beliefs"),
+    ("Política óptima", "Optimal policy"),
+    ("frente a benchmarks de rescate", "vs. rescue benchmarks"),
+    ("y negociación", "and negotiation"),
+    ("Frecuencia de decisiones óptimas", "Frequency of optimal decisions"),
+    ("vs. ejecución MDG", "vs. MDG execution"),
+    ("Incluir", "Include"),
+    ("largo plazo", "long term"),
+    ("corto plazo", "short term"),
+    ("Nota:", "Note:"),
+    ("según", "according to"),
+]
+
+
+def _translate_text_to_english(text: str) -> str:
+    if st.session_state.get("app_language", "English") != "English":
+        return text
+    out = str(text)
+    for src, dst in _ES_EN_REPLACEMENTS:
+        pattern = re.escape(src)
+        if re.match(r"\w", src, flags=re.UNICODE):
+            pattern = r"(?<!\w)" + pattern
+        if re.search(r"\w$", src, flags=re.UNICODE):
+            pattern = pattern + r"(?!\w)"
+        out = re.sub(pattern, dst, out, flags=re.IGNORECASE if src.islower() else 0)
+    return out
+
+
+def _translate_latex_expression(expr: str) -> str:
+    """Translate only human text inside LaTeX text blocks, leaving commands intact."""
+    if st.session_state.get("app_language", "English") != "English":
+        return expr
+
+    def repl(match: re.Match) -> str:
+        return r"\text{" + _translate_text_to_english(match.group(1)) + "}"
+
+    return re.sub(r"\\text\{([^{}]*)\}", repl, str(expr))
+
+
+def _translate_display_value(value: Any) -> Any:
+    if st.session_state.get("app_language", "English") != "English":
+        return value
+    if isinstance(value, str):
+        return _translate_text_to_english(value)
+    if isinstance(value, list):
+        return [_translate_display_value(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_translate_display_value(v) for v in value)
+    if isinstance(value, dict):
+        return {_translate_display_value(k): _translate_display_value(v) for k, v in value.items()}
+    if isinstance(value, pd.DataFrame):
+        df = value.copy()
+        df.columns = [_translate_text_to_english(str(c)) for c in df.columns]
+        obj_cols = df.select_dtypes(include=["object", "string"]).columns
+        for col in obj_cols:
+            df[col] = df[col].map(lambda x: _translate_text_to_english(x) if isinstance(x, str) else x)
+        return df
+    return value
+
+
+def _patch_streamlit_translation_layer() -> None:
+    if getattr(st, "_rational_types_translation_patched", False):
+        return
+
+    def wrap_first_arg(name: str) -> None:
+        original = getattr(st, name)
+
+        def wrapped(*args, **kwargs):
+            if args:
+                args = (_translate_display_value(args[0]),) + args[1:]
+            if "label" in kwargs:
+                kwargs["label"] = _translate_display_value(kwargs["label"])
+            return original(*args, **kwargs)
+
+        setattr(st, name, wrapped)
+
+    for _name in (
+        "title", "header", "subheader", "markdown", "caption", "info", "success",
+        "warning", "error", "button", "slider", "number_input", "text_input",
+        "form_submit_button", "expander", "metric", "checkbox", "download_button",
+    ):
+        if hasattr(st, _name):
+            wrap_first_arg(_name)
+
+    if hasattr(st, "latex"):
+        original_latex = st.latex
+
+        def latex_wrapped(body, *args, **kwargs):
+            return original_latex(_translate_latex_expression(str(body)), *args, **kwargs)
+
+        st.latex = latex_wrapped
+
+    original_tabs = st.tabs
+
+    def tabs_wrapped(labels, *args, **kwargs):
+        return original_tabs(_translate_display_value(labels), *args, **kwargs)
+
+    st.tabs = tabs_wrapped
+
+    def wrap_select_like(name: str) -> None:
+        original = getattr(st, name)
+
+        def wrapped(label, options, *args, **kwargs):
+            label = _translate_display_value(label)
+            user_format = kwargs.get("format_func")
+
+            def translated_format(option):
+                shown = user_format(option) if user_format else option
+                return _translate_display_value(shown)
+
+            kwargs["format_func"] = translated_format
+            return original(label, options, *args, **kwargs)
+
+        setattr(st, name, wrapped)
+
+    for _name in ("selectbox", "radio"):
+        if hasattr(st, _name):
+            wrap_select_like(_name)
+
+    for _name in ("dataframe", "table", "data_editor"):
+        if hasattr(st, _name):
+            original = getattr(st, _name)
+
+            def wrapped_data(data=None, *args, _original=original, **kwargs):
+                return _original(_translate_display_value(data), *args, **kwargs)
+
+            setattr(st, _name, wrapped_data)
+
+    if hasattr(st, "plotly_chart"):
+        original_plotly_chart = st.plotly_chart
+
+        def translate_plotly_value(value):
+            if isinstance(value, str):
+                return _translate_text_to_english(value)
+            if isinstance(value, list):
+                return [translate_plotly_value(v) for v in value]
+            if isinstance(value, tuple):
+                return tuple(translate_plotly_value(v) for v in value)
+            if isinstance(value, dict):
+                return {k: translate_plotly_value(v) for k, v in value.items()}
+            return value
+
+        def plotly_chart_wrapped(figure_or_data, *args, **kwargs):
+            if st.session_state.get("app_language", "English") == "English" and hasattr(figure_or_data, "to_dict"):
+                try:
+                    figure_or_data = go.Figure(translate_plotly_value(figure_or_data.to_dict()))
+                except Exception:
+                    pass
+            return original_plotly_chart(figure_or_data, *args, **kwargs)
+
+        st.plotly_chart = plotly_chart_wrapped
+
+    st._rational_types_translation_patched = True
+
+
+_patch_streamlit_translation_layer()
+
 
 # --- UTILIDADES BÁSICAS ---
 
@@ -1588,6 +2279,17 @@ def _focus_cmh_endogenous_tentatives(theta_k: str) -> dict:
 _CITA_CMH_URL = (
     "https://micrositios.centrodememoriahistorica.gov.co/observatorio/portal-de-datos/el-conflicto-en-cifras/"
 )
+def _cita_biblio_cmh() -> str:
+    return _ui_text(
+        f"**Source (CNMH, 2026):** National Centre for Historical Memory. "
+        f"[Data Portal: The conflict in figures]({_CITA_CMH_URL}) "
+        "(Observatory of Memory and Conflict).",
+        f"**Fuente (CNMH, 2026):** Centro Nacional de Memoria Histórica. "
+        f"[Portal de Datos: El conflicto en cifras]({_CITA_CMH_URL}) "
+        "(Observatorio de Memoria y Conflicto).",
+    )
+
+
 CITA_BIBLIO_CMH = (
     "**Fuente (CNMH, 2026):** Centro Nacional de Memoria Histórica. "
     f"[Portal de Datos: El conflicto en cifras]({_CITA_CMH_URL}) "
@@ -1657,7 +2359,7 @@ _MECH_LATEX = {
 }
 
 # Texto unificado (tono Mechanism.tex / riesgos competitivos + MDG + Bayes); varía solo el desenlace j.
-_MECH_EQUATION_BLURB = {
+_MECH_EQUATION_BLURB_ES = {
     1: (
         "La intensidad de pago $\\lambda_1$ representa la propensión marginal al cierre del episodio por la **causa "
         "$j=1$** (**pago** / liberación por pago), actuando como una **tasa instantánea** y no como una probabilidad "
@@ -1693,6 +2395,45 @@ _MECH_EQUATION_BLURB = {
         "identificar la identidad estructural del captor y sustentar el ajuste del modelo en esta dimensión."
     ),
 }
+
+_MECH_EQUATION_BLURB_EN = {
+    1: (
+        "The payment intensity $\\lambda_1$ represents the marginal propensity for the episode to close through "
+        "**cause $j=1$** (**payment** / release by payment), acting as an **instantaneous rate** rather than a daily "
+        "percentage probability. "
+        "Under a **proportional hazards** structure, this intensity scales a baseline according to the environment, "
+        "the captor's criminal technology, and the applied public-policy instruments. "
+        "Operating within a **competing-risks** framework, the algebraic sign of each coefficient determines whether "
+        "a factor **accelerates or retards** the outcome under **cause $j=1$**. "
+        "Bayesian learning can thus process what was **actually executed** (via the MDG process) to identify the "
+        "captor's structural type and support model calibration along this dimension."
+    ),
+    2: (
+        "The death intensity $\\lambda_2$ represents the marginal propensity for the episode to close through "
+        "**cause $j=2$** (**death** of the captive), acting as an **instantaneous rate** rather than a daily "
+        "percentage probability. "
+        "Under a **proportional hazards** structure, this intensity scales a baseline according to the environment, "
+        "the captor's criminal technology, and the applied public-policy instruments. "
+        "In **competing risks**, the algebraic sign of each coefficient determines whether a factor **accelerates or "
+        "retards** **cause $j=2$** relative to the other outcomes. "
+        "Bayesian learning can thus process what was **actually executed** (via the MDG process) to identify the "
+        "captor's structural type and support model calibration along this dimension."
+    ),
+    3: (
+        "The rescue intensity $\\lambda_3$ represents the marginal propensity for the episode to close through "
+        "**cause $j=3$** (**rescue** / state intervention with that outcome), as an **instantaneous rate** rather "
+        "than a daily percentage probability. "
+        "Under **proportional hazards**, it scales the baseline according to the environment, the captor's criminal "
+        "technology, and public-policy instruments — including the materialisation of the **rescue pathway** when "
+        "the State acts in that direction. "
+        "In **competing risks**, the algebraic sign of each coefficient fixes whether a factor **accelerates or "
+        "retards** the outcome under **cause $j=3$** relative to payment ($j=1$) or death ($j=2$). "
+        "Bayesian learning can thus process what was **actually executed** (via the MDG process) to identify the "
+        "captor's structural type and support model calibration along this dimension."
+    ),
+}
+
+_MECH_EQUATION_BLURB = _MECH_EQUATION_BLURB_ES
 
 
 def _cal_focus_row(j_mech: int):
@@ -1737,13 +2478,20 @@ _FOCUS_TERM_KATEX = {
     # Tabla 2 · intensidades efectivas (evitar «Término» con $…$: rompe \text{…} en KaTeX).
     "Umbral de maduración (texto)": r"\text{Umbral de maduración (texto)}",
     "Canal exógeno (basal)": r"\text{Canal exógeno (basal)}",
-    # Tabla 3 · logit de p_det,t (Mechanism.tex)
+    # Tabla 3 · logit de p_det,t (Mechanism.tex) — ES y EN
     "Intercepto logit (p_det)": r"\text{Intercepto logit }(p_{\mathrm{det}})",
+    "Intercept logit (p_det)": r"\text{Intercept logit }(p_{\mathrm{det}})",
     "Peso de α* en p_det": (
         r"\text{Peso de }\alpha^\ast\text{ en }p_{\mathrm{det}}"
     ),
+    "Weight of α* in p_det": (
+        r"\text{Weight of }\alpha^\ast\text{ in }p_{\mathrm{det}}"
+    ),
     "Peso de γ* en p_det": (
         r"\text{Peso de }\gamma^\ast\text{ en }p_{\mathrm{det}}"
+    ),
+    "Weight of γ* in p_det": (
+        r"\text{Weight of }\gamma^\ast\text{ in }p_{\mathrm{det}}"
     ),
     # Tabla 4 · supervivencia (ec. 37–38 Mechanism.tex)
     "α₀ rescate (Prior · ec. 38)": r"\text{Letalidad intrínseca }\alpha_0(\theta_K)",
@@ -1852,15 +2600,19 @@ def _focus_term_to_latex(term_plain: str) -> str:
     if " · " in term_plain:
         _parts = [p for p in term_plain.split(" · ") if p]
         if len(_parts) >= 2:
-            return r" \,\cdot\, ".join(
-                r"\text{" + _escape_katex_text_fragment(p) + "}" for p in _parts
-            )
+            def _part_to_tex(p: str) -> str:
+                if p in _FOCUS_TERM_KATEX:
+                    return _FOCUS_TERM_KATEX[p]
+                if p in _TABLA7_MDG_TERM_KATEX:
+                    return _TABLA7_MDG_TERM_KATEX[p]
+                return r"\text{" + _escape_katex_text_fragment(p) + "}"
+            return r" \,\cdot\, ".join(_part_to_tex(p) for p in _parts)
     esc = _escape_katex_text_fragment(term_plain)
     return r"\text{" + esc + "}"
 
 
 def _fmt_es_num(x, ndigits: int = 2) -> str:
-    """Miles con punto (.) y decimales con coma (,)."""
+    """Formato numérico visible: EN 1,234.56; ES 1.234,56."""
     if x is None:
         return "—"
     try:
@@ -1873,12 +2625,15 @@ def _fmt_es_num(x, ndigits: int = 2) -> str:
     neg = xf < 0
     xf = abs(xf)
     s = f"{xf:,.{int(ndigits)}f}"
-    body = s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+    if st.session_state.get("app_language", "English") == "English":
+        body = s
+    else:
+        body = s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
     return ("-" if neg else "") + body
 
 
 def _fmt_es_num_sigfirst(x, *, max_decimals: int = 6) -> str:
-    """Formato compacto que conserva decimales hasta el primer dígito significativo."""
+    """Formato compacto con separador decimal según idioma."""
     if x is None:
         return "—"
     try:
@@ -1895,13 +2650,14 @@ def _fmt_es_num_sigfirst(x, *, max_decimals: int = 6) -> str:
     else:
         dec = min(max_decimals, 2)
     s = _fmt_es_num(xf, dec)
-    if "," in s:
-        s = s.rstrip("0").rstrip(",")
+    dec_sep = "." if st.session_state.get("app_language", "English") == "English" else ","
+    if dec_sep in s:
+        s = s.rstrip("0").rstrip(dec_sep)
     return s
 
 
 def _parse_es_num(s: str):
-    """Interpreta miles '.' y decimal ','; inválido o vacío -> None."""
+    """Interpreta números visibles según idioma; inválido o vacío -> None."""
     s = (s or "").strip().replace(" ", "").replace("\u00a0", "")
     if not s or s in ("-", ",", "."):
         return None
@@ -1911,7 +2667,25 @@ def _parse_es_num(s: str):
     if not s:
         return None
     try:
-        if "," in s:
+        if st.session_state.get("app_language", "English") == "English":
+            if "." in s:
+                left, right = s.rsplit(".", 1)
+                if "," in right or "." in right:
+                    return None
+                left = left.replace(",", "")
+                if not right.isdigit():
+                    return None
+                if left == "":
+                    left = "0"
+                if not left.isdigit():
+                    return None
+                v = float(f"{left}.{right}")
+            else:
+                s_clean = s.replace(",", "")
+                if s_clean == "" or not s_clean.isdigit():
+                    return None
+                v = float(s_clean)
+        elif "," in s:
             left, right = s.rsplit(",", 1)
             if "." in right or "," in right:
                 return None
@@ -2617,27 +3391,28 @@ def _render_focus_covariate_katex_table(
         if show_orig_col:
             _cstrip = _coef_raw.strip()
             if _cstrip.startswith("\\"):
-                _coef_for_cell = _coef_raw
+                _coef_for_cell = _translate_latex_expression(_coef_raw)
                 _coef_is_latex = True
             else:
-                _coef_for_cell = _focus_term_to_latex(_coef_raw)
+                _coef_for_cell = _focus_term_to_latex(_translate_text_to_english(_coef_raw))
                 _coef_is_latex = True
         else:
-            _coef_for_cell = _coef_raw
+            _coef_for_cell = _translate_latex_expression(_coef_raw)
             _coef_is_latex = True
+        _term_display = _translate_text_to_english(str(row["Término"]))
         rd = {
             "n": int(row["#"]),
-            "term": str(row["Término"]),
-            "term_tex": _focus_term_to_latex(str(row["Término"])),
+            "term": _term_display,
+            "term_tex": _focus_term_to_latex(_term_display),
             "coef_is_latex": _coef_is_latex,
             "coef_display": _coef_for_cell,
             "val": _val_es,
-            "val_tex": val_tex,
+            "val_tex": _translate_latex_expression(val_tex) if val_tex is not None else val_tex,
         }
         if show_orig_col:
-            rd["orig_tex"] = str(row.get("Origen del valor", ""))
+            rd["orig_tex"] = _translate_text_to_english(str(row.get("Origen del valor", "")))
         if has_clase:
-            rd["clase_tab7"] = str(row.get("Clase_tab7", "") or "")
+            rd["clase_tab7"] = _translate_text_to_english(str(row.get("Clase_tab7", "") or ""))
         rows_out.append(rd)
     try:
         payload = json.dumps(rows_out, ensure_ascii=False)
@@ -2658,9 +3433,12 @@ def _render_focus_covariate_katex_table(
     _frag_id = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:14]
     _tb_id = f"cov_tb_{_frag_id}"
     _json_id = f"cov_j_{_frag_id}"
-    _th_orig = '<th class="orig">Origen del valor</th>' if show_orig_col else ""
+    _th_orig = (
+        f'<th class="orig">{html.escape(_translate_text_to_english("Origen del valor"), quote=False)}</th>'
+        if show_orig_col else ""
+    )
     _th_clase = (
-        '<th class="prior-flag" title="Prior = coef. / riesgo calibrado; Observado = indicadores del incidente (Config.).">Clase</th>'
+        f'<th class="prior-flag" title="{html.escape(_translate_text_to_english("Prior = coef. / riesgo calibrado; Observado = indicadores del incidente (Config.)."), quote=True)}">{html.escape(_translate_text_to_english("Clase"), quote=False)}</th>'
         if has_clase
         else ""
     )
@@ -3350,6 +4128,8 @@ def render_generic_katex_table(
     """
     if df is None or df.empty:
         return
+    df = _translate_display_value(df)
+    katex_headers = [_translate_latex_expression(str(h)) for h in list(katex_headers)]
 
     n_h = len(katex_headers)
     n_r = int(len(df))
@@ -3398,11 +4178,11 @@ def render_generic_katex_table(
         if body_max_height_px is not None
         else "overflow-x:auto;overflow-y:visible;"
     )
-    _tips = list(header_tooltips or [])
+    _tips = [_translate_text_to_english(str(x)) for x in list(header_tooltips or [])]
     if len(_tips) < len(katex_headers):
         _tips.extend([""] * (len(katex_headers) - len(_tips)))
     _tips = [html.escape(str(x), quote=True) for x in _tips[:len(katex_headers)]]
-    _tip_latex = list(header_tooltip_latex or [])
+    _tip_latex = [_translate_latex_expression(str(x)) for x in list(header_tooltip_latex or [])]
     if len(_tip_latex) < len(katex_headers):
         _tip_latex.extend([""] * (len(katex_headers) - len(_tip_latex)))
     _tip_latex = [html.escape(str(x), quote=True) for x in _tip_latex[:len(katex_headers)]]
@@ -3531,7 +4311,7 @@ def render_generic_katex_table(
         html_fragment += f"<th{_class_attr}{_style_attr}><span class='math'>{h}</span>{_tipbox}</th>"
     html_fragment += "</tr></thead><tbody>"
 
-    _row_tips_list = list(row_tooltips or [])
+    _row_tips_list = [_translate_text_to_english(str(x)) for x in list(row_tooltips or [])]
     if len(_row_tips_list) < len(df):
         _row_tips_list.extend([""] * (len(df) - len(_row_tips_list)))
     for _ri, (_, row) in enumerate(df.iterrows()):
@@ -3984,7 +4764,7 @@ def _mechanism_m_probs_for_actions(
         zeta_R=float(zp.get("zeta_R", 0.1)),
         estado_rescata=str(a_s).strip().lower().startswith("rescat"),
         t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-        lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+        lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
         zeta_by_j=bundle.get("zeta_by_j") if isinstance(bundle.get("zeta_by_j"), dict) else None,
         atilde_F=str(a_f),
         atilde_K=str(a_k),
@@ -5849,7 +6629,11 @@ if st.session_state.get("cal_T_mad_default_version") != "tmad_5":
     st.session_state.cal_T_mad = 5.0
     st.session_state["cal_T_mad_default_version"] = "tmad_5"
 if "cal_lambda_4" not in st.session_state:
-    st.session_state.cal_lambda_4 = 0.002
+    st.session_state.cal_lambda_4 = 0.0005
+if st.session_state.get("cal_lambda_4_default_version") != "lambda4_0p0005":
+    if abs(float(st.session_state.get("cal_lambda_4", 0.002)) - 0.002) < 1e-12:
+        st.session_state.cal_lambda_4 = 0.0005
+    st.session_state["cal_lambda_4_default_version"] = "lambda4_0p0005"
 # Tabla 3 · p_det,t(θ_K) = Λ(η₀(θ_K)+η₁α*+η₂γ*) · Mechanism.tex
 # η₀(θ_K) es tipo-específico: distintas organizaciones difieren en detectabilidad basal
 _ETA0_PDET_DEFAULTS = {"DC": -1.5, "PAR": -2.0, "ELN": -2.5, "FARC": -2.8}
@@ -5944,11 +6728,28 @@ if st.session_state.get("cal_mdg7_alignment_version") != int(_MDG7_ALIGNMENT_CAL
             st.session_state.pop(f"mdg7_p_{_mdg_code_reset}_{_idx_reset}", None)
     st.session_state["cal_mdg7_alignment_version"] = int(_MDG7_ALIGNMENT_CALIB_VERSION)
 
-st.title("⚖️ Sistema de Análisis Dinámico de Mecanismos")
+st.title(_ui_text("⚖️ Identification of Rational Types", "⚖️ Identificación de tipos racionales"))
 st.markdown(
-    "**(Golden Edition)** · Fases alineadas con **Mechanism.tex** · "
-    "Validación empírica **Data_CMH.csv** · Calibración tipo **main.tex**."
+    _ui_text(
+        "Prepared by: Prof. Humberto Bernal, Ph.D. in Economics, Universidad de los Andes, Colombia",
+        "Elaborado por: Prof. Humberto Bernal, Ph.D. en Economía, Universidad de los Andes, Colombia",
+    )
 )
+_header_language_choice = st.radio(
+    _ui_text("Language", "Idioma"),
+    _LANG_OPTIONS,
+    index=_LANG_OPTIONS.index(st.session_state.get("app_language", "English")),
+    horizontal=True,
+    key="app_language_header_choice",
+    help=_ui_text(
+        "Select English for the jury-facing version or Spanish for the original version.",
+        "Seleccione inglés para la versión dirigida al jurado o español para la versión original.",
+    ),
+)
+if _header_language_choice != st.session_state.get("app_language"):
+    st.session_state["app_language"] = _header_language_choice
+    st.rerun()
+_inject_page_translator()
 
 # --- SECCIÓN GLOBAL: SIMULACIÓN E INCIDENTE ---
 with st.container():
@@ -6038,7 +6839,7 @@ with st.container():
         st.session_state["base_cycle_m_tau0_by_theta"] = _base_m_by_theta
         _clear_dynamic_cycles_only()
         st.success("Nuevo sorteo de m para τ=0 solicitado. La Tabla 5.2 se actualizará en pestaña 5.")
-    c1, c2, c3 = st.columns(3)
+    c1, c2 = st.columns([2, 1])
     if "dynamic_seed_reset_counts" not in st.session_state:
         st.session_state["dynamic_seed_reset_counts"] = {}
     if "dynamic_seed_run_log" not in st.session_state:
@@ -6177,8 +6978,7 @@ with st.container():
         _active_src52 = st.session_state.get("dynamic_active_source")
         if _active_src52:
             st.caption(f"Corrida dinámica actual: {_active_src52}.")
-    n_sims = c2.slider("Número de corridas (Lote):", min_value=10, max_value=5000, value=500, step=10)
-    limite_dias = int(c3.number_input(
+    limite_dias = int(c2.number_input(
         "Horizonte máximo (días, τ):",
         min_value=2,
         max_value=5000,
@@ -6375,7 +7175,10 @@ with st.container():
         _generate_and_store_incident_voice()
         st.session_state["incident_voice_context_sig"] = _voice_context_sig
         st.success(
-            "Proceso iniciado con los parámetros actuales. Se recalcularán las tablas dependientes en este recorrido."
+            _ui_text(
+                "Process started with current parameters. Dependent tables will be recalculated in this run.",
+                "Proceso iniciado con los parámetros actuales. Se recalcularán las tablas dependientes en este recorrido.",
+            )
         )
         st.rerun()
     if _run_dynamic_blocks_now and st.session_state.get("full_process_context_sig") != _voice_context_sig:
@@ -6394,8 +7197,12 @@ with st.container():
         ):
             st.session_state.pop(_c1_k52, None)
         st.warning(
-            "Los parámetros actuales no coinciden con el escenario base. Presione **Iniciar proceso** "
-            "para regenerar el escenario base y luego avance el primer ciclo."
+            _ui_text(
+                "Current parameters do not match the base scenario. Press **Start Process** "
+                "to regenerate the base scenario and then advance the first cycle.",
+                "Los parámetros actuales no coinciden con el escenario base. Presione **Iniciar proceso** "
+                "para regenerar el escenario base y luego avance el primer ciclo.",
+            )
         )
     elif _run_dynamic_blocks_now:
         _seed_click52 = str(int(st.session_state.get("global_semilla_rng", semilla)))
@@ -6424,7 +7231,10 @@ with st.container():
             st.session_state.pop(_c1_k52, None)
         st.session_state["first_cycle_pending_rerun"] = True
         st.success(
-            "Ciclos solicitados. Se avanzará hasta que m sea distinto de Continuar o hasta el horizonte máximo."
+            _ui_text(
+                "Cycles requested. Will advance until m differs from Continue or until the maximum horizon.",
+                "Ciclos solicitados. Se avanzará hasta que m sea distinto de Continuar o hasta el horizonte máximo.",
+            )
         )
     if st.session_state.get("full_process_context_sig") != _voice_context_sig:
         st.session_state["mechanism_started"] = False
@@ -6442,18 +7252,21 @@ with st.container():
         ):
             st.session_state.pop(_c1_k52, None)
         st.info(
-            "Ajuste los parámetros del incidente y presione **Iniciar proceso** para generar la voz y calcular el mecanismo."
+            _ui_text(
+                "Adjust the incident parameters and press **Start Process** to generate the voice and calculate the mechanism.",
+                "Ajuste los parámetros del incidente y presione **Iniciar proceso** para generar la voz y calcular el mecanismo.",
+            )
         )
 
     if st.session_state.get("mechanism_started", False):
         with st.expander(
-            "Trayectoria de voz del incidente",
+            _ui_text("Incident Voice Trajectory", "Trayectoria de voz del incidente"),
             expanded=bool(st.session_state.get("incident_voice_meta")),
         ):
             _ic1, _ic2 = st.columns([1, 2])
             with _ic1:
                 st.number_input(
-                    "κ (fuerza prior Beta)",
+                    _ui_text("κ (prior Beta strength)", "κ (fuerza prior Beta)"),
                     min_value=2.0,
                     max_value=500.0,
                     value=float(st.session_state.get("incident_voice_kappa", 30.0)),
@@ -6463,8 +7276,10 @@ with st.container():
                 )
             with _ic2:
                 st.caption(
-                    "La trayectoria de voz aleatoria del incidente se genera únicamente al presionar "
-                    "**Iniciar proceso**."
+                    _ui_text(
+                        "The incident's random voice trajectory is generated only when pressing **Start Process**.",
+                        "La trayectoria de voz aleatoria del incidente se genera únicamente al presionar **Iniciar proceso**.",
+                    )
                 )
 
             _meta_inc = st.session_state.get("incident_voice_meta")
@@ -6473,19 +7288,24 @@ with st.container():
                 _seed_stored = st.session_state.get("incident_voice_seed")
                 if _th_stored != str(tipo_real) or int(_seed_stored or -1) != int(semilla):
                     st.warning(
-                        f"La trayectoria guardada corresponde a θ*={_th_stored}, semilla={_seed_stored}. "
-                        f"Controles actuales: θ*={tipo_real}, semilla={int(semilla)}. "
-                        "Presione **Iniciar proceso** para recalcular."
+                        _ui_text(
+                            f"The saved trajectory corresponds to θ*={_th_stored}, seed={_seed_stored}. "
+                            f"Current controls: θ*={tipo_real}, seed={int(semilla)}. "
+                            "Press **Start Process** to recalculate.",
+                            f"La trayectoria guardada corresponde a θ*={_th_stored}, semilla={_seed_stored}. "
+                            f"Controles actuales: θ*={tipo_real}, semilla={int(semilla)}. "
+                            "Presione **Iniciar proceso** para recalcular.",
+                        )
                     )
                 _pi_prior_s = st.session_state.get("incident_pi_call_prior", {})
                 _pi_tilde_s = st.session_state.get("incident_pi_call_realized", {})
                 _df_pi_inc = pd.DataFrame(
                     {
                         "θ": TIPOS_SECUESTRADOR,
-                        "π_call (prior, pestaña 2)": [
+                        _ui_text("π_call (prior, tab 2)", "π_call (prior, pestaña 2)"): [
                             round(float(_pi_prior_s.get(th, 0.0)), 4) for th in TIPOS_SECUESTRADOR
                         ],
-                        "π̃_call (realizada, incidente)": [
+                        _ui_text("π̃_call (realized, incident)", "π̃_call (realizada, incidente)"): [
                             round(float(_pi_tilde_s.get(th, 0.0)), 4) for th in TIPOS_SECUESTRADOR
                         ],
                     }
@@ -6494,6 +7314,7 @@ with st.container():
                 _path_inc = st.session_state.get("incident_voice_path", [])
                 if _path_inc:
                     _rows_path = []
+                    _call_col = _ui_text("Call", "Llamada")
                     for _s in _path_inc:
                         _x = _s.get("x_obs")
                         _x_str = (
@@ -6505,23 +7326,27 @@ with st.container():
                             {
                                 "t": _s.get("t"),
                                 "V_t": _s.get("V_t"),
-                                "Llamada": "Sí" if int(_s.get("V_t", 0)) == 1 else "No",
+                                _call_col: _ui_text("Yes", "Sí") if int(_s.get("V_t", 0)) == 1 else "No",
                                 "x_obs": _x_str,
-                                "emisor": _s.get("emisor_voz"),
+                                _ui_text("sender", "emisor"): _s.get("emisor_voz"),
                             }
                         )
                     st.dataframe(pd.DataFrame(_rows_path), hide_index=True, use_container_width=True)
                     _df_vlik = st.session_state.get("incident_voice_likelihood_df")
                     if isinstance(_df_vlik, pd.DataFrame) and not _df_vlik.empty:
                         st.markdown(
-                            "**Verosimilitudes de voz (Tabla 14)** · "
-                            r"$\mathcal{L}_{C,t}$, $\mathcal{L}_{\mathrm{voz},t}$ con el mismo $(V_t,x^{\mathrm{obs}})$"
+                            _ui_text(
+                                "**Voice Likelihoods (Table 14)** · "
+                                r"$\mathcal{L}_{C,t}$, $\mathcal{L}_{\mathrm{voz},t}$ with the same $(V_t,x^{\mathrm{obs}})$",
+                                "**Verosimilitudes de voz (Tabla 14)** · "
+                                r"$\mathcal{L}_{C,t}$, $\mathcal{L}_{\mathrm{voz},t}$ con el mismo $(V_t,x^{\mathrm{obs}})$",
+                            )
                         )
                         _show_vlik = _df_vlik.rename(
                             columns={
                                 "t": "t",
                                 "V_t": "V_t",
-                                "Llamada": "Llamada",
+                                "Llamada": _call_col,
                                 "L_voz": "ℒ_voz",
                                 "L_C": "ℒ_{C,t}",
                             }
@@ -6531,7 +7356,7 @@ with st.container():
                             for c in [
                                 "t",
                                 "V_t",
-                                "Llamada",
+                                _call_col,
                                 "ℒ_voz",
                                 "ℒ_{C,t}",
                             ]
@@ -6543,8 +7368,8 @@ with st.container():
                                 _show_vlik_render[_cn] = pd.to_numeric(
                                     _show_vlik_render[_cn], errors="coerce"
                                 )
-                        if "Llamada" in _show_vlik_render.columns:
-                            _show_vlik_render["Llamada"] = _show_vlik_render["Llamada"].astype(str)
+                        if _call_col in _show_vlik_render.columns:
+                            _show_vlik_render[_call_col] = _show_vlik_render[_call_col].astype(str)
                         st.dataframe(
                             _show_vlik_render,
                             hide_index=True,
@@ -6554,8 +7379,12 @@ with st.container():
     if not st.session_state.get("mechanism_started", False):
         st.markdown("---")
         st.info(
-            "Puede revisar las pestañas y tablas base del modelo. La voz del incidente y los "
-            "resultados calculados del mecanismo se generarán al presionar **Iniciar proceso**."
+            _ui_text(
+                "You can review the base model tabs and tables. The incident voice and calculated "
+                "mechanism results will be generated when pressing **Start Process**.",
+                "Puede revisar las pestañas y tablas base del modelo. La voz del incidente y los "
+                "resultados calculados del mecanismo se generarán al presionar **Iniciar proceso**.",
+            )
         )
 
 st.markdown("---")
@@ -6563,34 +7392,41 @@ st.markdown("---")
 
 tab_cfg, tab_cal, tab_mdg, tab_rb, tab_mech_sol, tab_dyn = st.tabs(
     [
-        "1 · Configuración e Inicio",
-        "2 · Probabilidades",
+        _ui_text("1 · Setup and Start", "1 · Configuración e Inicio"),
+        _ui_text("2 · Probabilities", "2 · Probabilidades"),
         "3 · MDG",
-        "4 · Familia-Secuestrador",
-        "5 · Solución Mecanismo",
-        "6 · Gráficas dinámica",
+        _ui_text("4 · Family-Kidnapper", "4 · Familia-Secuestrador"),
+        _ui_text("5 · Mechanism Solution", "5 · Solución Mecanismo"),
+        _ui_text("6 · Dynamic Charts", "6 · Gráficas dinámica"),
     ]
 )
 
 
 with tab_cfg:
-    st.markdown("## Configuración e Inicio")
+    st.markdown(_ui_text("## Setup and Start", "## Configuración e Inicio"))
     st.caption(
-        "Los controles globales (Simulación, Incidente e Instrumentos) ahora se encuentran en la parte superior para facilitar su acceso desde cualquier pestaña."
+        _ui_text(
+            "Global controls (Simulation, Incident and Instruments) are now at the top for easy access from any tab.",
+            "Los controles globales (Simulación, Incidente e Instrumentos) ahora se encuentran en la parte superior para facilitar su acceso desde cualquier pestaña.",
+        )
     )
 
-    st.markdown("### Distribución ex-ante (priors)")
-    st.markdown("#### Fundamentación")
+    st.markdown(_ui_text("### Ex-ante Distribution (priors)", "### Distribución ex-ante (priors)"))
+    st.markdown(_ui_text("#### Rationale", "#### Fundamentación"))
     st.latex(r"\mu_0(\theta \mid z, \theta_V) = \frac{\exp(\varpi_\theta + \eta_{\theta, z} + \xi_{\theta, v})}{\sum_{\theta' \in \Theta} \exp(\varpi_{\theta'} + \eta_{\theta', z} + \xi_{\theta', v})}")
     st.markdown(
-        "La probabilidad inicial sigue una **softmax** sobre $\\varpi$ (frecuencia base), $\eta$ (región **Z**) y $\\xi$ (perfil **V**), "
-        "según **Mechanism.tex** (ec. 1269)."
+        _ui_text(
+            "The initial probability follows a **softmax** over $\\varpi$ (base frequency), $\\eta$ (region **Z**) and $\\xi$ (profile **V**), "
+            "according to **Mechanism.tex** (eq. 1269).",
+            "La probabilidad inicial sigue una **softmax** sobre $\\varpi$ (frecuencia base), $\\eta$ (región **Z**) y $\\xi$ (perfil **V**), "
+            "según **Mechanism.tex** (ec. 1269).",
+        )
     )
 
-    st.markdown("#### Parámetros para la selección actual (Z, V)")
+    st.markdown(_ui_text("#### Parameters for the Current Selection (Z, V)", "#### Parámetros para la selección actual (Z, V)"))
     z = st.session_state.z_region
     v = st.session_state.v_victim
-    
+
     param_data = []
     for t in TIPOS_SECUESTRADOR:
         d = COEF_DELTA.get(t, 0.0)
@@ -6598,7 +7434,7 @@ with tab_cfg:
         x = COEF_XI.get(v, {}).get(t, 0.0)
         score = d + e + x
         param_data.append({
-            "Tipo": t,
+            _ui_text("Type", "Tipo"): t,
             "varpi": round(d, 2),
             "eta_z": round(e, 2),
             "xi_v": round(x, 2),
@@ -6615,54 +7451,29 @@ with tab_cfg:
         hide_index=True,
     )
 
-    st.markdown("#### Selección de priors (modelo vs manual)")
-    mode = st.radio("Selecciona el origen de los Priors para la simulación:", ["Modelo", "Manual"], horizontal=True, key="prior_mode_selector")
+    st.markdown(_ui_text("#### Prior Selection (model vs manual)", "#### Selección de priors (modelo vs manual)"))
+    _prior_opts = [_ui_text("Model", "Modelo"), "Manual"]
+    mode = st.radio(
+        _ui_text("Select the source of Priors for the simulation:", "Selecciona el origen de los Priors para la simulación:"),
+        _prior_opts,
+        horizontal=True,
+        key="prior_mode_selector",
+    )
     st.session_state.prior_mode = mode
 
-    # Preparar datos comparativos
+    _prior_model_col = _ui_text("Prior (Model %)", "Prior (Modelo %)")
+    _prior_manual_col = _ui_text("Prior (Manual %)", "Prior (Manual %)")
+    _group_col = _ui_text("Group", "Grupo")
     comparison_data = pd.DataFrame({
-        "Grupo": TIPOS_SECUESTRADOR,
-        "Prior (Modelo %)": [round(p, 2) for p in st.session_state.dynamic_priors],
-        "Prior (Manual %)": st.session_state.manual_priors
+        _group_col: TIPOS_SECUESTRADOR,
+        _prior_model_col: [round(p, 2) for p in st.session_state.dynamic_priors],
+        _prior_manual_col: st.session_state.manual_priors,
     })
 
-    if mode == "Manual":
-        st.markdown("#### Configuración Manual de Probabilidades")
-        st.info("💡 **Regla de Cierre**: Ingresa los valores para los primeros 3 grupos. El valor de **FARC** se ajustará automáticamente para que la suma sea 100%. Todos los valores deben ser estrictamente mayores a 0.")
-        
-        c1, c2, c3 = st.columns(3)
-        # Usamos los valores actuales de session_state para los inputs
-        p_dc = c1.number_input("DC (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[0]), step=1.0, key="manual_p_dc")
-        p_par = c2.number_input("PAR (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[1]), step=1.0, key="manual_p_par")
-        p_eln = c3.number_input("ELN (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[2]), step=1.0, key="manual_p_eln")
-        
-        total_3 = p_dc + p_par + p_eln
-        p_farc = 100.0 - total_3
-        
-        if p_farc <= 0:
-            st.error(f"❌ Error: La suma de DC, PAR y ELN ({total_3:.2f}%) ya es el 100% o más. FARC quedaría en {p_farc:.2f}%, lo cual no es válido. Reduce los valores.")
-            st.session_state.final_priors = st.session_state.dynamic_priors
-        else:
-            st.session_state.manual_priors = [p_dc, p_par, p_eln, p_farc]
-            st.session_state.final_priors = st.session_state.manual_priors
-            
-            # Mostrar tabla final comparativa para confirmación
-            comparison_data["Prior (Manual %)"] = [round(p, 2) for p in st.session_state.manual_priors]
-            styled_df = comparison_data.style.format({
-                "Prior (Modelo %)": "{:.2f}",
-                "Prior (Manual %)": "{:.2f}"
-            })
-            st.dataframe(
-                styled_df,
-                width="stretch",
-                height=_glide_full_height_px(_st_table_row_count(styled_df)),
-                hide_index=True,
-            )
-            st.success(f"✅ Configuración Manual Activa. FARC se ha ajustado a: **{p_farc:.2f}%**")
-    else:
+    if mode == _prior_opts[0]:  # Model mode
         styled_df = comparison_data.style.format({
-            "Prior (Modelo %)": "{:.2f}",
-            "Prior (Manual %)": "{:.2f}"
+            _prior_model_col: "{:.2f}",
+            _prior_manual_col: "{:.2f}",
         })
         st.dataframe(
             styled_df,
@@ -6671,20 +7482,72 @@ with tab_cfg:
             hide_index=True,
         )
         st.session_state.final_priors = st.session_state.dynamic_priors
+    else:  # Manual mode
+        st.markdown(_ui_text("#### Manual Probability Configuration", "#### Configuración Manual de Probabilidades"))
+        st.info(
+            _ui_text(
+                "💡 **Closure Rule**: Enter values for the first 3 groups. The **FARC** value will be automatically adjusted so the sum is 100%. All values must be strictly greater than 0.",
+                "💡 **Regla de Cierre**: Ingresa los valores para los primeros 3 grupos. El valor de **FARC** se ajustará automáticamente para que la suma sea 100%. Todos los valores deben ser estrictamente mayores a 0.",
+            )
+        )
+        c1, c2, c3 = st.columns(3)
+        p_dc = c1.number_input("DC (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[0]), step=1.0, key="manual_p_dc")
+        p_par = c2.number_input("PAR (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[1]), step=1.0, key="manual_p_par")
+        p_eln = c3.number_input("ELN (%)", min_value=0.01, max_value=99.97, value=float(st.session_state.manual_priors[2]), step=1.0, key="manual_p_eln")
+
+        total_3 = p_dc + p_par + p_eln
+        p_farc = 100.0 - total_3
+
+        if p_farc <= 0:
+            st.error(
+                _ui_text(
+                    f"❌ Error: The sum of DC, PAR and ELN ({total_3:.2f}%) is already 100% or more. FARC would be {p_farc:.2f}%, which is not valid. Reduce the values.",
+                    f"❌ Error: La suma de DC, PAR y ELN ({total_3:.2f}%) ya es el 100% o más. FARC quedaría en {p_farc:.2f}%, lo cual no es válido. Reduce los valores.",
+                )
+            )
+            st.session_state.final_priors = st.session_state.dynamic_priors
+        else:
+            st.session_state.manual_priors = [p_dc, p_par, p_eln, p_farc]
+            st.session_state.final_priors = st.session_state.manual_priors
+            comparison_data[_prior_manual_col] = [round(p, 2) for p in st.session_state.manual_priors]
+            styled_df = comparison_data.style.format({
+                _prior_model_col: "{:.2f}",
+                _prior_manual_col: "{:.2f}",
+            })
+            st.dataframe(
+                styled_df,
+                width="stretch",
+                height=_glide_full_height_px(_st_table_row_count(styled_df)),
+                hide_index=True,
+            )
+            st.success(
+                _ui_text(
+                    f"✅ Manual Configuration Active. FARC has been adjusted to: **{p_farc:.2f}%**",
+                    f"✅ Configuración Manual Activa. FARC se ha ajustado a: **{p_farc:.2f}%**",
+                )
+            )
 
     st.markdown("---")
-    st.markdown("### Mapa regional por municipio")
+    st.markdown(_ui_text("### Regional Map by Municipality", "### Mapa regional por municipio"))
     st.markdown(
-        "Cada polígono es un **municipio**; el color muestra la **región** del modelo. "
-        "Los totales por municipio y el rango de años provienen de la misma base de casos que usa la aplicación "
-        "(archivo **Data_CMH.csv**, alineado con la información pública del **CNMH**)."
+        _ui_text(
+            "Each polygon is a **municipality**; the color shows the model **region**. "
+            "Municipal totals and year ranges come from the same case database used by the application "
+            "(**Data_CMH.csv**, aligned with public **CNMH** data).",
+            "Cada polígono es un **municipio**; el color muestra la **región** del modelo. "
+            "Los totales por municipio y el rango de años provienen de la misma base de casos que usa la aplicación "
+            "(archivo **Data_CMH.csv**, alineado con la información pública del **CNMH**).",
+        )
     )
 
     _load_map_now = st.button(
-        "Cargar mapa municipal",
+        _ui_text("Load municipal map", "Cargar mapa municipal"),
         key="btn_load_municipio_map",
         use_container_width=True,
-        help="Carga el GeoJSON municipal solo cuando se necesita ver el mapa. No afecta Tabla 5.2 ni pestaña 6.",
+        help=_ui_text(
+            "Loads the municipal GeoJSON only when needed to view the map. Does not affect Table 5.2 or tab 6.",
+            "Carga el GeoJSON municipal solo cuando se necesita ver el mapa. No afecta Tabla 5.2 ni pestaña 6.",
+        ),
     )
     if _load_map_now:
         st.session_state["municipio_map_requested"] = True
@@ -6693,17 +7556,53 @@ with tab_cfg:
         municipio_geojson, df_municipios = load_municipio_geojson_v4()
     else:
         municipio_geojson, df_municipios = None, pd.DataFrame()
-        st.info("Mapa municipal no cargado en el inicio para acelerar la app. Use el botón para visualizarlo.")
+        st.info(
+            _ui_text(
+                "Municipal map not loaded at startup to speed up the app. Use the button to view it.",
+                "Mapa municipal no cargado en el inicio para acelerar la app. Use el botón para visualizarlo.",
+            )
+        )
 
     if municipio_geojson and not df_municipios.empty:
+        _lbl_total = _ui_text("Total Kidnappings (municipality)", "Total de secuestros (municipio)")
+        _lbl_first = _ui_text("First year with records (municipality)", "Primer año con registro (municipio)")
+        _lbl_last = _ui_text("Last year with records (municipality)", "Último año con registro (municipio)")
+        _lbl_dept = _ui_text("Department", "Departamento")
+        _lbl_muni = _ui_text("Municipality", "Municipio")
+        _lbl_reg = _ui_text("Region", "Región")
+
+        # Region name translations for map category labels
+        _REGION_EN = {
+            "Metropolitana": "Metropolitan",
+            "Andina": "Andean",
+            "Caribe": "Caribbean",
+            "Pacífica / Zona Roja": "Pacific / Red Zone",
+            "Oriente / Selva": "East / Jungle",
+            "Sin región": "No region",
+        }
+        _is_en = st.session_state.get("app_language", "English") == "English"
+        _df_map = df_municipios.copy()
+        if _is_en and "Region" in _df_map.columns:
+            _df_map["Region"] = _df_map["Region"].map(lambda r: _REGION_EN.get(str(r), str(r)) if pd.notna(r) else r)
+        _region_order = (
+            [_REGION_EN.get(r, r) for r in REGIONES] + ["No region"]
+            if _is_en
+            else REGIONES + ["Sin región"]
+        )
+        _region_colors = (
+            {_REGION_EN.get(k, k): v for k, v in REGION_COLORS.items()}
+            if _is_en
+            else REGION_COLORS
+        )
+
         fig_map = px.choropleth(
-            df_municipios,
+            _df_map,
             geojson=municipio_geojson,
             locations="feature_id",
             featureidkey="properties.MPIO_CCNCT",
             color="Region",
-            category_orders={"Region": REGIONES + ["Sin región"]},
-            color_discrete_map=REGION_COLORS,
+            category_orders={"Region": _region_order},
+            color_discrete_map=_region_colors,
             hover_name="Municipio",
             hover_data={
                 "Departamento": True,
@@ -6714,15 +7613,20 @@ with tab_cfg:
                 "feature_id": False,
             },
             labels={
-                "Total Secuestros": "Total de secuestros (municipio)",
-                "Primer Año": "Primer año con registro (municipio)",
-                "Último Año": "Último año con registro (municipio)",
+                "Municipio": _lbl_muni,
+                "Departamento": _lbl_dept,
+                "Region": _lbl_reg,
+                "Total Secuestros": _lbl_total,
+                "Primer Año": _lbl_first,
+                "Último Año": _lbl_last,
             },
         )
         fig_map.update_traces(marker_line_width=0.25, marker_line_color="rgba(255,255,255,0.65)")
         fig_map.update_geos(fitbounds="locations", visible=False, projection_type="mercator")
-        fig_map.update_layout(height=650, margin={"r": 0, "t": 20, "l": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)",
-                              legend=dict(title_text="Región", orientation="h", yanchor="bottom", y=1.01, xanchor="right", x=1))
+        fig_map.update_layout(
+            height=650, margin={"r": 0, "t": 20, "l": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)",
+            legend=dict(title_text=_lbl_reg, orientation="h", yanchor="bottom", y=1.01, xanchor="right", x=1),
+        )
         st.plotly_chart(fig_map, use_container_width=True)
 
         _ts = df_municipios["Total Secuestros"].sum()
@@ -6741,23 +7645,39 @@ with tab_cfg:
                     año_primero_sec = None
                     año_ultimo_sec = None
 
-        st.markdown(f"**Total de secuestros acumulados:** {total_secuestros:,} (suma de todos los municipios con datos).")
+        st.markdown(
+            _ui_text(
+                f"**Total accumulated kidnappings:** {total_secuestros:,} (sum of all municipalities with data).",
+                f"**Total de secuestros acumulados:** {total_secuestros:,} (suma de todos los municipios con datos).",
+            )
+        )
         if año_primero_sec is not None and año_ultimo_sec is not None:
             st.markdown(
-                f"**Cobertura temporal del panel municipal (CMH):** "
-                f"**{año_primero_sec}**–**{año_ultimo_sec}**."
+                _ui_text(
+                    f"**Temporal coverage of the municipal panel (CMH):** **{año_primero_sec}**–**{año_ultimo_sec}**.",
+                    f"**Cobertura temporal del panel municipal (CMH):** **{año_primero_sec}**–**{año_ultimo_sec}**.",
+                )
             )
         elif not df_con_casos.empty:
             st.info(
-                "Hay municipios con al menos un caso, pero el rango de años no está disponible "
-                "(revisa la columna **Año** en **Data_CMH.csv**)."
+                _ui_text(
+                    "There are municipalities with at least one case, but the year range is not available "
+                    "(check the **Year** column in **Data_CMH.csv**).",
+                    "Hay municipios con al menos un caso, pero el rango de años no está disponible "
+                    "(revisa la columna **Año** en **Data_CMH.csv**).",
+                )
             )
-        st.markdown(CITA_BIBLIO_CMH)
+        st.markdown(_cita_biblio_cmh())
     else:
         st.warning(
-            "No se pudo cargar el mapa municipal o no hay datos para graficar. "
-            "Comprueba que el archivo **co_2018_MGN_MPIO_POLITICO.geojson** esté en la misma carpeta que **app.py** "
-            "y que **Data_CMH.csv** tenga registros; luego reinicia la aplicación."
+            _ui_text(
+                "Could not load the municipal map or there are no data to plot. "
+                "Check that **co_2018_MGN_MPIO_POLITICO.geojson** is in the same folder as **app.py** "
+                "and that **Data_CMH.csv** has records; then restart the application.",
+                "No se pudo cargar el mapa municipal o no hay datos para graficar. "
+                "Comprueba que el archivo **co_2018_MGN_MPIO_POLITICO.geojson** esté en la misma carpeta que **app.py** "
+                "y que **Data_CMH.csv** tenga registros; luego reinicia la aplicación.",
+            )
         )
 
 with tab_cal:
@@ -6899,9 +7819,12 @@ with tab_cal:
         st.markdown(f"**Causa** $j = {_j_mech}$.")
         # KaTeX: más compacta (~dos líneas visuales junto a Tabla 1).
         st.latex(r"\footnotesize " + _MECH_LATEX[_j_mech])
-        _blurb = _MECH_EQUATION_BLURB.get(_j_mech, _MECH_EQUATION_BLURB[1])
+        _is_en_blurb = st.session_state.get("app_language", "English") == "English"
+        _blurb_dict = _MECH_EQUATION_BLURB_EN if _is_en_blurb else _MECH_EQUATION_BLURB_ES
+        _blurb = _blurb_dict.get(_j_mech, _blurb_dict[1])
+        _blurb_lang = "en" if _is_en_blurb else "es"
         st.markdown(
-            f'<div class="mech-eq-blurb" lang="es">\n\n{_blurb}\n\n</div>',
+            f'<div class="mech-eq-blurb" lang="{_blurb_lang}">\n\n{_blurb}\n\n</div>',
             unsafe_allow_html=True,
         )
     with _ecRa:
@@ -7134,11 +8057,12 @@ with tab_cal:
                 if st.button(
                     "Restablecer",
                     key="tab2_reset_prior",
-                    help="Vuelve a los valores base (T_mad=5, λ4=0,002).",
+                    help="Vuelve a los valores base (T_mad=5, λ4=0,0005).",
                 ):
                     st.session_state.cal_T_mad = 5.0
-                    st.session_state.cal_lambda_4 = 0.002
+                    st.session_state.cal_lambda_4 = 0.0005
                     st.session_state["cal_T_mad_default_version"] = "tmad_5"
+                    st.session_state["cal_lambda_4_default_version"] = "lambda4_0p0005"
                     st.info("Valores **Prior** de Tabla 2 restablecidos.")
                     st.rerun()
 
@@ -7155,21 +8079,32 @@ with tab_cal:
             r"=p_{\mathrm{det},t}(\theta_K)^{\,d_t}\bigl(1-p_{\mathrm{det},t}(\theta_K)\bigr)^{\,1-d_t}."
         )
         st.caption(
-            r"Detectabilidad **tipo-específica**: $\eta_0(\theta_K)$ varía entre organizaciones; "
-            r"$\eta_1,\eta_2$ capturan el efecto de instrumentos $(\alpha_t^\ast,\gamma_t^\ast)$; "
-            r"señal Bernoulli $d_t\in\{0,1\}$."
+            _ui_text(
+                r"**Type-specific** detectability: $\eta_0(\theta_K)$ varies across organisations; "
+                r"$\eta_1,\eta_2$ capture the effect of instruments $(\alpha_t^\ast,\gamma_t^\ast)$; "
+                r"Bernoulli signal $d_t\in\{0,1\}$.",
+                r"Detectabilidad **tipo-específica**: $\eta_0(\theta_K)$ varía entre organizaciones; "
+                r"$\eta_1,\eta_2$ capturan el efecto de instrumentos $(\alpha_t^\ast,\gamma_t^\ast)$; "
+                r"señal Bernoulli $d_t\in\{0,1\}$.",
+            )
         )
     with _pdRa:
         rb_katex_title(
-            r"#### Tabla 3 · $\eta_0,\eta_1,\eta_2$ en $p_{\mathrm{det},t}$ (Prior)"
+            _ui_text(
+                r"#### Table 3 · $\eta_0,\eta_1,\eta_2$ in $p_{\mathrm{det},t}$ (Prior)",
+                r"#### Tabla 3 · $\eta_0,\eta_1,\eta_2$ en $p_{\mathrm{det},t}$ (Prior)",
+            )
         )
         _e1 = float(st.session_state.cal_eta1_pdet)
         _e2 = float(st.session_state.cal_eta2_pdet)
+        _t3_intercept_lbl = _ui_text("Intercept logit (p_det)", "Intercepto logit (p_det)")
+        _t3_w_alpha_lbl   = _ui_text("Weight of α* in p_det",  "Peso de α* en p_det")
+        _t3_w_gamma_lbl   = _ui_text("Weight of γ* in p_det",  "Peso de γ* en p_det")
         _df_pdet = pd.DataFrame(
             [
                 {
                     "#": _idx_eta,
-                    "Término": f"Intercepto logit (p_det) · {_th_eta}",
+                    "Término": f"{_t3_intercept_lbl} · {_th_eta}",
                     "Coeficiente": rf"\eta_0(\mathrm{{{_th_eta}}})",
                     "Valor": _pdet_eta0_for_theta(_th_eta),
                     "Origen del valor": "Prior",
@@ -7179,14 +8114,14 @@ with tab_cal:
             + [
                 {
                     "#": 5,
-                    "Término": "Peso de α* en p_det",
+                    "Término": _t3_w_alpha_lbl,
                     "Coeficiente": r"\eta_1",
                     "Valor": _e1,
                     "Origen del valor": "Prior",
                 },
                 {
                     "#": 6,
-                    "Término": "Peso de γ* en p_det",
+                    "Término": _t3_w_gamma_lbl,
                     "Coeficiente": r"\eta_2",
                     "Valor": _e2,
                     "Origen del valor": "Prior",
@@ -7203,7 +8138,7 @@ with tab_cal:
             collapse_gap_below=True,
         )
         with st.popover(
-            "Editar valores Prior · Tabla 3",
+            _ui_text("Edit Prior values · Table 3", "Editar valores Prior · Tabla 3"),
             width="stretch",
         ):
             st.markdown(
@@ -7243,69 +8178,95 @@ with tab_cal:
                 """,
                 unsafe_allow_html=True,
             )
-            rb_katex_title(r"1. $\eta_0(\theta_K)$ — intercepto por tipo")
+            rb_katex_title(
+                _ui_text(
+                    r"1. $\eta_0(\theta_K)$ — intercept by type",
+                    r"1. $\eta_0(\theta_K)$ — intercepto por tipo",
+                )
+            )
             for _th_ui in ("DC", "PAR", "ELN", "FARC"):
                 _c3l1, _c3r1 = st.columns((0.68, 0.32), gap="small")
                 with _c3l1:
                     rb_katex_title(rf"$\eta_0(\mathrm{{{_th_ui}}})$")
                 with _c3r1:
                     st.number_input(
-                        "Valor",
+                        _ui_text("Value", "Valor"),
                         value=float(st.session_state.get(f"cal_eta0_pdet_{_th_ui}", _ETA0_PDET_DEFAULTS.get(_th_ui, -2.0))),
                         step=0.05,
                         format="%.2f",
                         key=f"cal_eta0_pdet_{_th_ui}",
                         label_visibility="collapsed",
-                        help=rf"Detectabilidad basal de $\theta_K=\mathrm{{{_th_ui}}}$: $\eta_0(\mathrm{{{_th_ui}}})+\eta_1\alpha^\ast+\eta_2\gamma^\ast$.",
+                        help=_ui_text(
+                            rf"Baseline detectability of $\theta_K=\mathrm{{{_th_ui}}}$: $\eta_0(\mathrm{{{_th_ui}}})+\eta_1\alpha^\ast+\eta_2\gamma^\ast$.",
+                            rf"Detectabilidad basal de $\theta_K=\mathrm{{{_th_ui}}}$: $\eta_0(\mathrm{{{_th_ui}}})+\eta_1\alpha^\ast+\eta_2\gamma^\ast$.",
+                        ),
                     )
             _c3l2, _c3r2 = st.columns((0.68, 0.32), gap="small")
             with _c3l2:
                 rb_katex_title(r"2. $\eta_1$")
             with _c3r2:
                 st.number_input(
-                    "Valor",
+                    _ui_text("Value", "Valor"),
                     value=float(st.session_state.cal_eta1_pdet),
                     step=0.05,
                     format="%.2f",
                     key="cal_eta1_pdet",
                     label_visibility="collapsed",
-                    help=r"Peso de $\alpha_t^\ast$ (bloqueo / instrumento relacionado).",
+                    help=_ui_text(
+                        r"Weight of $\alpha_t^\ast$ (blockade / related instrument).",
+                        r"Peso de $\alpha_t^\ast$ (bloqueo / instrumento relacionado).",
+                    ),
                 )
             _c3l3, _c3r3 = st.columns((0.68, 0.32), gap="small")
             with _c3l3:
                 rb_katex_title(r"3. $\eta_2$")
             with _c3r3:
                 st.number_input(
-                    "Valor",
+                    _ui_text("Value", "Valor"),
                     value=float(st.session_state.cal_eta2_pdet),
                     step=0.05,
                     format="%.2f",
                     key="cal_eta2_pdet",
                     label_visibility="collapsed",
-                    help=r"Peso de $\gamma_t^\ast$ (presión operativa).",
+                    help=_ui_text(
+                        r"Weight of $\gamma_t^\ast$ (operational pressure).",
+                        r"Peso de $\gamma_t^\ast$ (presión operativa).",
+                    ),
                 )
             st.divider()
             _t3_btn_save, _t3_btn_reset = st.columns(2)
             with _t3_btn_save:
                 if st.button(
-                    "Guardar",
+                    _ui_text("Save", "Guardar"),
                     key="tab3_save_prior",
                     type="primary",
-                    help="Confirma los valores editados para esta sesión.",
+                    help=_ui_text(
+                        "Confirms the edited values for this session.",
+                        "Confirma los valores editados para esta sesión.",
+                    ),
                 ):
-                    st.success("Valores **Prior** de Tabla 3 guardados en la sesión.")
+                    st.success(_ui_text(
+                        "**Prior** values for Table 3 saved in session.",
+                        "Valores **Prior** de Tabla 3 guardados en la sesión.",
+                    ))
                     st.rerun()
             with _t3_btn_reset:
                 if st.button(
-                    "Restablecer",
+                    _ui_text("Reset", "Restablecer"),
                     key="tab3_reset_prior",
-                    help="Vuelve a los valores base (η₀(DC)=-1.5, η₀(PAR)=-2.0, η₀(ELN)=-2.5, η₀(FARC)=-2.8, η₁=1, η₂=1).",
+                    help=_ui_text(
+                        "Returns to base values (η₀(DC)=-1.5, η₀(PAR)=-2.0, η₀(ELN)=-2.5, η₀(FARC)=-2.8, η₁=1, η₂=1).",
+                        "Vuelve a los valores base (η₀(DC)=-1.5, η₀(PAR)=-2.0, η₀(ELN)=-2.5, η₀(FARC)=-2.8, η₁=1, η₂=1).",
+                    ),
                 ):
                     for _th_rst, _v_rst in _ETA0_PDET_DEFAULTS.items():
                         st.session_state[f"cal_eta0_pdet_{_th_rst}"] = _v_rst
                     st.session_state.cal_eta1_pdet = 1.0
                     st.session_state.cal_eta2_pdet = 1.0
-                    st.info("Valores **Prior** de Tabla 3 restablecidos.")
+                    st.info(_ui_text(
+                        "**Prior** values for Table 3 reset.",
+                        "Valores **Prior** de Tabla 3 restablecidos.",
+                    ))
                     st.rerun()
 
     # ── Sorteo d₀ ~ Bernoulli(p_det,0) — Mechanism.tex ────────────────────────
@@ -8889,7 +9850,7 @@ with tab_rb:
         else st.session_state.get("h0_alpha", st.session_state.get("cal_alpha_star", 0.0))
     )
     _Tmad_t0 = float(st.session_state.get("cal_T_mad", 30.0))
-    _lambda4_t0 = float(st.session_state.get("cal_lambda_4", 0.002))
+    _lambda4_t0 = float(st.session_state.get("cal_lambda_4", 0.0005))
     _iota_t0 = float(precision_iota)
 
     _t0_headers = [
@@ -10378,7 +11339,7 @@ with tab_rb:
                 zeta_R=float(_zp_traj.get("zeta_R", 0.1)),
                 estado_rescata=_estado_rescate_traj,
                 t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                 omega_voz=_omega_voz_t14,
                 pi_call_by_theta=_pi_call_t14,
                 voz_params_by_theta=_voz_params_t14,
@@ -10410,7 +11371,7 @@ with tab_rb:
                 zeta_R=float(_zp_traj.get("zeta_R", 0.1)),
                 estado_rescata=_estado_rescate_traj,
                 t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                 t_eval=0,
                 omega_voz=_omega_voz_t14,
                 pi_call_by_theta=_pi_call_t14,
@@ -10444,7 +11405,7 @@ with tab_rb:
                     zeta_R=float(_zp_traj.get("zeta_R", 0.1)),
                     estado_rescata=_estado_rescate_traj,
                     t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                    lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                    lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                     omega_voz=_omega_voz_t14,
                     pi_call_by_theta=_pi_call_t14,
                     voz_params_by_theta=_voz_params_t14,
@@ -10571,7 +11532,7 @@ with tab_rb:
             zeta=_zeta_traj,
             estado_rescata=bool(_estado_rescate_traj),
             t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-            lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+            lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
             omega_voz=float(_omega_voz_t14),
             voice_seed=int(st.session_state.get("global_semilla_rng", 123)),
             tipo_emit=str(tipo_real),
@@ -10634,7 +11595,7 @@ with tab_rb:
                     zeta_R=_zeta_traj[3],
                     estado_rescata=_estado_rescate_traj,
                     t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                    lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                    lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                     omega_voz=_omega_voz_t14,
                     continuation_path=True,
                     alpha_by_t=_alpha_by_t,
@@ -11820,9 +12781,10 @@ with tab_mech_sol:
                 if not np.isfinite(v):
                     return "—"
                 if abs(v) > 1.0:
-                    return f"{v:,.0f}".replace(",", ".")
-                s = f"{v:.6f}".rstrip("0").rstrip(".")
-                return s.replace(".", ",")
+                    return _fmt_es_num(v, 0)
+                return _fmt_es_num(v, 6).rstrip("0").rstrip(
+                    "." if st.session_state.get("app_language", "English") == "English" else ","
+                )
 
             def _state_param_math_cell(val: Any) -> str:
                 s = str(val)
@@ -12367,6 +13329,40 @@ with tab_mech_sol:
                     key="t52_entropy_info_weight",
                     help="Peso del término -ψ_H·ΔH en el problema del Estado. En 0 se recupera el objetivo sin motivo de exploración.",
                 )
+                st.number_input(
+                    "Top-K auditoría IR/IC",
+                    min_value=5,
+                    max_value=441,
+                    value=int(st.session_state.get("t52_iric_top_k", 25)),
+                    step=5,
+                    key="t52_iric_top_k",
+                    help=(
+                        "Audita IR/IC solo en los K mejores candidatos por score continuo. "
+                        "Suba este valor para mayor precisión; bájelo para acelerar Tabla 5.2."
+                    ),
+                )
+                st.number_input(
+                    "Top-M cálculo ΔH",
+                    min_value=5,
+                    max_value=441,
+                    value=int(st.session_state.get("t52_delta_h_top_m", 40)),
+                    step=5,
+                    key="t52_delta_h_top_m",
+                    help=(
+                        "Calcula la ganancia informacional ΔH solo en los M mejores "
+                        "candidatos por valor continuo antes de auditar IR/IC."
+                    ),
+                )
+                st.checkbox(
+                    "Calcular benchmark PI en todos los ciclos",
+                    value=bool(st.session_state.get("t52_pi_benchmark_all_cycles", False)),
+                    key="t52_pi_benchmark_all_cycles",
+                    help=(
+                        "Si está desactivado, la referencia de información perfecta se calcula "
+                        "solo para τ=0 y τ=1, y el valor de τ=1 se registra en los ciclos siguientes. "
+                        "Activarlo recalcula PI en cada ciclo, pero aumenta el tiempo."
+                    ),
+                )
             _V52_tau0_int = 1 if str(_V52_tau0).startswith("1") else 0
             _d52_tau0_int = 1 if str(_d52_tau0).startswith("1") else 0
             st.session_state["t52_tau0_V0"] = int(_V52_tau0_int)
@@ -12455,6 +13451,12 @@ with tab_mech_sol:
                 mu_n = _t52_norm_mu(mu_v)
                 return float(-sum(p * np.log(max(p, 1e-15)) for p in mu_n.values()))
 
+            _t52_entropy_gain_cache: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+            def _t52_mu_signature(mu_v: dict[str, float]) -> tuple[tuple[str, float], ...]:
+                mu_n = _t52_norm_mu(mu_v)
+                return tuple((str(th), round(float(mu_n.get(str(th), 0.0)), 8)) for th in TIPOS_SECUESTRADOR)
+
             def _t52_expected_entropy_gain(
                 mu_v: dict[str, float],
                 tau_v: int,
@@ -12465,6 +13467,22 @@ with tab_mech_sol:
                 a_f_exec_v: str,
             ) -> dict[str, Any]:
                 mu_n = _t52_norm_mu(mu_v)
+                _cache_key = (
+                    _t52_mu_signature(mu_n),
+                    int(tau_v),
+                    round(float(alpha_v), 4),
+                    round(float(gamma_v), 4),
+                    str(a_k_exec_v),
+                    str(a_s_exec_v),
+                    str(a_f_exec_v),
+                    str(st.session_state.z_region),
+                    str(st.session_state.v_victim),
+                    str(f_capa),
+                    str(s_tipo),
+                    round(float(st.session_state.get("t52_likelihood_policy_sensitivity", 4.0)), 6),
+                )
+                if _cache_key in _t52_entropy_gain_cache:
+                    return copy.deepcopy(_t52_entropy_gain_cache[_cache_key])
                 h_now = float(_t52_shannon_entropy(mu_n))
                 # η₀(θ_K) tipo-específico — detectabilidad basal varía entre organizaciones
                 p_det_by_theta: dict[str, float] = {
@@ -12528,7 +13546,7 @@ with tab_mech_sol:
                         post_by_event[event_key] = post
                         e_h_next += p_event * float(_t52_shannon_entropy(post))
                 delta_h = float(max(0.0, h_now - e_h_next))
-                return {
+                _out = {
                     "H": h_now,
                     "E_H_next": float(e_h_next),
                     "Delta_H": delta_h,
@@ -12536,6 +13554,8 @@ with tab_mech_sol:
                     "post_by_event": post_by_event,
                     "p_det": p_det_v,
                 }
+                _t52_entropy_gain_cache[_cache_key] = copy.deepcopy(_out)
+                return _out
 
             _pdet0_m52 = _pdet_logit_prob(
                 str(tipo_real),
@@ -12697,7 +13717,7 @@ with tab_mech_sol:
                     zeta_R=float(_zp52.get("zeta_R", 0.1)),
                     estado_rescata=str(_ats0_m52).strip().lower().startswith("rescat"),
                     t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                    lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                    lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                     t_eval=0,
                     omega_voz=float(_omega_voz52),
                     pi_call_by_theta=_pi_call52,
@@ -12979,55 +13999,152 @@ with tab_mech_sol:
                 info_bonus_func=None,
                 extra_score_fn=None,
             ) -> tuple[float, float, float, dict[str, Any]]:
-                _cands: set[tuple[float, float]] = set()
-                _grid = np.linspace(0.0, 1.0, 21)
-                for _g in _grid:
-                    for _a in _grid:
-                        _cands.add((round(float(_g), 8), round(float(_a), 8)))
+                _continuous_value_cache: dict[tuple[float, float], float] = {}
+
+                def _continuous_value(_g_v: float, _a_v: float) -> float:
+                    _key_v = (round(float(_g_v), 8), round(float(_a_v), 8))
+                    if _key_v in _continuous_value_cache:
+                        return float(_continuous_value_cache[_key_v])
+                    _val_v = _t52_quad_value(
+                        float(_g_v), float(_a_v),
+                        const, b_gamma, q_gamma, b_alpha, q_alpha, q_gamma_alpha,
+                    )
+                    if extra_score_fn is not None:
+                        try:
+                            _val_v = float(_val_v) + float(extra_score_fn(float(_a_v), float(_g_v)))
+                        except Exception:
+                            pass
+                    _continuous_value_cache[_key_v] = float(_val_v)
+                    return float(_val_v)
+
+                _structural_cands = {
+                    (0.0, 0.0),
+                    (0.0, 1.0),
+                    (1.0, 0.0),
+                    (1.0, 1.0),
+                }
+                _coarse_cands: set[tuple[float, float]] = set()
+                _coarse_grid = np.linspace(0.0, 1.0, 11)
+                for _g in _coarse_grid:
+                    for _a in _coarse_grid:
+                        _coarse_cands.add((round(float(_g), 8), round(float(_a), 8)))
+                _coarse_cands.update(_structural_cands)
+
+                _analytic_cands: set[tuple[float, float]] = set()
                 det = float(q_gamma * q_alpha - q_gamma_alpha * q_gamma_alpha)
                 if abs(det) > 1e-12:
                     _g_int = float((-b_gamma * q_alpha + q_gamma_alpha * b_alpha) / det)
                     _a_int = float((q_gamma_alpha * b_gamma - q_gamma * b_alpha) / det)
                     if 0.0 <= _g_int <= 1.0 and 0.0 <= _a_int <= 1.0:
-                        _cands.add((round(_g_int, 8), round(_a_int, 8)))
+                        _analytic_cands.add((round(_g_int, 8), round(_a_int, 8)))
                 for _a_fix in (0.0, 1.0):
                     _g_b = (
                         float(-(b_gamma + q_gamma_alpha * _a_fix) / q_gamma)
                         if abs(q_gamma) > 1e-12
                         else (0.0 if b_gamma + q_gamma_alpha * _a_fix >= 0.0 else 1.0)
                     )
-                    _cands.add((round(float(min(1.0, max(0.0, _g_b))), 8), round(_a_fix, 8)))
+                    _analytic_cands.add((round(float(min(1.0, max(0.0, _g_b))), 8), round(_a_fix, 8)))
                 for _g_fix in (0.0, 1.0):
                     _a_b = (
                         float(-(b_alpha + q_gamma_alpha * _g_fix) / q_alpha)
                         if abs(q_alpha) > 1e-12
                         else (0.0 if b_alpha + q_gamma_alpha * _g_fix >= 0.0 else 1.0)
                     )
-                    _cands.add((round(_g_fix, 8), round(float(min(1.0, max(0.0, _a_b))), 8)))
+                    _analytic_cands.add((round(_g_fix, 8), round(float(min(1.0, max(0.0, _a_b))), 8)))
 
-                _best_any: Optional[tuple[float, float, float, dict[str, Any]]] = None
-                _best_feas: Optional[tuple[float, float, float, dict[str, Any]]] = None
+                _coarse_cands.update(_analytic_cands)
+                _refine_centers = sorted(
+                    _coarse_cands,
+                    key=lambda _ga: _continuous_value(float(_ga[0]), float(_ga[1])),
+                )[:5]
+                _cands: set[tuple[float, float]] = set(_coarse_cands)
+                _refine_step = 0.05
+                for _g0, _a0 in _refine_centers:
+                    for _dg in (-_refine_step, 0.0, _refine_step):
+                        for _da in (-_refine_step, 0.0, _refine_step):
+                            _g_ref = float(min(1.0, max(0.0, float(_g0) + float(_dg))))
+                            _a_ref = float(min(1.0, max(0.0, float(_a0) + float(_da))))
+                            _cands.add((round(_g_ref, 8), round(_a_ref, 8)))
+
+                _cheap_rank: list[tuple[float, float, float, float, float]] = []
                 for _g_v, _a_v in _cands:
-                    _val_v = _t52_quad_value(_g_v, _a_v, const, b_gamma, q_gamma, b_alpha, q_alpha, q_gamma_alpha)
-                    if extra_score_fn is not None:
-                        try:
-                            _val_v = float(_val_v) + float(extra_score_fn(float(_a_v), float(_g_v)))
-                        except Exception:
-                            pass
-                    _bonus_v = 0.0
-                    if float(_t52_entropy_weight) > 0.0 and info_bonus_func is not None:
+                    _val_v = _continuous_value(float(_g_v), float(_a_v))
+                    _cheap_rank.append((float(_val_v), float(_g_v), float(_a_v), float(_val_v), 0.0))
+
+                _cheap_rank.sort(key=lambda x: x[0])
+                _delta_h_top_m = int(max(1, min(len(_cheap_rank), int(st.session_state.get("t52_delta_h_top_m", 40)))))
+                _delta_h_cands: dict[tuple[float, float], tuple[float, float, float]] = {}
+                for _score_v, _g_v, _a_v, _val_v, _bonus_v in _cheap_rank[:_delta_h_top_m]:
+                    _delta_h_cands[(round(_g_v, 8), round(_a_v, 8))] = (_score_v, _val_v, _bonus_v)
+                for _g_s, _a_s in _structural_cands:
+                    for _score_v, _g_v, _a_v, _val_v, _bonus_v in _cheap_rank:
+                        if abs(_g_v - _g_s) < 1e-9 and abs(_a_v - _a_s) < 1e-9:
+                            _delta_h_cands[(round(_g_v, 8), round(_a_v, 8))] = (_score_v, _val_v, _bonus_v)
+                            break
+
+                _rank_with_info: list[tuple[float, float, float, float, float]] = []
+                for _score_v, _g_v, _a_v, _val_v, _bonus_v in _cheap_rank:
+                    _key_v = (round(_g_v, 8), round(_a_v, 8))
+                    if _key_v in _delta_h_cands and float(_t52_entropy_weight) > 0.0 and info_bonus_func is not None:
                         try:
                             _bonus_v = float(info_bonus_func(float(_a_v), float(_g_v)).get("Delta_H", 0.0))
                         except Exception:
                             _bonus_v = 0.0
-                    _score_v = float(_val_v - float(_t52_entropy_weight) * _bonus_v)
+                        _score_v = float(_val_v - float(_t52_entropy_weight) * _bonus_v)
+                    _rank_with_info.append((float(_score_v), float(_g_v), float(_a_v), float(_val_v), float(_bonus_v)))
+
+                _rank_with_info.sort(key=lambda x: x[0])
+                _top_k = int(max(1, min(len(_cheap_rank), int(st.session_state.get("t52_iric_top_k", 25)))))
+                _audit_cands: dict[tuple[float, float], tuple[float, float]] = {}
+                for _score_v, _g_v, _a_v, _val_v, _bonus_v in _rank_with_info[:_top_k]:
+                    _audit_cands[(round(_g_v, 8), round(_a_v, 8))] = (_score_v, _val_v)
+                for _g_s, _a_s in _structural_cands:
+                    for _score_v, _g_v, _a_v, _val_v, _bonus_v in _rank_with_info:
+                        if abs(_g_v - _g_s) < 1e-9 and abs(_a_v - _a_s) < 1e-9:
+                            _audit_cands[(round(_g_v, 8), round(_a_v, 8))] = (_score_v, _val_v)
+                            break
+
+                _best_any: Optional[tuple[float, float, float, dict[str, Any]]] = None
+                _best_feas: Optional[tuple[float, float, float, dict[str, Any]]] = None
+                for (_g_v, _a_v), (_score_v, _val_v) in _audit_cands.items():
                     _other_v = float(other_value_func(_g_v, _a_v))
                     _st_v = _t52_iric_status(_a_v, _g_v, mu_tau_v, _other_v, _val_v)
+                    _st_v["iric_audit_top_k"] = int(_top_k)
+                    _st_v["iric_audited_candidates"] = int(len(_audit_cands))
+                    _st_v["iric_total_candidates"] = int(len(_cheap_rank))
+                    _st_v["grid_mode"] = "adaptive_11x11_top5_local3x3"
+                    _st_v["grid_coarse_candidates"] = int(len(_coarse_cands))
+                    _st_v["grid_refine_centers"] = int(len(_refine_centers))
+                    _st_v["delta_h_top_m"] = int(_delta_h_top_m)
+                    _st_v["delta_h_evaluated_candidates"] = int(len(_delta_h_cands))
+                    _st_v["iric_audit_mode"] = "top_k"
                     _rec_v = (float(_a_v), float(_g_v), float(_score_v), _st_v)
                     if _best_any is None or _score_v < _best_any[2]:
                         _best_any = _rec_v
                     if bool(_st_v.get("feasible", False)) and (_best_feas is None or _score_v < _best_feas[2]):
                         _best_feas = _rec_v
+                if _best_feas is None:
+                    for _score_v, _g_v, _a_v, _val_v, _bonus_v in _rank_with_info[_top_k:]:
+                        _key_v = (round(_g_v, 8), round(_a_v, 8))
+                        if _key_v in _audit_cands:
+                            continue
+                        _other_v = float(other_value_func(_g_v, _a_v))
+                        _st_v = _t52_iric_status(_a_v, _g_v, mu_tau_v, _other_v, _val_v)
+                        _st_v["iric_audit_top_k"] = int(_top_k)
+                        _st_v["iric_audited_candidates"] = int(len(_audit_cands) + 1)
+                        _st_v["iric_total_candidates"] = int(len(_cheap_rank))
+                        _st_v["grid_mode"] = "adaptive_11x11_top5_local3x3"
+                        _st_v["grid_coarse_candidates"] = int(len(_coarse_cands))
+                        _st_v["grid_refine_centers"] = int(len(_refine_centers))
+                        _st_v["delta_h_top_m"] = int(_delta_h_top_m)
+                        _st_v["delta_h_evaluated_candidates"] = int(len(_delta_h_cands))
+                        _st_v["iric_audit_mode"] = "top_k_fallback"
+                        _rec_v = (float(_a_v), float(_g_v), float(_score_v), _st_v)
+                        if _best_any is None or _score_v < _best_any[2]:
+                            _best_any = _rec_v
+                        if bool(_st_v.get("feasible", False)):
+                            _best_feas = _rec_v
+                            break
                 # Γ_t(μ_t) = ∅ si no existe punto con IR^K, IC^K e IR^F.
                 # En ese caso se devuelve el mínimo irrestricto solo como diagnóstico,
                 # marcado con feasible=False para no tratarlo como óptimo formal.
@@ -13167,6 +14284,42 @@ with tab_mech_sol:
                     "IRIC_VR": dict(_iric_vr_pi or {}),
                     "IRIC_VN": dict(iric_vn or {}),
                 }
+
+            def _t52_blank_pi_reference(theta_ref_v: str, tau_v: int) -> dict[str, Any]:
+                return {
+                    "theta": str(theta_ref_v),
+                    "tau": int(tau_v),
+                    "skipped": True,
+                    "branch": "—",
+                    "a_s_full": "—",
+                    "alpha_star": float("nan"),
+                    "gamma_star": float("nan"),
+                    "alpha_vr": float("nan"),
+                    "gamma_vr": float("nan"),
+                    "V_R": float("nan"),
+                    "alpha_vn": float("nan"),
+                    "gamma_vn": float("nan"),
+                    "V_N": float("nan"),
+                    "p_surv": float("nan"),
+                    "p_kill": float("nan"),
+                    "IRIC_VR": {},
+                    "IRIC_VN": {},
+                }
+
+            def _t52_reuse_pi_reference(pi_ref_v: dict[str, Any], tau_v: int) -> dict[str, Any]:
+                _ref = copy.deepcopy(dict(pi_ref_v))
+                _ref["tau"] = int(tau_v)
+                _ref["reused_from_tau"] = int(_ref.get("source_tau", _ref.get("tau_source", 1)) or 1)
+                _ref["source_tau"] = int(_ref.get("reused_from_tau", 1) or 1)
+                _ref["skipped"] = False
+                return _ref
+
+            def _t52_pi_display(pi_ref_v: dict[str, Any], key_v: str) -> str:
+                try:
+                    _val = float(dict(pi_ref_v).get(key_v, float("nan")))
+                    return f"{_val:.4f}" if np.isfinite(_val) else "—"
+                except Exception:
+                    return "—"
 
             _theta_hat_link52 = max(_mu0_52, key=_mu0_52.get) if _mu0_52 else str(tipo_real)
             _iota_link52 = float(max(_mu0_52.values())) if _mu0_52 else float(_iota_52)
@@ -14164,7 +15317,7 @@ with tab_mech_sol:
 
             _t52_cycle_vals: dict[str, str] = {}
             _t52_dynamic_cycles: list[dict[str, Any]] = []
-            _t52_dynamic_cycle_version = 13
+            _t52_dynamic_cycle_version = 17
             _t52_dynamic_cycle_signature = {
                 "version": int(_t52_dynamic_cycle_version),
                 "theta_true": str(tipo_real),
@@ -14176,10 +15329,13 @@ with tab_mech_sol:
                 "likelihood_policy_sensitivity": round(float(st.session_state.get("t52_likelihood_policy_sensitivity", 4.0)), 6),
                 "entropy_info_weight": round(float(st.session_state.get("t52_entropy_info_weight", 25.0)), 6),
                 "limite_dias": int(st.session_state.get("limite_dias", limite_dias)),
+                "iric_top_k": int(st.session_state.get("t52_iric_top_k", 25)),
+                "delta_h_top_m": int(st.session_state.get("t52_delta_h_top_m", 40)),
+                "pi_benchmark_all_cycles": bool(st.session_state.get("t52_pi_benchmark_all_cycles", False)),
                 "tau0_alpha": round(float(_t0_alpha_eff), 4),
                 "tau0_gamma": round(float(_t0_gamma_eff), 4),
                 "cal_T_mad": round(float(st.session_state.get("cal_T_mad", 30.0)), 8),
-                "cal_lambda_4": round(float(st.session_state.get("cal_lambda_4", 0.002)), 8),
+                "cal_lambda_4": round(float(st.session_state.get("cal_lambda_4", 0.0005)), 8),
                 "eta0_by_theta": tuple(
                     (str(th), round(float(st.session_state.get(f"cal_eta0_pdet_{th}", _ETA0_PDET_DEFAULTS.get(th, -2.0))), 8))
                     for th in TIPOS_SECUESTRADOR
@@ -14515,6 +15671,7 @@ with tab_mech_sol:
                         _as_exec_prev_loop52 = str(_ats0_m52)
                         _af_exec_prev_loop52 = str(_atf0_m52)
                         _cycles52: list[dict[str, Any]] = []
+                        _pi_ref_tau1_c52: Optional[dict[str, Any]] = None
                         _stop52: dict[str, Any] = {
                             "motivo": "horizonte",
                             "tau": int(_cycle_horizon52),
@@ -14548,14 +15705,28 @@ with tab_mech_sol:
                             _as_mdg_intent_c52 = str(_state_c52.get("a_s_mdg_intent", _as_star_c52))
                             _alpha_star_c52 = float(_state_c52["alpha_star"])
                             _gamma_star_c52 = float(_state_c52["gamma_star"])
-                            _pi_ref_c52 = _t52_perfect_info_state_reference(
-                                str(tipo_real),
-                                int(_tau_start52),
-                                float(_gamma_prev_loop52),
-                                str(_ak_exec_prev_loop52),
-                                str(_as_exec_prev_loop52),
-                                str(_af_exec_prev_loop52),
+                            _pi_ref_compute_c52 = bool(
+                                int(_tau_start52) <= 1
+                                or st.session_state.get("t52_pi_benchmark_all_cycles", False)
                             )
+                            if _pi_ref_compute_c52:
+                                _pi_ref_c52 = _t52_perfect_info_state_reference(
+                                    str(tipo_real),
+                                    int(_tau_start52),
+                                    float(_gamma_prev_loop52),
+                                    str(_ak_exec_prev_loop52),
+                                    str(_as_exec_prev_loop52),
+                                    str(_af_exec_prev_loop52),
+                                )
+                                _pi_ref_c52["source_tau"] = int(_tau_start52)
+                                if int(_tau_start52) == 1:
+                                    _pi_ref_tau1_c52 = copy.deepcopy(dict(_pi_ref_c52))
+                            else:
+                                _pi_ref_c52 = (
+                                    _t52_reuse_pi_reference(_pi_ref_tau1_c52, int(_tau_start52))
+                                    if isinstance(_pi_ref_tau1_c52, dict)
+                                    else _t52_blank_pi_reference(str(tipo_real), int(_tau_start52))
+                                )
                             _iota_prior_c52 = float(_state_c52["iota"])
                             _theta_prior_c52 = str(_state_c52["theta_hat"])
                             _policy_c52 = _t52_screening_policy(
@@ -14724,7 +15895,7 @@ with tab_mech_sol:
                                 zeta_R=float(_zp52.get("zeta_R", 0.1)),
                                 estado_rescata=str(_ats_c52).strip().lower().startswith("rescat"),
                                 t_mad=float(st.session_state.get("cal_T_mad", 30.0)),
-                                lambda4=float(st.session_state.get("cal_lambda_4", 0.002)),
+                                lambda4=float(st.session_state.get("cal_lambda_4", 0.0005)),
                                 t_eval=int(_tau_start52),
                                 omega_voz=float(_omega_voz52),
                                 pi_call_by_theta=_pi_call52,
@@ -14758,10 +15929,10 @@ with tab_mech_sol:
                                 "ã_S": f"{_ats_c52} (u={_u_s_c52:.4f}, p={_ps_c52[_ats_c52]:.4f})",
                                 "γ* Estado": f"{float(_gamma_star_c52):.4f}",
                                 "α* Estado": f"{float(_alpha_star_c52):.4f}",
-                                _gamma_r_pi_label52: f"{float(_pi_ref_c52['gamma_vr']):.4f}",
-                                _alpha_r_pi_label52: f"{float(_pi_ref_c52['alpha_vr']):.4f}",
-                                _gamma_n_pi_label52: f"{float(_pi_ref_c52['gamma_vn']):.4f}",
-                                _alpha_n_pi_label52: f"{float(_pi_ref_c52['alpha_vn']):.4f}",
+                                _gamma_r_pi_label52: _t52_pi_display(_pi_ref_c52, "gamma_vr"),
+                                _alpha_r_pi_label52: _t52_pi_display(_pi_ref_c52, "alpha_vr"),
+                                _gamma_n_pi_label52: _t52_pi_display(_pi_ref_c52, "gamma_vn"),
+                                _alpha_n_pi_label52: _t52_pi_display(_pi_ref_c52, "alpha_vn"),
                                 "a_F*": str(_af_star_c52),
                                 "ã_F": f"{_atf_c52} (u={_u_f_c52:.4f}, p={_pf_c52[_atf_c52]:.4f})",
                                 f"a_K* ({tipo_real})": str(_ak_star_c52),
@@ -14840,6 +16011,8 @@ with tab_mech_sol:
                                         "Delta_H_VN": float(_state_c52.get("Delta_H_VN", 0.0)),
                                         "psi_H": float(_state_c52.get("psi_H", _t52_entropy_weight)),
                                         "pi_ref": dict(_pi_ref_c52),
+                                        "pi_ref_computed": bool(_pi_ref_compute_c52),
+                                        "pi_ref_reused_from_tau": int(dict(_pi_ref_c52).get("reused_from_tau", 0) or 0),
                                         "alpha_R_pi_ref": float(_pi_ref_c52["alpha_vr"]),
                                         "gamma_R_pi_ref": float(_pi_ref_c52["gamma_vr"]),
                                         "alpha_N_pi_ref": float(_pi_ref_c52["alpha_vn"]),
@@ -16040,7 +17213,7 @@ with tab_mech_sol:
             _rows53 = []
 
             def _fmt_t53_thousands_1(value: float) -> str:
-                return f"{float(value):,.1f}".replace(",", "_").replace(".", ",").replace("_", ".")
+                return _fmt_es_num(float(value), 1)
 
             for _tau53 in [1]:
                 _mu53, _iota53, _thhat53, _gamma53, _alpha53 = _t53_row_inputs(_tau53)
@@ -16446,7 +17619,7 @@ with tab_mech_sol:
                 expanded=False,
             ):
                 def _fmt_latex_num(value: float, nd: int = 2) -> str:
-                    return f"{float(value):,.{nd}f}".replace(",", "_").replace(".", ",").replace("_", ".")
+                    return _fmt_es_num(float(value), nd)
 
                 def _fmt_signed_latex(value: float, suffix: str) -> str:
                     sign = "+" if float(value) >= 0.0 else "-"

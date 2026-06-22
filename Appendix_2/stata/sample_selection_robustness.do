@@ -20,7 +20,7 @@ include _setup_paths.do
 include _load_analytical_sample.do
 
 * --------------------------------------------------------------------------
-* ATTRITION (re-estimated on extortive stratum from master — see README)
+* ATTRITION (re-estimated on extortive stratum from master --- see README)
 * --------------------------------------------------------------------------
 display as text _n ">>> For full attrition logit on n=11,270 extortive cases,"
 display as text "    run microstructure_replication.do from the top. <<<"
@@ -29,16 +29,16 @@ display as text "    run microstructure_replication.do from the top. <<<"
 * MAIN MNL
 * --------------------------------------------------------------------------
 display as text _n ">>> MAIN MULTINOMIAL LOGIT (n=`=_N', base = Payment) <<<"
-mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-       i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-       i.Sexo_Victima i.Duracion_Categ ln_TotalVictimas i.Periodo_Historico, ///
-       vce(cluster Municipio_Num) base(1) rrr
+mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+       i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+       i.Victim_Sex i.Duration_Categ ln_Victims i.Historical_Period, ///
+       vce(cluster Municipality_ID) base(1) rrr
 estimates store Main
 
 display as text "Wald chi2 = " %9.2f e(chi2) ", df = " e(df) ", p = " %6.4f e(p)
-quietly mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-       i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-       i.Sexo_Victima i.Duracion_Categ ln_TotalVictimas i.Periodo_Historico, ///
+quietly mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+       i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+       i.Victim_Sex i.Duration_Categ ln_Victims i.Historical_Period, ///
        base(1)
 display as text "Pseudo R2 = " %5.2f (1 - e(ll)/e(ll_0))
 estimates restore Main
@@ -46,44 +46,55 @@ estimates restore Main
 * --------------------------------------------------------------------------
 * ROBUSTNESS
 * --------------------------------------------------------------------------
-quietly mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-       i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-       i.Sexo_Victima i.Duracion_Categ ln_TotalVictimas i.Periodo_Historico, ///
+quietly mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+       i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+       i.Victim_Sex i.Duration_Categ ln_Victims i.Historical_Period, ///
        vce(robust) base(1)
 estimates store RobSE
 
-quietly mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-       i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-       i.Sexo_Victima ln_TotalVictimas i.Periodo_Historico, ///
-       vce(cluster Municipio_Num) base(1)
+quietly mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+       i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+       i.Victim_Sex ln_Victims i.Historical_Period, ///
+       vce(cluster Municipality_ID) base(1)
 estimates store NoDur
 
-display as text _n ">>> ROBUSTNESS TABLE (Death equation coefficients) <<<"
-estimates table Main RobSE NoDur, ///
-    keep([Death]4.Grupo_Responsable [Death]2.Estructura_Secuestro) ///
-    b(%9.3f) star(.05 .01 .001)
+display as text _n ">>> ROBUSTNESS TABLE (Death equation — β and p-value) <<<"
+file open fh using "`outdir'/mnl_robustness_death.txt", write replace
+foreach mdl in Main RobSE NoDur {
+    quietly estimates restore `mdl'
+    foreach coef in "4.Captor_Group" "2.Kidnap_Structure" {
+        local b  = _b[Death:`coef']
+        local se = _se[Death:`coef']
+        local p  = 2*(1-normal(abs(`b'/`se')))
+        display as text "`mdl' `coef': b=" %8.4f (`b') " p=" %6.4f (`p')
+        file write fh "`mdl' `coef' " %8.4f (`b') " " %6.4f (`p') _n
+    }
+}
+file close fh
+display as text "(written to mnl_robustness_death.txt)"
+estimates restore Main
 
 * Death proportion test: FARC vs common delinquency
-gen Muerte_Dummy = (Y_Resultado == 2)
+gen Death_Dummy = (Y_Outcome == 2)
 display as text _n ">>> PROPORTION TEST: DEATH RATE FARC vs COMMON DELINQUENCY <<<"
-prtest Muerte_Dummy if inlist(Grupo_Responsable, 1, 4), by(Grupo_Responsable)
+prtest Death_Dummy if inlist(Captor_Group, 1, 4), by(Captor_Group)
 
 * --------------------------------------------------------------------------
 * SUEST IIA
 * --------------------------------------------------------------------------
 display as text _n ">>> SUEST IIA TEST <<<"
 quietly {
-    mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-           i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-           i.Sexo_Victima i.Duracion_Categ ln_TotalVictimas i.Periodo_Historico, base(1)
+    mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+           i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+           i.Victim_Sex i.Duration_Categ ln_Victims i.Historical_Period, base(1)
     estimates store A
-    mlogit Y_Resultado i.Grupo_Responsable i.Perfil_Victima i.Zona_Geografica ///
-           i.Modus_Operandi i.Estructura_Secuestro i.Intervencion_GAULA ///
-           i.Sexo_Victima i.Duracion_Categ ln_TotalVictimas i.Periodo_Historico ///
-           if Y_Resultado != 2, base(1)
+    mlogit Y_Outcome i.Captor_Group i.Victim_Profile i.Geographic_Zone ///
+           i.Modus_Operandi i.Kidnap_Structure i.GAULA_Intervention ///
+           i.Victim_Sex i.Duration_Categ ln_Victims i.Historical_Period ///
+           if Y_Outcome != 2, base(1)
     estimates store B
-    suest A B, cluster(Municipio_Num) noomitted
+    suest A B, cluster(Municipality_ID) noomitted
 }
-test [A_Escape_or_Release]_b[4.Periodo_Historico] = [B_Escape_or_Release]_b[4.Periodo_Historico]
+test [A_Escape_or_Release]_b[4.Historical_Period] = [B_Escape_or_Release]_b[4.Historical_Period]
 
 display as text _n ">>> SAMPLE SELECTION / ROBUSTNESS COMPLETE <<<"

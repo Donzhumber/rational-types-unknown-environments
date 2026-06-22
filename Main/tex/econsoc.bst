@@ -53,6 +53,7 @@ ENTRY
     title
     type
     url
+    doi
     volume
     year
   }
@@ -102,6 +103,14 @@ FUNCTION {output.check}
 FUNCTION {fin.entry}
 { add.period$
   write$
+  doi empty$
+    { url empty$
+        'skip$
+        { "}" write$ }
+      if$
+    }
+    { "}" write$ }
+  if$
   newline$
   annote missing$
     { "\bibAnnoteFile{" cite$ * "}" * write$ newline$ }
@@ -349,6 +358,8 @@ FUNCTION {format.url}
     { "\urlprefix\url{" url * "}" * }
   if$
 }
+FUNCTION {format.doi.or.url}
+{ "" }
 
 STRINGS  { bibinfo}
 INTEGERS { nameptr namesleft numnames }
@@ -584,6 +595,14 @@ FUNCTION {output.bibitem}
 	  			cite$ write$
   		"}" write$
   		newline$
+  		doi empty$
+  		  { url empty$
+  		      'skip$
+  		      { "\href{" url * "}{" * write$ newline$ }
+  		    if$
+  		  }
+  		  { "\href{https://doi.org/" doi * "}{" * write$ newline$ }
+  		if$
   		""
   before.all 'output.state :=
 }
@@ -887,9 +906,9 @@ FUNCTION {article}
       format.pages output
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 FUNCTION {book}
@@ -919,9 +938,9 @@ FUNCTION {book}
       format.book.crossref output.nonnull
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 FUNCTION {booklet}
@@ -934,9 +953,9 @@ FUNCTION {booklet}
   new.sentence
   howpublished "howpublished" bibinfo.check output
   address "address" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -971,9 +990,9 @@ FUNCTION {inbook}
       format.book.crossref output.nonnull
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -997,9 +1016,9 @@ FUNCTION {incollection}
       format.chapter.pages output
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 FUNCTION {inproceedings}
@@ -1026,9 +1045,9 @@ FUNCTION {inproceedings}
       format.pages output
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 FUNCTION {conference} { inproceedings }
@@ -1043,11 +1062,11 @@ FUNCTION {manual}
   new.sentence
   organization "organization" bibinfo.check output
   address "address" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
-}
+  }
 
 FUNCTION {mastersthesis}
 { output.bibitem
@@ -1061,9 +1080,9 @@ FUNCTION {mastersthesis}
   bbl.mthesis format.thesis.type output.nonnull
   school "school" bibinfo.warn output
   address "address" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -1076,9 +1095,9 @@ FUNCTION {misc}
   format.title output
   new.sentence
   howpublished "howpublished" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 FUNCTION {phdthesis}
@@ -1093,9 +1112,9 @@ FUNCTION {phdthesis}
   bbl.phdthesis format.thesis.type output.nonnull
   school "school" bibinfo.warn output
   address "address" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -1114,9 +1133,9 @@ FUNCTION {proceedings}
       format.publisher.address output
     }
   if$
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -1132,9 +1151,9 @@ FUNCTION {techreport}
   format.tr.number output.nonnull
   institution "institution" bibinfo.warn output
   address "address" bibinfo.check output
-  format.url output
   new.sentence
   format.note output
+  format.doi.or.url output
   fin.entry
 }
 
@@ -1145,9 +1164,9 @@ FUNCTION {unpublished}
   format.date "year" output.check
   date.block
   format.title "title" output.check
-  format.url output
   new.sentence
   format.note "note" output.check
+  format.doi.or.url output
   fin.entry
 }
 
@@ -1428,7 +1447,7 @@ FUNCTION {begin.bib}
   write$ newline$
   "\providecommand{\url}[1]{\texttt{#1}}"
   write$ newline$
-  "\providecommand{\urlprefix}{URL }"
+  "\providecommand{\urlprefix}{}"
   write$ newline$
   "\providecommand{\bibAnnoteFile}[1]{%"
   write$ newline$

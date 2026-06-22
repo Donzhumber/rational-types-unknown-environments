@@ -1,0 +1,6 @@
+Main 4.Captor_Group   4.1531 0.0020
+Main 2.Kidnap_Structure   2.4633 0.0006
+RobSE 4.Captor_Group   4.1531 0.0011
+RobSE 2.Kidnap_Structure   2.4633 0.0005
+NoDur 4.Captor_Group   4.0003 0.0011
+NoDur 2.Kidnap_Structure   2.3894 0.0006

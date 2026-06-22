@@ -1,0 +1,417 @@
+% !TEX root = Working_paper.tex
+% ============================================================
+% WORKING PAPER (ENGLISH VERSION)
+% Identifying Rational Types in Unknown Environments:
+% Evidence from Kidnapping in Colombia
+% ============================================================
+% Sources: Mechanism_2.tex (primary theoretical framework, reorganized version),
+%          Mechanism.tex (original mechanism version),
+%          main.tex (empirical content, figures, and econometric analysis).
+% ============================================================
+\documentclass[12pt]{article}
+\usepackage[bottom,hang,flushmargin]{footmisc}
+
+% =========================
+% PACKAGES
+% =========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2em}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{etoolbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage[style=authoryear,backend=bibtex,maxcitenames=2,maxbibnames=99]{biblatex}
+\addbibresource{../../../../references.bib}
+
+% Figure paths relative to this document's directory
+\graphicspath{
+  {../../../../figuras_calibracion/}
+  {../../../../}
+}
+
+\geometry{margin=1in}
+\onehalfspacing
+\widowpenalty=10000
+\clubpenalty=10000
+\setcounter{secnumdepth}{3}
+
+% Section headings at body text size
+\titleformat{\section}[block]{\normalfont\normalsize\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+\titleformat{\subsection}[hang]{\normalfont\normalsize\itshape}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titleformat{\subsubsection}[block]{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\AtEndEnvironment{definition}{\par\nobreak{\hfill\ensuremath{\square}\par}}
+
+% =========================
+% COMMANDS
+% =========================
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ProbE}{\mathbb{P}_{\mathrm{E}}}
+\newcommand{\ProbI}[1]{\mathbb{P}_{\mathrm{I},#1}}
+\newcommand{\ProbC}[1]{\mathbb{P}_{\mathrm{C},#1}}
+\newcommand{\Unif}{\mathrm{Unif}}
+\newcommand{\1}{\mathbf{1}}
+
+% =========================
+\begin{document}
+
+% --------------------------------------------------------
+% TITLE PAGE
+% --------------------------------------------------------
+\begin{titlepage}
+\begin{center}
+  \vspace*{1.5cm}
+  {\large\bfseries Working Paper}\\[0.4cm]
+  \rule{\linewidth}{0.8pt}\\[0.6cm]
+  {\LARGE\bfseries Identifying Rational Types\\
+  in Unknown Environments:\\[0.3cm]
+  \Large Evidence from Kidnapping in Colombia}\\[0.6cm]
+  \rule{\linewidth}{0.8pt}\\[1cm]
+  {\large Humberto Bernal}\\[0.3cm]
+  {\normalsize Universidad Colegio Mayor de Cundinamarca\\
+  Ph.D.\ in Economics, Universidad de los Andes, Colombia\\[0.2cm]
+  \href{mailto:hbernalc@universidadmayor.edu.co}{hbernalc@universidadmayor.edu.co}\quad
+  \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}}\\[1.5cm]
+  {\normalsize June 2026}\\[2cm]
+  \begin{minipage}{0.85\textwidth}
+    \small\textbf{Abstract.} We develop a dynamic mechanism for the deterrence of extortionary kidnapping in discrete time under incomplete information. Three actors---the State, the captor, and the family---interact over a captivity episode modeled as a competing-risks proportional hazard process. The captor's type $\theta_K$ is private information; the State updates its beliefs via Bayesian learning over a public history of outcomes and observable signals. Implementation rests on the MDG (Mano de Dios-Guadalupe) process, which introduces a stochastic layer between strategic intention and executed action, ensuring sequential consistency of the Perfect Bayesian Equilibrium off the equilibrium path. The central result---the \textbf{Theorem of Type Identification under Unknown Environments}---establishes that if structural heterogeneity in the risk coefficients $\beta_{K,j}$ generates uniform separation in total variation between daily observation laws, Kakutani's criterion implies mutual singularity of path laws and posterior beliefs converge to the true type almost surely. A computational calibration with Colombian kidnapping data (1964--2025) validates the mechanism quantitatively, distinguishing among common criminals (CC), paramilitaries (PAR), the ELN, and the FARC. Policy implications are operational: the optimal operational pressure $\gamma_t^\ast$ must be calibrated according to posterior beliefs and structural separation between types.
+  \end{minipage}\\[1cm]
+  {\small\textbf{Keywords.} dynamic mechanisms; incomplete information; Bayesian learning; perfect Bayesian equilibrium; kidnapping.}\\[0.3cm]
+  {\small\textbf{JEL.} C73; D82; K42.}
+\end{center}
+\end{titlepage}
+
+\newpage
+\setcounter{page}{1}
+
+% ============================================================
+% SECTION 1: INTRODUCTION
+% ============================================================
+\section{Introduction}
+\label{sec:introduction}
+
+\noindent The phenomenon of kidnapping at the global scale, examined on the basis of official data from the United Nations Office on Drugs and Crime (\textcite{unodc_Data}), shows a highly asymmetric distribution of the crime for the period 2003--2024. Records corresponding to 145 countries indicate that the total number of kidnappings amounts to 1,514,546 cases during this interval. From a comparative cross-country perspective, the median of the within-country annual average stands at 46 kidnappings, while the mean of the within-country annual averages reaches 1,153 cases, reflecting a heavy-tailed distribution that invalidates homogeneous interpretations of the phenomenon and underscores the need for analytical approaches that incorporate institutional, legal, and criminological heterogeneity.
+
+In the case of Colombia, over the period from 1964 to 2025, the rate of kidnapping for ransom per 100,000 inhabitants follows a non-linear trajectory that reflects the interaction among armed conflict dynamics, illegal economies, economic activity, and state capacity. Beginning in the late 1970s, a structural break can be identified with the consolidation of guerrilla groups, the expansion of drug trafficking, and the use of kidnapping as a mechanism for financing and political coercion \parencite{pinto2004,Zarate2007}. This process culminates in the late 1990s and early 2000s, when the rate reaches its historical peak, close to 9.6 kidnappings per 100,000 inhabitants. From 2002 onward, a persistent reversal of the trend is observed, with a sustained decline following the strengthening of state institutional capacity and the creation of GAULA units, reaching historical lows following the signing of the 2016 Peace Agreement.
+
+This empirical trajectory motivates the theoretical framework developed in this paper. In Colombia, the heterogeneity among captors---FARC, ELN, paramilitaries, and common criminals---is crucial for understanding both the temporal evolution of kidnappings and the differences in captivity duration, resolution modality, and response to state policy instruments. The key challenge for policymakers is that the captor's type $\theta_K$ is \textbf{private information}: the State and the family observe the outcome history but cannot directly identify the criminal organization behind the kidnapping.
+
+The mechanism formalized in this paper models the interplay of ransom payments, rescues, and operational pressure as a robust Bayesian learning process. The central result---the \textbf{Theorem of Rational Type Identification under Unknown Environments}---demonstrates that if the public policy generates asymptotically separable competing risks, the accumulation of signals forces the convergence of the posterior distribution toward the true type's structural identity. The normative objective thus transcends the \textbf{reduction of criminal profitability} and the \textbf{minimization of social loss} \parencite{Becker1968,Mejia2000Secuestro}; it seeks to \textbf{optimize the inference architecture} that allows the State to identify the nature of the adversary \parencite{Selten1977Kidnapping}.
+
+The paper is organized as follows. Section~\ref{sec:empirical} presents the empirical context based on Colombian administrative records and UNODC data. Section~\ref{sec:model} develops the formal dynamic mechanism. Section~\ref{sec:bayesian} establishes the Bayesian learning framework and the identification theorem. Section~\ref{sec:calibration} reports the computational calibration. Section~\ref{sec:policy} discusses policy implications. Section~\ref{sec:structural-id} presents the measure-theoretic foundations. Section~\ref{sec:conclusion} concludes.
+
+% ============================================================
+% SECTION 2: EMPIRICAL CONTEXT
+% ============================================================
+\section{Empirical Context}
+\label{sec:empirical}
+
+\noindent The empirical analysis combines data from the National Center for Historical Memory (\textcite{cnmh_datos}), the United Nations Office on Drugs and Crime (\textcite{unodc_Data}), and Colombian administrative records. The sample covers the period 1964--2025 with 39,369 kidnapping episodes, of which 36,916 correspond to the analytic sample available for competing-risks analysis.
+
+\subsection{Long-run trends}
+
+Colombia concentrates a disproportionate share of global kidnapping cases. In absolute terms, the evolution of total kidnappings exhibits a non-linear dynamic with identifiable structural breaks. Until the late 1970s, annual records remain at low and relatively stable levels (fewer than 100 cases), followed by a first structural break in the early 1980s when kidnappings exceed 1,000 cases per year. The volume grows in a sustained yet volatile manner during the 1980s and 1990s, reaching a historical peak of approximately 3,700 cases annually in the late 1990s and early 2000s. From 2002 onward, a persistent reduction is observed, with annual records falling below 500 cases during the 2010s, followed by a slight uptick in more recent years still far below critical past levels.
+
+The temporal trajectory is spatially reflected in the municipal distribution: kidnappings occur across most of the national territory but are highly concentrated in municipalities with strong urban centrality or strategic value. Bogotá (1,437 total cases), Cali (784), and Medellín (652) lead the ranking, followed by intermediate cities with strategic significance such as Valledupar (530), Argelia (452), and Villavicencio (436). This pattern indicates that kidnapping in Colombia has been concentrated both temporally and spatially, shaped by differentiated criminal opportunities, strategic corridors, and persistent limitations in state capacity \parencite{Pires2014}.
+
+\subsection{Microeconomic analysis: competing risks}
+
+At the individual episode level, the resolution mechanism follows a \textbf{competing-risks} process with four competing outcomes: ransom payment (baseline category), escape or release, victim death, and state rescue. The structural determinants of captivity duration include the captor's type ($\theta_K$), the victim's profile ($\theta_V$), geographic zone, and institutional conditions of the State ($\theta_S$). Multinomial logistic analysis of the available sample reveals significant heterogeneity among groups: the FARC exhibit greater propensity toward rescue outcomes ($\beta_{K,\text{res}} > 0$), while common criminals (CC) show greater relative incidence of payment. Collective versus common organizational structures generate statistically distinguishable risk profiles at $p < 0.01$ in the death equation, providing the empirical foundation for the mechanism's separability assumption.
+
+\subsection{The GAULA institutional framework}
+
+The State's institutional response framework rests on the Unified Action Groups for Personal Liberty (GAULA), created by \textcite{ley282_1996} and reinforced by \textcite{decreto864_1998}. Geographic analysis of 3,949 arrests recorded between 2010 and 2025 shows concentration in cities with GAULA presence: Bogotá (15.93\%), Medellín (9.29\%), Cali (7.39\%), Villavicencio (2.38\%), and Cúcuta (2.36\%). The correspondence between arrests and institutional presence suggests greater operational, investigative, and judicial capacity in urban centers, validating the specification of the parameter $\gamma_t$ (operational pressure intensity) in the mechanism.
+
+% ============================================================
+% SECTION 3: THE MODEL
+% ============================================================
+\section{The Model}
+\label{sec:model}
+
+\subsection{Environment, types, and deterrence mechanism}
+
+Let $\mathcal{J}=\{S,K,F\}$ be the set of \textbf{agents}, where $S$ represents the State, $K$ the kidnapper, and $F$ the family. Each episode is characterized by the type vector:
+\[
+\theta=(\theta_K,\theta_F,\theta_V,\theta_S)\in\Theta=\Theta_K\times\Theta_F\times\Theta_V\times\Theta_S,
+\]
+with $\Theta_K=\{\text{CC},\text{PAR},\text{ELN},\text{FARC}\}$, $\Theta_F=\{\text{High wealth},\text{Low wealth}\}$, $\Theta_V=\{\text{Public},\text{Private}\}$, and $\Theta_S=\{\text{Hard},\text{Lax}\}$. Each episode is located in $z\in\mathcal{R}=\{\text{Metropolitan}, \text{Andean}, \text{Caribbean}, \text{Pacific}, \text{Eastern Jungle}\}$. Only $\theta_K$ is private information of the captor; the remaining components and $z$ are observable at the episode's outset. The State and family maintain the belief $\mu_t\in\Delta(\Theta_K)$.
+
+The \textbf{information sets} at the time of choosing in period $t$ are:
+\[
+\mathcal{I}_t^S = \bigl(h_t, z, \theta_F, \theta_V, \theta_S, \mu_t\bigr),\quad
+\mathcal{I}_t^F = \bigl(h_t, z, \theta_F, \theta_V, \theta_S\bigr),\quad
+\mathcal{I}_t^K = \bigl(h_t, z, \theta_K, \theta_F, \theta_V, \theta_S\bigr),
+\]
+with \textbf{public history} $h_t$ defined recursively as:
+\begin{align}
+h_t &= \bigl(t,\, \alpha^\ast_{[0,t-1]},\, \gamma^\ast_{[0,t-1]},\, \tilde{a}^F_{[0,t-1]},\, \tilde{a}^K_{[0,t-1]},\, \tilde{a}^S_{[0,t-1]},\, m_{[0,t-1]},\, d_{[0,t-1]}\bigr),\\
+h_{t+1} &= \bigl(h_t,\, \alpha_t^\ast,\, \gamma_t^\ast,\, \tilde{a}_t^F,\, \tilde{a}_t^K,\, \tilde{a}_t^S,\, m_t,\, d_t\bigr).
+\end{align}
+The State's continuous instruments are: $\alpha_t\in[0,1]$, the \textbf{financial blocking rate} (fraction of ransom blocked by the State), and $\gamma_t\in[0,1]$, the \textbf{operational pressure intensity} (normalized between zero and maximum institutional capacity). The stopping time is:
+\[
+\tau = \inf \{ t \geq 0 : m_t \in \mathcal{M}_{\mathrm{term}} \},\qquad \mathcal{M}_{\mathrm{term}}=\{\mathrm{pay},\mathrm{res},\mathrm{rel},\mathrm{kill}\}.
+\]
+The dynamic deterrence mechanism is formally defined as the tuple:
+\[
+\mathcal{D} = \bigl\langle \mathcal{J},\, \mathbb{T},\, \Theta,\, \mathcal{R},\, (\mathcal{X}_t)_{t \in \mathbb{T}},\, (H_t)_{t \in \mathbb{T}},\, (\mu_t)_{t \in \mathbb{T}},\, \ProbE \bigr\rangle.
+\]
+
+The social choice rule is implementable if it constitutes the path of a \textbf{Perfect Bayesian Equilibrium} \parencite{FudenbergTirole1991}: the pair $(s,\mu)$ satisfies (i) \textbf{sequential rationality}---each agent maximizes expected utility given the belief system and opponents' strategies---and (ii) \textbf{Bayesian consistency}---at every node reached with positive probability:
+\[
+\mu_t(\theta) = \ProbE\bigl(\theta_K = \theta \mid \mathcal{F}_t^{\mathrm{pub}}\bigr),\qquad \mathcal{F}_t^{\mathrm{pub}} = \sigma(z,\theta_V,\zeta_0, \dots, \zeta_{t-1}).
+\]
+
+\subsection{The MDG process: stochastic implementation}
+
+The transition between strategic intentions and their effective materialization is mediated by the \textbf{MDG process} (Mano de Dios-Guadalupe), a stochastic layer akin to the \emph{trembling hand} of \textcite{Selten1975Perfectness}. In each period, this operator transforms the optimal intentions $(a_t^{F\ast}, a_t^{K\ast}, a_t^{S\ast})$ into executed actions $\tilde{A}_t = (\tilde{a}_t^F, \tilde{a}_t^K, \tilde{a}_t^S)$:
+\[
+\tilde{a}_t^i \sim \ProbI{i}\bigl(\cdot \mid a_t^{i\ast},\, X_t\bigr),
+\]
+where $\ProbI{i}$ concentrates dominant mass on $a_t^{i\ast}$ but maintains full support over $\mathcal{A}^i$. The physical outcome is drawn from the competing-risks law:
+\[
+m_t \sim \ProbE\bigl(\cdot \mid \theta_K,\,\mathcal{C}_t\bigr).
+\]
+The logit law implementing the MDG is axiomatically justified as the unique law compatible with full support, dominance, and maximum entropy (the Luce-Debreu axioms applied to this stochastic context).
+
+\subsection{Proportional competing risks}
+
+Transition intensities follow a proportional covariates model \parencite{Cox1972}:
+\[
+\lambda_j(t \mid \theta_K,\mathcal{C}_t) = \lambda_{j0}(t)\exp\!\bigl(\beta_{K,j}(\theta_K) + \beta^\top x_t\bigr),\qquad j\in\{1,2,3,4\},
+\]
+where $j=1$ (payment), $j=2$ (death), $j=3$ (rescue), $j=4$ (release), $\lambda_{j0}(t)$ is the baseline hazard, and $\beta_{K,j}(\theta_K)$ is the type-specific coefficient for event $j$. \textbf{Structural separability} between types---key to identification---requires that there exist $j$ such that $\beta_{K,j}(\theta)\neq\beta_{K,j}(\theta')$ for $\theta\neq\theta'$.
+
+\subsection{Agent optimization}
+
+In each period $t$, the \textbf{captor} solves an optimal stopping problem selecting $a^K_t\in\{a_{rel},a_{kill},a_{cont}\}$ that maximizes his value function:
+\[
+a_t^{K\ast} = \arg\max_{a^K_t \in \mathcal{A}^K}\mathcal{U}^K_t(a^K_t \mid h_t, \theta_K, \theta_S).
+\]
+The captor's continuation value combines current flow (net ransom net of blocking, operating cost, capture penalty) with discounted future value:
+\[
+V^K_{cont,t} = \tilde{p}_{pay,t}(\theta_K)\cdot R(1-\alpha_t) - C_t(\gamma_t,\theta_K) - \tilde{p}_{cap,t}(\theta_K)\cdot F_{cap}(\theta_K,\theta_S)
++ \beta(\theta_K)(1-\tilde{p}_{cap,t})\,\E_{\theta_K}\!\left[V^K_{t+1}(\mu_{t+1})\right].
+\]
+The \textbf{family} chooses between paying the ransom and rejecting negotiation, disciplined by IR constraints that anchor the likelihood to the structural mechanism. The \textbf{State} minimizes expected social loss:
+\[
+\mathcal{L}_t(\alpha_t,\gamma_t;\mu_t) = \sum_{\theta\in\Theta_K}\mu_t(\theta)\left[\lambda^{pay}(\theta)\cdot R + \lambda^{kill}(\theta)\cdot L_{kill} - \Delta H_t(\theta)\right] + \chi_\alpha(\alpha_t)^2 + \chi_\gamma(\gamma_t)^2,
+\]
+where $\Delta H_t$ is the \textbf{informational gain} (reduction in Shannon entropy of $\mu_t$ upon observing $\zeta_t$), acting as a learning bonus that converts policy into a dual-objective instrument: reducing material losses and identifying the adversary's type.
+
+% ============================================================
+% SECTION 4: BAYESIAN LEARNING AND TYPE IDENTIFICATION
+% ============================================================
+\section{Bayesian Learning and Type Identification}
+\label{sec:bayesian}
+
+\noindent Bayesian convergence does not imply identification: beliefs can stabilize at a random limit without concentrating on the true type if distinct profiles generate observationally equivalent signals \parencite{Schervish1995Theory,BlackwellDubins1962}. This section establishes the conditions under which the public history of the mechanism discriminates types in the limit.
+
+\subsection{Public filtration and beliefs}
+
+\begin{definition}[Public signal and filtration]
+The \textbf{public signal} $\zeta_t$ gathers the instruments $(\alpha_t,\gamma_t)$, executed actions $(\tilde{a}_t^F,\tilde{a}_t^K,\tilde{a}_t^S)$, the physical outcome $m_t\in\mathcal{M}$, and the detection signal $d_t\in\{0,1\}$. The \textbf{public filtration} is:
+\[
+\mathcal{F}_0^{\mathrm{pub}}:=\sigma(z, \theta_V),\qquad \mathcal{F}_t^{\mathrm{pub}}:=\sigma(z,\theta_V,\zeta_0,\ldots,\zeta_{t-1})\text{ for }t\ge 1.
+\]
+\end{definition}
+
+\begin{definition}[Beliefs and Bayesian updating consistent with PBE]
+Let $\mu_0\in\Delta(\Theta_K)$ be the prior with full support, $\mu_0(\theta\mid z,\theta_V)>0$ for all $\theta\in\Theta_K$. The process $\{\mu_t\}_{t\ge 0}$ is \textbf{consistent with the PBE} if:
+\[
+\mu_t(\theta)=\ProbE\bigl(\theta_K=\theta\mid\mathcal{F}_t^{\mathrm{pub}}\bigr)\qquad \forall\,\theta\in\Theta_K,\;\forall\,t\ge 0.
+\]
+The structural prior is formalized via a Multinomial Logit Softmax:
+\[
+\mu_0(\theta \mid z, \theta_V) = \frac{\exp\left( \varpi_\theta + \eta_{\theta,z} + \xi_{\theta,V} \right)}{\sum_{j \in \Theta_K} \exp\left( \varpi_j + \eta_{j,z} + \xi_{j,V} \right)},
+\]
+where $\varpi_\theta$ is the historical prevalence, $\eta_{\theta,z}$ the geographic filter, and $\xi_{\theta,V}$ the victim visibility filter.
+\end{definition}
+
+\subsection{Asymptotic identification and measure singularity}
+
+\begin{definition}[Prolonged captivity event]
+\[
+\mathcal{T}:=\{\tau=\infty\}=\bigl\{\omega\in\Omega : m_t(\omega)\in\mathcal{M}_{\mathrm{cont}}\;\forall\, t\ge 0\bigr\}.
+\]
+\end{definition}
+
+\begin{definition}[Asymptotic identification in $\mathcal{T}$]
+The model is \textbf{asymptotically identifiable} in $\mathcal{T}$ if $\ProbC{\theta_K^\ast}(\mathcal{T})>0$ and, for all $\theta\neq\theta_K^\ast$, at least one of the following holds:
+\begin{enumerate}
+\item[\textup{(a)}] \textbf{Survival exclusion}: $\ProbC{\theta}(\mathcal{T})=0$.
+\item[\textup{(b)}] \textbf{Signal singularity}: the laws of $\{\zeta_t\}_{t\ge 0}$ restricted to $\mathcal{T}$ under $\ProbC{\theta}$ and $\ProbC{\theta_K^\ast}$ are mutually singular.
+\end{enumerate}
+\end{definition}
+
+\begin{lemma}[Structural identifiability and total variation separation]
+\label{lem:hazard-separation}
+If there exists $j\in\{1,2,3,4\}$ such that $\beta_{K,j}(\theta)\neq\beta_{K,j}(\theta')$ for $\theta\neq\theta'$, then there exists $\varepsilon>0$ such that:
+\[
+\bigl\| p_\theta(\cdot\mid \mathcal{F}_t^{\mathrm{pub}})-p_{\theta'}(\cdot\mid \mathcal{F}_t^{\mathrm{pub}})\bigr\|_{\mathrm{TV}}\ge \varepsilon.
+\]
+If moreover the set $\mathcal{S}_{\theta,\theta_K^\ast}$ of periods with this separation is infinite and $\underline{\varepsilon}>0$ is a uniform lower bound, then Kakutani's criterion \parencite{Kakutani1948} implies mutual singularity of the path laws of $\theta$ and $\theta_K^\ast$ in $\mathcal{T}$.
+\end{lemma}
+
+\begin{theorem}[Identification and Consistency of True Types]
+\label{thm:posterior-consistency}
+Consider a prior $\mu_0\in\Delta(\Theta_K)$ with full support and Bayesian updating consistent with the PBE. Let $\theta^\ast:=\theta_K^\ast$ be the realized type and $\mu_C:=\ProbC{\theta^\ast}(\,\cdot\mid\mathcal{T})$. If the mechanism is \textbf{asymptotically identifiable} in $\mathcal{T}$, then $\mu_C$-almost surely:
+\begin{enumerate}
+\item \textbf{Exclusion of false hypotheses}: $\mu_t(\theta)\xrightarrow{t\to\infty}0$ for all $\theta\neq\theta^\ast$.
+\item \textbf{Concentration on the true type}: $\mu_t(\theta^\ast)\xrightarrow{t\to\infty}1$.
+\end{enumerate}
+Consequently, $\{\mu_t\}$ converges weakly to the Dirac measure $\delta_{\theta^\ast}$ in $\mathcal{T}$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+(1)~By PBE consistency, $\{\mu_t(\theta)\}$ is a bounded martingale under $\ProbE$, converging $\ProbE$-a.s.\ to a limit $Z_\theta\in[0,1]$. (2)~Asymptotic identifiability (Definition~4.3)---via Lemma~\ref{lem:hazard-separation} and Kakutani's criterion---implies that the likelihood ratio $R_t^\theta=d\ProbC{\theta}/d\ProbC{\theta^\ast}\big|_{\mathcal{F}_t^{\mathrm{pub}},\mathcal{T}}\to 0$ $\mu_C$-a.s.\ for every false type. Bayes' formula then gives $\mu_t(\theta)\le(\mu_0(\theta)/\mu_0(\theta^\ast))R_t^\theta\to 0$. (3)~The normalization $\sum_\theta\mu_t(\theta)=1$ and finiteness of $\Theta_K$ yield $\mu_t(\theta^\ast)\to 1$.
+\end{proof}
+
+\begin{remark}[Economic reading and link to $\beta_{K,j}$]
+The asymptotic identifiability condition is a \textbf{design and identification hypothesis}: it requires that the composition of the policy rule $\chi_t$, the admissible responses under IR/IC, and the competing-risks structure produce long trajectories that are \textbf{not} compatible with false types. In practice, differential shifts $\beta_{K,j}(\theta)\neq\beta_{K,j}(\theta')$ for some $j$ and policies that vary $(\alpha_t^\ast,\gamma_t^\ast,a_t^{S\ast})$ over $h_t$ favor singularity of the laws of $(m_t,d_t)$.
+\end{remark}
+
+% ============================================================
+% SECTION 5: CALIBRATION AND QUANTITATIVE RESULTS
+% ============================================================
+\section{Calibration and Quantitative Results}
+\label{sec:calibration}
+
+\noindent This section documents a computational calibration of the mechanism with two contrasting true types, $\theta_K^\ast=\mathrm{CC}$ and $\theta_K^\ast=\mathrm{FARC}$. The exercise verifies that the model's primitives generate quantitatively coherent trajectories of Bayesian learning, optimal instrument choice, and informational value.
+
+The simulation operates in \textbf{Continue mode}: the process runs until a fixed horizon $T=80$ even if the daily physical draw would produce a terminal outcome. The first period in which such an outcome would have absorbed the episode is denoted $\tau^{\mathrm{hyp}}:=\inf\{t\ge 0:m_t\neq\mathrm{Continue}\}$. The gray band in temporal figures marks $\tau^{\mathrm{hyp}}$; the trajectory to the right of that band is counterfactual learning and policy dynamics.
+
+The simulation uses the prior $\mu_0=(0.25,0.20,0.20,0.35)$ for $(\mathrm{CC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC})$, metropolitan region, private victim, and fixed seed. In each period, the policy $(\alpha_t^\ast,\gamma_t^\ast)$ is computed via grid search, incorporating expected losses from payment, death, rescue, and release, convex instrument costs, and the informational gain term $\Delta H_t$.
+
+\medskip
+
+The main quantitative results are:
+
+\begin{itemize}
+  \item \textbf{FARC} (organized type): final posterior $\mu_T(\mathrm{FARC})=0.924$, mean blocking $\bar\alpha^\ast=0.310$, mean pressure $\bar\gamma^\ast=0.318$, mean informational gain $\overline{\Delta H}=0.0039$. Identification occurs rapidly because the early rescue terminal signal effectively discriminates this type.
+  \item \textbf{CC} (common criminals, financial type): final posterior $\mu_T(\mathrm{CC})=0.728$, mean blocking $\bar\alpha^\ast=0.356$, mean pressure $\bar\gamma^\ast=0.366$, mean informational gain $\overline{\Delta H}=0.0043$. Concentration is more moderate because several realizations of continuation and payment remain compatible with other types.
+\end{itemize}
+
+The difference in posterior concentration is consistent with the model's hazard separation: in this parametrization, the FARC realization produces an early rescue terminal signal, while CC produces payment at $\tau^{\mathrm{hyp}}=25$. Mean precision $\bar\iota$ is higher for FARC, indicating that the public history discriminates organized types more rapidly than financially-motivated ones.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{fig_mu_dc_farc.pdf}
+\caption{Bayesian learning in Continue mode. The black line shows the posterior of the true type and the gray band marks $\tau^{\mathrm{hyp}}$. Source: computational calibration of the mechanism.}
+\label{fig:calibracion-mu}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{fig_alpha_dc_farc.pdf}
+\caption{Optimal financial blocking $\alpha_t^\ast$ and branch references $\alpha^R$, $\alpha^N$. Source: computational calibration.}
+\label{fig:calibracion-alpha}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{fig_gamma_dc_farc.pdf}
+\caption{Optimal operational pressure $\gamma_t^\ast$ and branch references $\gamma^R$, $\gamma^N$. Source: computational calibration.}
+\label{fig:calibracion-gamma}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{fig_deltaH_dc_farc.pdf}
+\caption{Expected informational gain $\Delta H_t$. The gray band marks the hypothetical absorption point. Source: computational calibration.}
+\label{fig:calibracion-deltah}
+\end{figure}
+
+% ============================================================
+% SECTION 6: POLICY IMPLICATIONS
+% ============================================================
+\section{Policy Implications}
+\label{sec:policy}
+
+\noindent The results of the preceding sections have direct consequences for anti-kidnapping policy design. The effect of $\gamma_t$ on expected captivity duration is governed by the sign of $\kappa_h(\theta_K,t)$: only when pressure accelerates closure outcomes more than it inhibits the payment channel is the episode shortened; otherwise, the State may paradoxically prolong it.
+
+\begin{proposition}[Optimal operational pressure and Bayesian type identification]
+\label{prop:optimal-gamma-beliefs}
+Suppose $\Theta_K=\{\theta_{low},\theta_{high}\}$ with $\beta_{K,j}(\theta_{high})>\beta_{K,j}(\theta_{low})$ for $j\in\{2,3\}$ (the high-risk type exhibits greater propensity toward rescue and death), and that the State's objective is strictly convex in $\gamma_t$. Then the optimal operational pressure $\gamma_t^\ast$ is strictly increasing in the posterior belief on the high-risk type:
+\[
+\frac{d\gamma_t^\ast}{d\mu_t(\theta_{high})} > 0.
+\]
+The elasticity of $\gamma_t^\ast$ with respect to $\mu_t(\theta_{high})$ is proportional to:
+\[
+\frac{\tilde\lambda_j(t\mid\theta_{high})}{\tilde\lambda_j(t\mid\theta_{low})}
+= \exp\!\bigl(\beta_{K,j}(\theta_{high})-\beta_{K,j}(\theta_{low})\bigr), \quad j\in\{2,3\}.
+\]
+Consequently, the range of optimal pressure variation in response to Bayesian updates is larger the more separated are the structural parameters $\beta_{K,j}$ between types.
+\end{proposition}
+
+Proposition~\ref{prop:optimal-gamma-beliefs} converts evidence about the type into a direct input for calibrating the operational instrument. In practice: (i) the State must maintain outcome records that allow real-time updating of $\mu_t$; (ii) pressure must be modulated differentially according to the dominant belief about the captor type; (iii) municipalities with high prevalence of organized types (FARC, ELN) require higher $\gamma_t^\ast$ intensity during the learning phase; and (iv) the rescue (FARC) or payment (CC) signal at $\tau^{\mathrm{hyp}}$ is auditable and must be incorporated explicitly into institutional recording systems.
+
+An applied research agenda includes: the development of a real-time Bayesian dashboard for GAULA units, estimation of $\beta_{K,j}(\theta_K)$ by type using panel data (available for Colombia 1964--2025), and the extension of the mechanism to continuous types $\Theta_K\subseteq\mathbb{R}$.
+
+% ============================================================
+% SECTION 7: STRUCTURAL IDENTIFICATION
+% ============================================================
+\section{Structural Identification: Measure Singularity}
+\label{sec:structural-id}
+
+\noindent This section presents the measure-theoretic foundation of Section~\ref{sec:bayesian}. The central argument is that \textbf{recurring local separation} in total variation between daily laws couples with \textcite{Kakutani1948}'s criterion to obtain \textbf{mutual singularity} of path laws.
+
+\begin{lemma}[Product of experiments and singularity (Kakutani's criterion)]
+\label{lem:general-id}
+Fix two types $\theta\neq\theta'$. Suppose that, conditional on the equilibrium-fixed policy and on $\mathcal{T}$, the sequence $\{Y_t\}_{t\ge 0}$ with $Y_t=(m_t,d_t)$ is independent and the law of $Y_t$ factorizes as $\bigotimes_{t=0}^{T} p_\theta^{(t)}$ under $\theta$. Let $\rho_t:=\sum_y \sqrt{p_\theta^{(t)}(y)p_{\theta'}^{(t)}(y)}$ be the Bhattacharyya affinity. Then:
+\[
+\rho\Bigl(\bigotimes_{t=0}^{T} p_\theta^{(t)},\,\bigotimes_{t=0}^{T} p_{\theta'}^{(t)}\Bigr)=\prod_{t=0}^{T}\rho_t.
+\]
+If there exists an infinite $\mathcal{S}_{\theta,\theta'}\subseteq\mathbb{N}$ with $\|p_\theta^{(t)}-p_{\theta'}^{(t)}\|_{\mathrm{TV}}\ge \underline{\varepsilon}>0$ for all $t\in\mathcal{S}_{\theta,\theta'}$, then $\prod_{t\in\mathcal{S}_{\theta,\theta'}}\rho_t=0$ and the product measures on the infinite sequence are \textbf{mutually singular} \parencite{Kakutani1948,Shiryaev2019Probability}.
+\end{lemma}
+
+Lemma~\ref{lem:general-id} isolates the pure measure-theoretic argument: under product structure and recurring total variation separation, Kakutani's criterion forces mutual singularity of path laws. Theorem~\ref{thm:posterior-consistency} invokes asymptotic identifiability as a high-level condition and Lemma~\ref{lem:hazard-separation} as an operationally verifiable path that connects it to the mechanism's parameters.
+
+The \textbf{structural hazard ratio} captures exactly the difference between types:
+\[
+\frac{\lambda_j(t \mid \theta)}{\lambda_j(t \mid \theta')} = \exp\!\left( \beta_{K,j}(\theta) - \beta_{K,j}(\theta') \right),
+\]
+an expression that encodes all structural differences between types in the space of observable hazards, without relying on aggregate signals or ad hoc functional forms.
+
+% ============================================================
+% SECTION 8: CONCLUSION
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+\noindent This paper presents a dynamic deterrence mechanism under incomplete information for the analysis of extortionary kidnapping, whose central contribution is the \textbf{Theorem of Rational Type Identification under Unknown Environments} (Theorem~\ref{thm:posterior-consistency}). The result establishes that, when public policy generates asymptotically separable risk intensities among captor types, the accumulation of daily signals forces almost sure convergence of the State's posterior beliefs toward the true type $\theta_K^\ast$ in the prolonged captivity regime $\mathcal{T}$.
+
+Three structural elements underpin this result. First, the MDG process, axiomatically justified as the unique implementation law compatible with full support, dominance, and maximum entropy, ensures that the public history remains informative even off the equilibrium path. Second, the Implementability Theorem establishes that there exists a PBE implementing the social choice rule under incentive compatibility IC$^K$, individual rationality IR$^K$ and IR$^F$. Third, the structural identification section provides the measure-theoretic foundation: mutual singularity of path laws---via Kakutani's criterion---is the mechanism that converts local statistical separation into global asymptotic identification.
+
+The policy implications are operational: the optimal operational pressure $\gamma_t^\ast$ must be calibrated according to the State's posterior beliefs and the structural separation between types, and its effect on captivity duration depends on the net sensitivity $\kappa_h(\theta_K,t)$ of competing hazards. Calibration with Colombian data confirms the computational viability of the mechanism and the speed of learning when the type is organized (FARC).
+
+A future research agenda includes the extension to continuous types $\Theta_K\subseteq\mathbb{R}$, the incorporation of endogenous strategic communication between the family and the State, and the structural estimation of the model with panel data of kidnapping episodes in Colombia.
+
+\printbibliography[title={References}]
+
+\end{document}
