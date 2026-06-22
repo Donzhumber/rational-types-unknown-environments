@@ -10,7 +10,6 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[spanish,es-noshorthands]{babel}
-\usepackage{csquotes}
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{geometry}
 \usepackage{setspace}
@@ -62,11 +61,13 @@
 
 \usepackage{float}% por si se usa \texttt{[H]} en figuras u otros entornos; los cuadros numerados del cuerpo usan \texttt{longtable} para salto de página y título APA~7.
 \usepackage{etoolbox}
+\usepackage[round,authoryear,longnamesfirst]{natbib}
 \usepackage[hidelinks]{hyperref}
-\usepackage[style=authoryear,backend=bibtex,maxcitenames=2,maxbibnames=99]{biblatex}
-\addbibresource{references.bib}
+% Alias para compatibilidad con comandos biblatex usados en el cuerpo
+\providecommand{\textcite}{\citet}
+\providecommand{\parencite}{\citep}
 
-% Cuerpo 12pt, notas al pie a 9/11 (ligeramente por debajo del \footnotesize por defecto de 10pt), uso habitual en textos académicos. (etoolbox lo carga biblatex.)
+% Cuerpo 12pt, notas al pie a 9/11 (ligeramente por debajo del \footnotesize por defecto de 10pt), uso habitual en textos académicos.
 \makeatletter
 \AtBeginDocument{%
   \@ifundefined{H@old@footnotetext}{%
@@ -204,11 +205,28 @@
 % PRIMERA PARTE: traducción completa de main.tex
 \maketitle
 \begin{abstract}
-Escribe tu resumen aquí...
+Este artículo estudia el diseño de un mecanismo dinámico indirecto para disuadir y desarticular organizaciones criminales bajo información incompleta, con aplicación al secuestro extorsivo en Colombia. La evidencia empírica proporciona el prior y los parámetros del mecanismo: un modelo vectorial de corrección de errores caracteriza las tendencias macroeconómicas del secuestro y las tasas de interés, mientras que modelos logit multinomial y de riesgos competitivos identifican costos, duraciones, desenlaces y heterogeneidad entre tipos criminales. La contribución teórica central es el Teorema de Identificación de Tipos Racionales en Entornos Desconocidos, que transforma la separación recurrente entre señales observables en identificación posterior del tipo verdadero. Bajo actualización bayesiana consistente en el evento de cautiverio prolongado, las creencias del Estado convergen casi seguramente al tipo real del captor. El documento establece además la implementabilidad condicional en Equilibrio Bayesiano Perfecto cuando el conjunto factible de políticas permanece no vacío. La calibración dinámica ilustra la viabilidad operativa del mecanismo y muestra cómo los instrumentos estatales pueden acelerar el aprendizaje y disciplinar la política óptima.
 \end{abstract}
+\noindent{\small\textbf{Palabras clave.} diseño de mecanismos; aprendizaje bayesiano; riesgos competitivos; secuestro; control dual; identificación.}\par
+\noindent{\small\textbf{JEL.} C73; D82; K42.}\par
+\vspace{0.75\baselineskip}
 
 
-\subsection*{\Large\bfseries Introducción}
+\section{Introducción y literatura relacionada}
+\label{sec:intro}
+
+El comportamiento criminal observable suele agrupar tipos distintos precisamente cuando la política pública necesita discriminarlos. Una solicitud de pago, un periodo de silencio, una prueba parcial de supervivencia o una escalada violenta pueden ser compatibles con tecnologías organizativas diferentes. Cuando una misma señal pública puede ser producida por organizaciones insurgentes disciplinadas, bandas criminales de horizonte corto o estructuras fragmentadas, una política puramente pasiva enfrenta un bloqueo informacional: la decisión que minimiza la pérdida inmediata puede preservar el agrupamiento que impide identificar al adversario en el futuro. El diseño de mecanismos ofrece la arquitectura para formular reglas que alineen los incentivos privados con los objetivos normativos del Estado bajo participación voluntaria y racionalidad secuencial.
+
+La pregunta central es cómo diseñar un mecanismo activo de selección cuando las acciones observables se encuentran en regiones de agrupamiento. El planificador es el Estado; sus instrumentos continuos son la interdicción financiera $\alpha_t\in[0,1]$ y la presión operativa $\gamma_t\in[0,1]$. El adversario posee un tipo privado $\theta_K\in\Theta_K$. Por tanto, el problema no consiste únicamente en elegir entre rescate y negociación, sino en calibrar $(\alpha_t,\gamma_t)$ para que la ley inducida de señales diarias sea informativa sobre la tecnología criminal latente.
+
+El artículo se ubica en la intersección del diseño dinámico de mecanismos, la economía del crimen y el aprendizaje activo. El Principio de Revelación y las restricciones de compatibilidad de incentivos y racionalidad individual proporcionan la base del problema de implementación \textcite{Gibbard1973,Myerson1979IC,Myerson1981,Rochet1987}. La literatura de mecanismos dinámicos extiende este enfoque a entornos intertemporales \textcite{CourtyLi2000,EsoSzentes2007,PavanSegalToikka2014}, mientras que la adquisición dinámica de información muestra por qué una política óptima debe valorar el efecto de las acciones presentes sobre la calidad de las señales futuras \textcite{Zhong2022}. La economía del crimen y los estudios sobre secuestro documentan los incentivos, la duración y la heterogeneidad organizativa del fenómeno \textcite{Becker1968,Ehrlich1973,Selten1977Kidnapping,Mejia2000Secuestro,Detotto2014Ransom,Forest2012Kidnapping,Shortland2019Kidnap}.
+
+La contribución integra tres elementos. Primero, el proceso Mano de Dios--Guadalupe (MDG) introduce implementación estocástica con soporte completo y mantiene bien definido el operador bayesiano fuera de la senda de equilibrio. Segundo, una estructura de riesgos competitivos conecta duración, forma de terminación y aprendizaje. Tercero, el Teorema de Identificación de Tipos Racionales en Entornos Desconocidos convierte una condición local de separación recurrente en identificación posterior global. El Teorema de Implementabilidad complementa este resultado al establecer las condiciones bajo las cuales la regla estatal puede sostenerse en Equilibrio Bayesiano Perfecto sin violar $IC^K$, $IR^K$ ni $IR^F$.
+
+\section{Marco institucional y hechos estilizados}
+\label{sec:institutional}
+
+\subsection{El secuestro como fenómeno concentrado y heterogéneo}
 
 El fenómeno del secuestro a escala mundial, examinado sobre la base de datos oficiales de la Oficina de las Naciones Unidas contra la Droga y el Delito (ONUDD)\textcite{unodc_Data}), muestra una distribución altamente asimétrica del crimen para el período 2023-2024. Los registros correspondientes a 145 países indican que el número total de secuestros asciende a 1.514.546 casos durante este intervalo. Desde una perspectiva comparativa entre países, la mediana del promedio anual dentro de cada país se sitúa en 46 secuestros, mientras que la media alcanza 1.153 casos. Además, el 75o el percentil de la distribución de promedios anuales a nivel nacional se alcanza en 109 países, lo que refleja una fuerte concentración del fenómeno dentro de un subconjunto reducido de estados. Este alto nivel de dispersión, junto con la marcada divergencia entre el medio y el medio, confirma la presencia de una distribución de cola pesada, que invalida las interpretaciones homogéneas del fenómeno y subraya la necesidad de enfoques analíticos que incorporan la heterogeneidad institucional, jurídica y crítica. Un vistazo de este patrón se presenta en la Figura~\ref{figure_1a}, que permite la observación de la dispersión en el número total de casos de secuestro por país para este período de análisis. 
 
@@ -385,7 +403,7 @@ Durante las administraciones de Juan Manuel Santos, Figura~\ref{fig:figure_5} in
 \end{landscape}
 \clearpage
 
-\subsection*{\Large\bfseries Tendencias largas en secuestro para rescate}
+\subsection{Análisis macroeconómico: tendencia estocástica}
 
 En virtud de la legislación penal colombiana, el secuestro se clasifica en dos modalidades, el secuestro por rescate y el secuestro no extorsionado. Gráfico~\ref{fig:figure_6a} presenta la trayectoria histórica de estos delitos de 1964 a 2025, mostrando que el volumen agregado del secuestro ha sido impulsado en gran medida por la dinámica de la modalidad extorsionada. Esta correlación es especialmente pronunciada durante el pico de 1996 a 2002 y refleja el uso instrumental del secuestro como recurso financiero durante la expansión del conflicto armado. Sin embargo, un cambio en la composición interna el secuestro emerge en el período posterior a 2010. Como se muestra en la Figura~\ref{fig:figure_6b}\footnote{La composición porcentual comunicada en la Figura~\ref{fig:figure_6b} se obtiene utilizando el doble aislamiento exponencial aplicado a la parte del secuestro por rescate en relación con los secuestros totales. Suavidad exponencial doble es una técnica de serie de tiempo que reduce las fluctuaciones a corto plazo Durante la captura de la tendencia subyacente a largo plazo, lo que permite observar cambios estructurales en la composición del secuestro sin estar dominado por la volatilidad mensual.}, mientras que el secuestro por rescate representaba la mayoría de los casos anteriores a 2000, su prevalencia relativa disminuyó a medida que disminuyeron las cifras generales. Por el contrario, la proporción de secuestros no extorsionados aumentó, resultando en una distribución más diversificada entre las dos modalidades en los últimos años. Por último, el intervalo de 2022 a 2025 muestra una tendencia ascendente moderada en casos totales, lo que sugiere que a pesar de la disminución a largo plazo, El secuestro persiste y sigue fluctuando en respuesta a la dinámica de seguridad contemporánea.
 
@@ -681,9 +699,10 @@ La validación cruzada de la tendencia a largo plazo en el secuestro por rescate
 
 
 
-\subsection*{\Large\bfseries Análisis microeconómico del secuestro para rescate}
+\subsection{Microestructura y riesgos competitivos en Colombia}
+\label{sec:empirico}
 
-\subsection*{\normalfont\itshape Manejo de datos y construcción de muestras}
+\subsection{Manejo de datos y construcción de muestras}
 
 Los datos utilizados en esta sección se derivan de microdatos anonimizados a nivel individual sobre secuestros por rescate reportados por el Centro Nacional de Memoria Histórica \textcite{cnmh_datos}. Esta institución documenta el secuestro a través del Sistema de Información sobre los Acontecimientos de Violencia en el Conflicto Armado Colombiano (SIEVCAC), que integra y valida múltiples fuentes institucionales (como el SIEVCAC) Procuraduría General y Policía Nacional, así como fuentes sociales (incluidas ONG, archivos de derechos humanos y prensa nacional y local). En lugar de generar datos primarios, la metodología compila, armoniza, y revisa sistemáticamente los registros de cada caso por caso para eliminar duplicaciones, individualizar a las víctimas y estructurar cada evento según el autor, víctima, fecha, ubicación y modalidad. El los registros son posteriormente codificados, sometidos a procedimientos rigurosos de control de calidad y validados estadísticamente antes de la publicación, lo que da lugar a un repositorio histórico unificado que prioriza el rigor documental y el reconstrucción de patrones relacionados con conflictos.
 
@@ -737,7 +756,7 @@ En particular, para asegurar la coherencia de los estimadores de las MNL, se imp
         \addlinespace
         \textbf{Attrición / Prueba de Logit descomunal}
         & ratios de probabilidades significativas \newline ($p<0.05$)
-        & \textbf{Reporting bias:} La probabilidad de falta de información sobre los resultados es rara vez y aumenta en las regiones periféricas y los contextos de menor capacidad estatal.
+        & \textbf{Sesgo de reporte:} La probabilidad de que falte información sobre el desenlace no es aleatoria y aumenta en regiones periféricas y contextos con menor capacidad estatal.
         & \textbf{Limitación} \newline (reportado) \\
         \bottomrule
     \end{tabular}
@@ -746,12 +765,12 @@ En particular, para asegurar la coherencia de los estimadores de las MNL, se imp
     \begin{minipage}{0.98\linewidth}
         \footnotesize
         \justifying
-        \textit{Nota:} La prueba IIA evalúa la suposición de Independencia de Alternativas Irrelevant comparando los coeficientes del modelo completo con los de un modelo restringido utilizando el enfoque SUEST. La prueba de letalidad corresponde a a diferencia-en-proporción test across armed groups. La prueba de atrición se basa en un modelo de logit que estima la probabilidad de que el resultado del secuestro no se conserva. \\ \scriptsize\textit{Fuente:} Los cálculos de los autores usando Stata 19.
+        \textit{Nota:} La prueba IIA evalúa el supuesto de independencia de alternativas irrelevantes comparando los coeficientes del modelo completo con los de un modelo restringido mediante el enfoque SUEST. La prueba de letalidad corresponde a una diferencia de proporciones entre grupos armados. La prueba de atrición utiliza un modelo logit para estimar la probabilidad de que el desenlace del secuestro no sea observado. \\ \scriptsize\textit{Fuente:} Cálculos del autor con Stata 19.
     \end{minipage}
 \end{table}
 
 
-\subsection*{\normalfont\itshape Determinantes estratégicos y dinámicas temporales de secuestro}
+\subsection{Determinantes estratégicos y dinámicas temporales del secuestro}
 
 Sobre la base de una muestra final de 1.125 observaciones, se estima que el modelo MNL analiza los determinantes de los resultados del secuestro. Esta especificación es particularmente adecuada para la naturaleza multicategorífica y no ordenada de la variable dependiente, que captura resultados mutuamente excluyentes como Pago, Muerte, Rescate y Escape o Liberación. A diferencia de los modelos de regresión binaria o lineal, el marco MNL está diseñado explícitamente para entornos de riesgo en que los autores y el Estado interactúan estratégicamente. Su relevancia en este contexto radica en su capacidad de cuantificar cómo un vector de variables explicativas cambia la probabilidad de que un negociación parte del resultado básico del Pago hacia resoluciones fallidas o violentas. Al descomponer los efectos netos de los determinantes organizativos, territoriales e institucionales, el modelo proporciona un granular vista de la estructura de incentivo que rige el comportamiento del secuestro, permitiendo una evaluación empírica de si el secuestro del rescate funciona de acuerdo a una lógica del mercado racional o se forma por las fricciones criminales.
 
@@ -1099,7 +1118,7 @@ Los resultados revelan heterogeneidad en la probabilidad de muerte en cautividad
     \vspace{0.2cm}
     \begin{minipage}{0.95\textwidth}
         \footnotesize
-        \textit{Notas:} Panel (a) muestra la probabilidad acumulativa de que un rescate estatal haya ocurrido por cada punto en el tiempo. Grupo b). El panel (b) muestra la probabilidad promedio de muerte en cautiverio por grupo armado, calculada como la media de un indicador binario de indicador de muerte dentro de cada categoría. Los valores reportados son proporciones descriptivas y no se derivan de un modelo de duración.
+        \textit{Notas:} El panel (a) muestra la probabilidad acumulada de que haya ocurrido un rescate estatal en cada momento. El panel (b) presenta la probabilidad promedio de muerte en cautiverio por grupo armado, calculada como la media de un indicador binario de muerte dentro de cada categoría. Los valores reportados son proporciones descriptivas y no se derivan de un modelo de duración.
         \\ \textit{Fuente:} Los cálculos de los autores usando Stata 19, basados en datos del \textcite{cnmh_datos}.
     \end{minipage}
  dama los dos titulos e las subsecciones que se diferencien bien
@@ -1227,7 +1246,7 @@ Por último, el análisis del período contemporáneo identifica un tijera de ef
 }
 
 
-\subsection*{\normalfont\itshape  Riesgo de secuestro a nivel poblacional: evidencia de una encuesta nacional}
+\subsection{Riesgo de secuestro a nivel poblacional: evidencia de una encuesta nacional}
 
 Esta sección se basa en la encuesta sobre la coexistencia y la seguridad ciudadana (ECSC) \textcite{DANE_ECSC_2021}, cuya metodología oficial y directrices operacionales se documentan en el Manual de Trabajo sobre el Terreno y los conceptos básicos \textcite{dane2022manual} y el Marco Metodológico General de la CESC \textcite{dane2022ecsc}. El CESC es un estudio probabilístico nacionalmente representativo de la población de 15 años y más, con cobertura a nivel nacional, urbano y rural. Está diseñado para medir la victimización directa, las percepciones de seguridad y comportamiento informante, incluyendo extorsión y, en mayor medida, secuestro para rescate. Comparado con el \textcite{cnmh_datos}, su principal fuerza reside en su diseño de muestreo y en el uso de factores de expansión que permiten la inferencia de nivel de población, así como su capacidad para capturar incidentes no reportados y proporcionar estandarizados, evidencia territorialmente comparable sobre dinámica de victimización.
 
@@ -1239,38 +1258,17 @@ Los resultados descriptivos y econométricos basados en la encuesta ECSC indican
 
 
 
-\subsection*{\Large\bfseries Diseño de mecanismos para la disuasión y mitigación del secuestro extorsivo}
+\section{Pertinencia del marco empírico para el modelo de mecanismo}
+\label{sec:pertinencia}
+
+La evidencia empírica no constituye un bloque separado del modelo teórico, sino la fuente de sus restricciones y parámetros. El sistema VEC identifica persistencia macroeconómica y relaciones de largo plazo que disciplinan los costos de retención y financiación. Los modelos logit multinomial y de riesgos competitivos proporcionan probabilidades de pago, muerte, rescate y liberación, además de heterogeneidad por perpetrador, víctima, región y duración. Estas estimaciones determinan los priors $\mu_0$, las intensidades $\tilde\lambda_j$, las huellas estructurales $\beta_{K,j}(\theta_K)$ y los márgenes de pérdida social utilizados por el mecanismo.
+
+Esta conexión cumple dos funciones. En primer lugar, evita que la identificación de tipos dependa de categorías criminales impuestas de forma arbitraria: los tipos se distinguen por diferencias observables en tecnologías de cautiverio, desenlaces y sensibilidad a los instrumentos estatales. En segundo lugar, permite interpretar la política como control dual: $\alpha_t$ y $\gamma_t$ modifican simultáneamente el riesgo material del episodio y la información disponible para decisiones posteriores. Así, la parte empírica ancla el prior y la parte teórica transforma esa información en una regla dinámica implementable.
 
 
-
-% =========================
-% 6. Discussion / Conclusion
-% =========================
-\section{Conclusión}
-Resumir las conclusiones, limitaciones e implicaciones.
-
-% =========================
-% References
-% =========================
-\newpage
 
 \clearpage
 % SEGUNDA PARTE: contenido completo de Mechanism_2.tex
-\title{Identificación de tipos racionales en entornos desconocidos:\\
-\large El caso del secuestro en Colombia II}
-\author{Humberto Bernal\thanks{Universidad Mayor de Cundinamarca. Ph.D.\ en Economía, Universidad de los Andes, Colombia. \href{mailto:hbeernalc@universidadmayor.edu.co}{hbeernalc@universidadmayor.edu.co}; \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}}}
-\date{}
-\maketitle
-
-\begin{abstract}
-Desarrollamos un mecanismo dinámico de disuasión del secuestro extorsivo en tiempo discreto bajo información incompleta. Tres actores---Estado, captor y familia---interactúan a lo largo de un cautiverio modelado como un proceso de riesgos competitivos proporcionales en covariables. El tipo del captor $\theta_K$ es información privada; el Estado actualiza sus creencias mediante aprendizaje bayesiano sobre una historia pública de desenlaces y señales observables. La implementación descansa en el proceso MDG (Mano de Dios-Guadalupe), que introduce una capa estocástica entre la intención estratégica y la acción ejecutada, garantizando la consistencia secuencial del Equilibrio Bayesiano Perfecto fuera de la senda de equilibrio. El resultado central---el \textbf{Teorema de Identificación de Tipos bajo Entornos Desconocidos}---establece que si la heterogeneidad estructural en los coeficientes de riesgo $\beta_{K,j}$ genera separación uniforme en variación total entre las leyes diarias de observación, el criterio de Kakutani implica singularidad mutua de las leyes de trayectoria y las creencias posteriores convergen al tipo verdadero casi seguramente. Las restricciones de compatibilidad de incentivos (IC) y participación (IR) anclan la verosimilitud predictiva al modelo estructural, convirtiendo el comportamiento observable en evidencia auditable sobre la identidad del adversario.
-\end{abstract}
-\vspace{0.5\baselineskip}
-\noindent{\small\textbf{Palabras clave.} mecanismos dinámicos; información incompleta; aprendizaje bayesiano; equilibrio bayesiano perfecto; secuestro.}\par\nobreak
-\noindent{\small\textbf{JEL.} C73; D82; K42.}\par
-\vspace{0.5\baselineskip}
-\noindent\rule{\linewidth}{0.4pt}\par
-\vspace{0.75\baselineskip}
 
 % ============================================================
 % SECCIÓN 1, INTRODUCCIÓN
@@ -1280,14 +1278,13 @@ Desarrollamos un mecanismo dinámico de disuasión del secuestro extorsivo en ti
 % No sustituye al archivo fuente original; organiza primero la tecnología
 % probabilística y luego los problemas de optimización de los agentes.
 % -------------------------------------------------------------------------
-\section{Introducción}
-\label{sec:introduction}
+\section{Modelo teórico}
+\label{sec:model}
 \label{sec:introduccion-mechanism}
 \noindent En Colombia, el secuestro extorsivo describe una trayectoria no lineal que evidencia una \textbf{interacción estratégica dinámica} bajo \textbf{información incompleta}. En este entorno, la heterogeneidad de los captores, la variabilidad de la respuesta estatal y la vulnerabilidad de los hogares configuran un sistema de decisiones interdependientes. El mecanismo formalizado en esta sección modela el encadenamiento de pagos, rescates y presión operativa como un proceso de aprendizaje bayesiano robusto, cuyo resultado fundamental es el \textbf{Teorema sobre la Identificación de Tipos Racionales bajo Entornos Desconocidos}. Bajo este marco, la inferencia estatal no colapsa ante acciones sorpresivas, sino que distingue entre intención estratégica, ejecución física imperfecta y señal estadística. Para ello, el proceso ``Mano de Dios-Guadalupe'' (MDG) incorpora una perturbación afín a la perfección de \textbf{mano temblorosa} de \textcite{Selten1975Perfectness}, refinada mediante la noción de \textbf{equilibrio secuencial} de \textcite{KrepsWilson1982}. Esta integración permite que eventos de baja probabilidad inicial sean tratados como desviaciones infinitesimales (temblores), asegurando que el planificador mantenga un sistema de creencias consistente y racional incluso fuera de la senda de equilibrio. De acuerdo con los principios del \textbf{Equilibrio Bayesiano Perfecto} de \textcite{FudenbergTirole1991}, las creencias sobre el tipo de captor $\theta_K$ quedan disciplinadas por la actualización de Bayes y la consistencia secuencial ininterrumpida. Si la política pública genera riesgos competitivos asintóticamente separables, el teorema demuestra que la acumulación de señales audita la volatilidad transitoria y fuerza la convergencia de la distribución posterior hacia la identidad estructural del tipo verdadero. De este modo, el objetivo normativo trasciende la \textbf{reducción de la rentabilidad delictiva} y la \textbf{minimización de la pérdida social}, en línea con \textcite{Becker1968} y \textcite{Mejia2000Secuestro}; busca \textbf{optimizar la arquitectura de inferencia} que permite al Estado identificar la naturaleza del adversario, en continuidad con el enfoque estratégico de \textcite{Selten1977Kidnapping}.
 % ============================================================
 % SECCIÓN 2, EL MODELO
 % ============================================================
-\section{El modelo}
 \label{sec:formal-mecanismo}
 \label{sec:forma-juego}
 \label{sec:types}
@@ -2715,7 +2712,7 @@ La arquitectura del modelo postula que la verosimilitud de las trayectorias obse
 
 La estructura de \textbf{martingala} de $\mu_t(\theta)$ bajo la ley ex ante $\ProbE$ garantiza que cada masa posterior pueda estabilizarse en un límite aleatorio $Z_\theta$ cuando $t\to\infty$. La identificación de largo plazo no crea esos límites, sino que determina su contenido bajo la ley condicionada al tipo verdadero y al evento de cautiverio prolongado, haciendo que las masas de los tipos falsos se desvanezcan y que la masa restante se concentre en el tipo realizado. Así se separan dos problemas, la convergencia de creencias como predicción secuencial coherente y el colapso a la verdad cuando el experimento público discrimina tipos.
 
-\subsection{Formalización de la Creencia Inicial: El Prior Estructural}
+\subsection{Formalización de la creencia inicial: el prior estructural}
 \label{subsec:prior-estructural}
 
 A fin de garantizar la consistencia operativa del aprendizaje bayesiano, el Estado debe partir de una conjetura fundamentada que recoja la trayectoria histórica del conflicto. Con base en la evidencia empírica, la creencia inicial $\mu_0$ se formaliza mediante una estructura \textbf{Logit Multinomial (Softmax)}, la cual parametriza la probabilidad de cada tipo $\theta_K \in \Theta_K$ en función de los atributos observables al abrir el episodio:
@@ -3067,7 +3064,7 @@ Si $\tau<\infty$ casi seguramente (episodio siempre termina), no existe evento $
 
 % Análisis del Teorema de tipos verdaderos racionales bajo entornos desconocidos (Bernal, 2026)
 
-\subsection*{Propiedades, limitaciones y dinámica del aprendizaje}
+\subsection{Propiedades, limitaciones y dinámica del aprendizaje}
 
 \noindent El mecanismo descansa sobre una separación en tres capas que determina tanto su validez interna como su capacidad de aprendizaje. En la primera, el planificador y los agentes resuelven un juego de información incompleta donde las reglas de decisión seleccionan intenciones óptimas sujetas a las restricciones de participación (IR) e incentivos (IC). En la segunda, el \textit{proceso MDG} mapea dichas intenciones en acciones materialmente ejecutadas $\tilde{A}_t$, incorporando la fricción operativa inherente al entorno. En la tercera, el bloque de riesgos proporcionales traduce la condición material resultante en un vector de intensidades \textit{cause-specific} $\lambda_j(t \mid \mathcal{C}_t)$, vinculando cada jornada de cautiverio con una distribución distinguible sobre los desenlaces observables. Esta estratificación aísla el impacto de los instrumentos de política de la varianza residual capturada por el tipo del captor, garantizando que la identificación no confunda fuentes de variación ni atribuya al diseño lo que corresponde a la heterogeneidad estructural.
 
@@ -3109,7 +3106,7 @@ expresión que codifica toda la diferencia estructural entre tipos en el espacio
 
 % Subsección 6.5, El Equilibrio del Mecanismo en Entornos Dinámicos
 
-\subsection{Equilibrio del Mecanismo, Integración de EBP e Implementabilidad}
+\subsection{Equilibrio del mecanismo, integración de EBP e implementabilidad}
 \label{subsec:equilibrio-mecanismo-introduccion}
 
 \noindent La caracterización del aprendizaje asintótico en este modelo requiere una estructura que garantice la coherencia entre las decisiones estratégicas de los agentes y la actualización de las creencias del Estado, lo cual se formaliza mediante la noción de \textbf{Equilibrio del Mecanismo}. Esta construcción integra el concepto de solución del \textbf{Equilibrio Perfecto Bayesiano (EBP)} con las restricciones de la \textbf{Teoría de Implementación}, permitiendo que la racionalidad secuencial y la consistencia de las expectativas actúen como el ancla de la verosimilitud predictiva. Al condicionar la actualización sobre la acción materializada ($\tilde{A}_t$) bajo la perturbación del \textit{proceso MDG}, el equilibrio transforma el flujo informativo en un motor de identificación estructural donde el Estado decodifica los parámetros de riesgo ($\beta_{K,j}$) del captor. De este modo, el equilibrio no solo disciplina el comportamiento de los jugadores, sino que asegura que la señal persistente de la organización criminal emerja sistemáticamente del ruido transitorio, validando la convergencia de la posterior hacia el tipo verdadero.
@@ -3244,7 +3241,7 @@ Debido a la perturbación estocástica del proceso MDG \textup{(}hipótesis iii 
 
 
 
-\subsection*{Lectura económica del resultado de implementabilidad}
+\subsection{Lectura económica del resultado de implementabilidad}
 
 \noindent El análisis de implementabilidad involucra dos capas lógicamente distintas. La primera, formalizada en la Definición~\ref{def:pbe-mechanism}, es de \textbf{consistencia estratégica}: la existencia de un perfil $(s,\mu)$ en el que el Estado, el captor y la familia son secuencialmente racionales dado $\mu_t$, y en el que las creencias $\mu_t$ son coherentes con la regla de Bayes en los nodos alcanzados. La segunda, articulada en la Definición~\ref{def:implementable-mechanism}, es de \textbf{implementabilidad}: que ese mismo perfil satisfaga $IC^K$, $IR^K$ e $IR^F$, de modo que la regla de elección social $f_t$, la política de rescate o negociación más los instrumentos $(\alpha_t,\gamma_t)$ que minimizan pérdida esperada, sea sostenible como \emph{outcome} de equilibrio sin que ningún agente tenga incentivo a desviarse. El EBP fija quién actúa, con qué creencias y con qué racionalidad; la implementabilidad determina si el \emph{outcome} público que el planificador desea puede mantenerse cuando los tipos son privados y la participación es voluntaria.
 
@@ -3384,76 +3381,144 @@ El presente teorema y el Teorema~\ref{thm:posterior-consistency} establecen prop
 % ============================================================
 % SECCIÓN 5, CALIBRACIÓN Y RESULTADOS CUANTITATIVOS
 % ============================================================
-\section{Calibración y resultados cuantitativos}
-\label{sec:calibracion-resultados}
+\section{Calibración del mecanismo y resultados cuantitativos}
+\label{sec:calibracion}
 
-Esta sección documenta una calibración computacional del mecanismo con dos tipos verdaderos contrastantes, $\theta_K^\ast=\mathrm{DC}$ y $\theta_K^\ast=\mathrm{FARC}$. El ejercicio no pretende ser una estimación estructural completa; su objetivo es verificar que las primitivas introducidas en el modelo generan trayectorias cuantitativas coherentes de aprendizaje bayesiano, elección óptima de instrumentos y valor informacional. Las series se obtienen en \textbf{modo Continuar}: el proceso sigue hasta un horizonte fijo $T=80$ aun cuando el sorteo físico diario produzca un desenlace terminal. El primer periodo en que tal desenlace habría absorbido el episodio se denota
-\[
-\tau^{\mathrm{hyp}}:=\inf\{t\geq0:m_t\neq\mathrm{Continuar}\}.
-\]
-En todas las figuras temporales, la banda gris claro marca $\tau^{\mathrm{hyp}}$. Por tanto, la parte de la trayectoria ubicada a la derecha de la banda debe leerse como dinámica contrafactual de aprendizaje y política: muestra cómo habría evolucionado el mecanismo si el episodio no se hubiera censurado por absorción.
+Esta sección calibra el mecanismo dinámico de la Sección~\ref{sec:model} para los cuatro tipos de captor, $\Theta_K=\{\mathrm{DC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC}\}$. Siguiendo la estructura de calibración de Bernal, el ejercicio estudia la evolución de las creencias $\mu_t(\theta)$, la respuesta de los instrumentos $(\alpha_t,\gamma_t)$, la ganancia informacional $\Delta H_t$ y el cumplimiento de las restricciones de racionalidad individual y compatibilidad de incentivos. Todos los escenarios se evalúan con la misma semilla y un horizonte fijo de \textbf{150 periodos}. Este horizonte es un parámetro de simulación distinto del tiempo endógeno de parada $\tau$ definido en~\eqref{eq:stopping-time}; después del primer desenlace terminal, las trayectorias representan la extensión contrafactual condicionada a la no absorción que permite comparar el aprendizaje entre tipos.
 
-La simulación utiliza el prior $\mu_0=(0.25,0.20,0.20,0.35)$ para $(\mathrm{DC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC})$, región metropolitana, víctima privada y semilla fija. En cada periodo se calcula una política $(\alpha_t^\ast,\gamma_t^\ast)$ por búsqueda en grilla sobre el problema del Estado, incorporando la pérdida esperada por pago, muerte, rescate y liberación, costos convexos de instrumentos y el término de ganancia informacional $\Delta H_t$. Las referencias $\alpha^R,\gamma^R$ y $\alpha^N,\gamma^N$ corresponden a los mínimos de las ramas de rescate y negociación sin el bono informacional; la política efectiva selecciona la rama de menor pérdida y luego internaliza $\Delta H_t$.
+Los escenarios son: \emph{I}, delincuencia común (DC), Estado duro, familia de alta riqueza, víctima privada y región metropolitana; \emph{II}, grupos paramilitares (PAR), Estado laxo, familia de alta riqueza, víctima privada y región Oriente--Selva; \emph{III}, ELN, Estado laxo, familia de baja riqueza, víctima pública y región Caribe; y \emph{IV}, FARC, Estado duro, familia de alta riqueza, víctima privada y región Oriente--Selva. Los cuatro casos conservan los parámetros y las trayectorias de calibración disponibles; únicamente se aplica el corte común $t\leq150$, sin extrapolar observaciones.
 
-\input{figuras_calibracion/tabla_resumen_calibracion.tex}
+\subsection{Aprendizaje bayesiano y separación de tipos}
 
-El Cuadro~\ref{tab:calibracion-resumen} resume la corrida. En ambos casos la posterior del tipo verdadero aumenta, pero la concentración es más marcada para FARC: $\mu_T(\mathrm{FARC})=0.924$, frente a $\mu_T(\mathrm{DC})=0.728$. La diferencia es consistente con la separación de hazards del modelo: en esta parametrización, la realización asociada a FARC produce una señal terminal de rescate temprana, mientras que DC produce pago en $\tau^{\mathrm{hyp}}=25$. La precisión media $\bar\iota$ también es mayor para FARC, lo que indica que la historia pública discrimina más rápidamente el tipo organizado que el tipo financiero de menor estructura.
+La Figura~\ref{fig:cal-cuatro-mu} presenta la evolución de las creencias. En DC, la posterior del tipo verdadero pasa de $0{,}350$ a prácticamente uno. En PAR y ELN parte de $0{,}050$ y alcanza, respectivamente, $0{,}999922$ y $0{,}999911$ en $t=150$. Estos tres escenarios exhiben separación efectiva en horizonte finito. El caso FARC funciona como prueba de tensión: la masa inicial sobre FARC es $0{,}150$, pero la trayectoria termina concentrándose en DC, con $\mu_{150}(\mathrm{DC})=0{,}99999999$. Por tanto, esta calibración no identifica correctamente a FARC; lejos de ocultar el resultado, el ejercicio muestra que la consistencia posterior exige que las señales observadas mantengan separación informativa respecto de los tipos rivales.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_mu_dc_farc.pdf}
-\caption{Aprendizaje bayesiano en modo Continuar. La línea negra muestra la posterior del tipo verdadero y la banda gris marca $\tau^{\mathrm{hyp}}$.}
-\label{fig:calibracion-mu}
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/DC_01_mu.pdf}
+  \caption{Escenario I: DC}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/PAR_01_mu.pdf}
+  \caption{Escenario II: PAR}
+\end{subfigure}
+
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/ELN_01_mu.pdf}
+  \caption{Escenario III: ELN}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/FARC_01_mu.pdf}
+  \caption{Escenario IV: FARC}
+\end{subfigure}
+\caption{Creencias bayesianas para los cuatro tipos de captor, $t\leq150$.}
+\label{fig:cal-cuatro-mu}
+\caption*{\footnotesize\textit{Nota:} la franja gris indica el primer desenlace distinto de continuar. La trayectoria posterior corresponde a la extensión contrafactual condicionada a la no absorción.}
 \end{figure}
 
-La Figura~\ref{fig:calibracion-mu} muestra el objeto central del teorema de identificación en horizonte finito. Para DC, la posterior crece de forma menos monotónica y solo alcanza una concentración moderada al final del horizonte, lo que refleja que varias realizaciones de continuidad y pago siguen siendo compatibles con otros tipos. Para FARC, la masa posterior se desplaza con mayor rapidez hacia el tipo verdadero y permanece alta después de la banda gris. La lectura relevante es temporal: antes de $\tau^{\mathrm{hyp}}$, el Estado ya acumula información; después de ese punto, la trayectoria ilustra el aprendizaje contrafactual que se perdería si el episodio quedara censurado por absorción.
+\subsection{Presión operativa e interdicción financiera}
 
-\begin{figure}[H]
+La presión operativa promedio es $0{,}804$ en DC, $0{,}871$ en PAR, $0{,}903$ en ELN y $0{,}812$ en FARC. Frente a las referencias de rescate, $\gamma^R=(0{,}80,0{,}86,0{,}92,0{,}80)$, las trayectorias muestran que el Estado no replica mecánicamente una rama pura. La política combina el efecto material de la intervención con el valor esperado de la información, de modo que la intensidad cambia con la posterior y con las condiciones institucionales del episodio.
+
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_alpha_dc_farc.pdf}
-\caption{Bloqueo financiero óptimo y referencias de rama. La línea principal reporta $\alpha_t^\ast$; las líneas grises muestran $\alpha^R$ y $\alpha^N$.}
-\label{fig:calibracion-alpha}
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/DC_03_gamma.pdf}
+  \caption{DC}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/PAR_03_gamma.pdf}
+  \caption{PAR}
+\end{subfigure}
+
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/ELN_03_gamma.pdf}
+  \caption{ELN}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/FARC_03_gamma.pdf}
+  \caption{FARC}
+\end{subfigure}
+\caption{Presión operativa óptima $\gamma_t^\ast$ y referencias del mecanismo.}
+\label{fig:cal-cuatro-gamma}
 \end{figure}
 
-La Figura~\ref{fig:calibracion-alpha} muestra el componente financiero de la política. En el caso DC, $\alpha_t^\ast$ fluctúa alrededor de $\bar\alpha^\ast=0.356$ y se aproxima con frecuencia a la referencia de negociación, consistente con un tipo cuya señal terminal hipotética es pago. Para FARC, el bloqueo medio es menor, $\bar\alpha^\ast=0.310$, y la serie es más estable antes y después de $\tau^{\mathrm{hyp}}$. La comparación con $\alpha^R$ y $\alpha^N$ muestra que la regla efectiva no copia mecánicamente una rama pura: el bloqueo se desplaza con la posterior y con la contribución informacional de la señal esperada.
+La interdicción financiera promedio es $0{,}790$ en DC, $0{,}921$ en PAR, $0{,}910$ en ELN y $0{,}803$ en FARC. Los valores de referencia de rescate son $\alpha^R=(0{,}78,0{,}84,0{,}90,0{,}78)$. La mayor intensidad media aparece en PAR, donde la combinación de alta riqueza familiar, víctima privada y entorno Oriente--Selva conserva el valor estratégico de restringir pagos. En ELN, el instrumento también permanece elevado, pero opera en un episodio con víctima pública y baja capacidad de pago.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_gamma_dc_farc.pdf}
-\caption{Presión operativa óptima y referencias de rama. La línea principal reporta $\gamma_t^\ast$; las líneas grises muestran $\gamma^R$ y $\gamma^N$.}
-\label{fig:calibracion-gamma}
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/DC_02_alpha.pdf}
+  \caption{DC}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/PAR_02_alpha.pdf}
+  \caption{PAR}
+\end{subfigure}
+
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/ELN_02_alpha.pdf}
+  \caption{ELN}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/FARC_02_alpha.pdf}
+  \caption{FARC}
+\end{subfigure}
+\caption{Interdicción financiera óptima $\alpha_t^\ast$ y referencias del mecanismo.}
+\label{fig:cal-cuatro-alpha}
 \end{figure}
 
-La Figura~\ref{fig:calibracion-gamma} separa el margen operativo. Para DC, $\gamma_t^\ast$ tiene media $\bar\gamma^\ast=0.366$ y exhibe mayor movilidad, reflejando que la presión tiene un doble papel: altera hazards competitivos y preserva información cuando el tipo permanece menos identificado. Para FARC, $\bar\gamma^\ast=0.318$ y la trayectoria se estabiliza más rápido, en línea con una posterior que alcanza mayor concentración. Las referencias $\gamma^R$ y $\gamma^N$ permiten leer si la política se acerca a una lógica de rescate o de negociación sin mezclarla con el instrumento financiero.
+\subsection{Ganancia informacional y viabilidad del mecanismo}
 
-\begin{figure}[H]
+La ganancia informacional se concentra en los primeros periodos. Su máximo es $0{,}0381$ en $t=7$ para DC, $0{,}0353$ en $t=6$ para PAR, $0{,}0430$ en $t=10$ para ELN y $0{,}0319$ en $t=10$ para FARC. A medida que $\Delta H_t$ se aproxima a cero, la contribución marginal de nuevas observaciones disminuye y la política queda gobernada principalmente por los costos materiales y la creencia acumulada.
+
+Las verificaciones $IR^K$, $IC^K$ e $IR^F$ se satisfacen en la totalidad de los 150 ciclos de los cuatro escenarios. Este resultado establece viabilidad interna de las trayectorias simuladas, pero no garantiza por sí solo identificación correcta: FARC satisface las restricciones y, sin embargo, sus señales inducen clasificación posterior hacia DC. La distinción confirma que la implementabilidad del mecanismo y la separación estadística de tipos son condiciones relacionadas, pero conceptualmente diferentes.
+
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_iota_alpha_dc_farc.pdf}
-\caption{Precisión posterior y bloqueo financiero. El eje horizontal es $\iota_t=\max_\theta\mu_t(\theta)$ y el eje vertical es $\alpha_t^\ast$; el marcador abierto indica $\tau^{\mathrm{hyp}}$.}
-\label{fig:calibracion-iota-alpha}
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/DC_11_IRIC.pdf}
+  \caption{DC}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/PAR_11_IRIC.pdf}
+  \caption{PAR}
+\end{subfigure}
+
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/ELN_11_IRIC.pdf}
+  \caption{ELN}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\linewidth]{figuras_calibracion_150/FARC_11_IRIC.pdf}
+  \caption{FARC}
+\end{subfigure}
+\caption{Cumplimiento de las restricciones de participación e incentivos.}
+\label{fig:cal-cuatro-iric}
 \end{figure}
 
-La Figura~\ref{fig:calibracion-iota-alpha} reordena la trayectoria por precisión posterior, no por calendario. En DC, la nube ordenada muestra que el bloqueo se ajusta en un rango amplio mientras $\iota_t$ permanece relativamente bajo; esto es coherente con una economía de aprendizaje en la que la política conserva valor experimental. En FARC, la masa de puntos se desplaza hacia valores altos de $\iota_t$ y el bloqueo se concentra en un intervalo más estrecho. El marcador de $\tau^{\mathrm{hyp}}$ ubica el punto en que el episodio se habría absorbido dentro de esa relación política-información.
+\subsection{Síntesis cuantitativa}
 
-\begin{figure}[H]
+Los primeros desenlaces terminales ocurren en $t=16$ para DC (rescate), $t=5$ para PAR (muerte), $t=16$ para ELN (liberación) y $t=32$ para FARC (rescate). La Tabla~\ref{tab:calibracion-cuatro} resume los resultados calculados sobre el mismo horizonte de 150 periodos.
+
+\begin{table}[htbp]
 \centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_iota_gamma_dc_farc.pdf}
-\caption{Precisión posterior y presión operativa. El eje horizontal es $\iota_t$ y el eje vertical es $\gamma_t^\ast$; el marcador abierto indica $\tau^{\mathrm{hyp}}$.}
-\label{fig:calibracion-iota-gamma}
-\end{figure}
+\caption{Resumen de la calibración para los cuatro tipos, $t\leq150$}
+\label{tab:calibracion-cuatro}
+\begin{tabular}{lcccccl}
+\toprule
+Escenario & $\mu_1(\theta^\ast)$ & $\mu_{150}(\theta^\ast)$ & $\bar\alpha^\ast$ & $\bar\gamma^\ast$ & $\tau^{\mathrm{hyp}}$ & Desenlace \\
+\midrule
+DC   & 0,350 & 1,000000 & 0,790 & 0,804 & 16 & Rescate \\
+PAR  & 0,050 & 0,999922 & 0,921 & 0,871 & 5  & Muerte \\
+ELN  & 0,050 & 0,999911 & 0,910 & 0,903 & 16 & Liberación \\
+FARC & 0,150 & 0,000000 & 0,803 & 0,812 & 32 & Rescate \\
+\bottomrule
+\end{tabular}
+\caption*{\footnotesize\textit{Nota:} en FARC la masa posterior se concentra en DC al final del horizonte; por ello, el valor cercano a cero no se interpreta como identificación del tipo verdadero, sino como evidencia de falta de separación bajo esa trayectoria.}
+\end{table}
 
-La Figura~\ref{fig:calibracion-iota-gamma} presenta el margen central de la Proposición~\ref{prop:optimal-gamma-beliefs}. En DC, la presión operativa se mueve más mientras la precisión posterior sigue incompleta, lo que refleja el trade-off entre forzar cierre y aprender del tipo. En FARC, la relación se estabiliza con mayor rapidez: una vez que $\iota_t$ aumenta, el valor marginal de cambios adicionales en $\gamma_t^\ast$ cae. Esta lectura complementa la figura temporal: no solo importa cuándo cambia la presión, sino con qué grado de identificación posterior ocurre ese cambio.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.94\textwidth]{figuras_calibracion/fig_deltaH_dc_farc.pdf}
-\caption{Ganancia informacional esperada $\Delta H_t$. La banda gris marca el punto de absorción hipotética bajo el sorteo físico diario.}
-\label{fig:calibracion-deltah}
-\end{figure}
-
-Finalmente, la Figura~\ref{fig:calibracion-deltah} muestra la ganancia esperada de entropía. En ambos tipos, $\Delta H_t$ es mayor cuando las creencias conservan incertidumbre suficiente para que una señal pública reordene la posterior; luego cae al concentrarse la masa. El nivel medio es ligeramente mayor para DC, $\overline{\Delta H}=0.0043$, que para FARC, $\overline{\Delta H}=0.0039$, precisamente porque la trayectoria DC permanece menos identificada. La banda gris permite separar dos mensajes: antes de la absorción hipotética, $\Delta H_t$ mide aprendizaje empíricamente observable; después, mide el valor informacional que el investigador solo observa en el laboratorio contrafactual del mecanismo.
-
-% ============================================================
+En conjunto, la comparación de los cuatro casos muestra que un mismo mecanismo puede ser implementable y generar políticas diferenciadas, pero la concentración posterior depende de la capacidad informativa de las señales. DC, PAR y ELN producen separación clara a 150 periodos; FARC revela una zona de fragilidad empírica que exige revisar la calibración de verosimilitudes o incorporar señales adicionales antes de sostener identificación robusta para ese tipo.
 % SECCIÓN 6, IMPLICACIONES DE POLÍTICA
 % ============================================================
 \section{Implicaciones de política}
@@ -3574,6 +3639,17 @@ es la diferencia en $\partial L_t/\partial\gamma_t$ entre tipos y, por tanto,
 mayor la respuesta óptima de $\gamma_t^\ast$ ante actualizaciones bayesianas.
 \end{proof}
 
+\subsection{Recomendaciones de política}
+
+\paragraph{Integrar alertas macrofinancieras en la planeación operativa.}
+La cointegración entre secuestro extorsivo, capacidad coercitiva y condiciones financieras indica que los cambios en liquidez y costo del capital pueden modificar la cartera criminal. Los sistemas de alerta temprana de las unidades GAULA deberían incorporar indicadores regionales de crédito, liquidez y presión financiera para anticipar cambios en la duración y rentabilidad esperada del secuestro.
+
+\paragraph{Aplicar de forma adaptativa la interdicción financiera.}
+El bloqueo $\alpha_t^ast$ disciplina la participación del captor y reduce el espacio para acuerdos clandestinos, pero su aplicación indiscriminada puede imponer costos innecesarios a la familia. La severidad de la interdicción debe responder al tipo posterior, al perfil de la víctima y a la riqueza familiar. Cuando la posterior se concentra y disminuye el valor marginal de experimentar, el bloqueo puede moderarse sin abandonar la trazabilidad financiera ni la capacidad disuasiva.
+
+\paragraph{Adoptar protocolos de inteligencia basados en control dual bayesiano.}
+La presión operativa $\gamma_t^ast$ debe perseguir simultáneamente el cierre seguro del episodio y la separación de verosimilitudes entre organizaciones. La combinación sistemática de señales de detección, pruebas de supervivencia, duración del cautiverio y patrones de riesgos competitivos permite clasificar tempranamente al captor, asignar mejor los recursos tácticos y reducir el riesgo humano de las operaciones.
+
 
 % ============================================================
 % SECCIÓN 6, IDENTIFICACIÓN ESTRUCTURAL: SINGULARIDAD DE MEDIDAS
@@ -3692,10 +3768,19 @@ de modo que $\mu_t(\theta_K^\ast)\to1$ $\ProbC{\theta_K^\ast}$-c.s. en $\mathcal
 
 Este trabajo presenta un mecanismo dinámico de disuasión bajo información incompleta para el análisis del secuestro extorsivo, cuya contribución central es el \textbf{Teorema de Identificación de Tipos Racionales bajo Entornos Desconocidos} (Teorema~\ref{thm:posterior-consistency}). El resultado establece que, cuando la política pública genera intensidades de riesgo asintóticamente separables entre tipos de captor, la acumulación de señales diarias fuerza la convergencia casi segura de las creencias posteriores del Estado hacia el tipo verdadero $\theta_K^\ast$ en el régimen de cautiverio prolongado $\mathcal{T}$.
 
-Tres elementos estructurales sostienen este resultado. Primero, el proceso MDG (Mano de Dios-Guadalupe), justificado axiomáticamente como la única ley de implementación compatible con soporte completo, dominancia y máxima entropía (Observación~\ref{rem:axiomas-logit}), garantiza que la historia pública permanezca informativa incluso fuera de la senda de equilibrio. Segundo, el Teorema de Implementabilidad (Teorema~\ref{thm:ebp-implementabilidad}) establece que existe un Equilibrio Bayesiano Perfecto que implementa la regla de elección social bajo compatibilidad de incentivos $IC^K$, racionalidad individual $IR^K$ e $IR^F$. Tercero, la sección de identificación estructural (Sección~\ref{app:general-id}) provee el fundamento measure-theoretic: la singularidad mutua de las leyes de trayectoria ---vía el criterio de Kakutani--- es el mecanismo que convierte la separación estadística local en identificación asintótica global.
+Tres elementos estructurales sostienen este resultado. Primero, el proceso MDG (Mano de Dios--Guadalupe), justificado axiomáticamente como una ley de implementación compatible con soporte completo, dominancia y máxima entropía (Observación~\ref{rem:axiomas-logit}), garantiza que la historia pública permanezca informativa incluso fuera de la senda de equilibrio. Segundo, el Teorema de Implementabilidad (Teorema~\ref{thm:ebp-implementabilidad}) establece que existe un Equilibrio Bayesiano Perfecto que implementa la regla de elección social bajo compatibilidad de incentivos $IC^K$, racionalidad individual $IR^K$ e $IR^F$. Tercero, la sección de identificación estructural (Sección~\ref{app:general-id}) proporciona el fundamento de teoría de la medida: la singularidad mutua de las leyes de trayectoria, mediante el criterio de Kakutani, convierte la separación estadística local en identificación asintótica global.
 
-Las implicaciones de política (Sección~\ref{sec:policy-implications}) son operacionales: la presión operativa óptima $\gamma_t^\ast$ debe calibrarse según las creencias posteriores del Estado y la separación estructural entre tipos, y su efecto sobre la duración del cautiverio depende de la sensibilidad neta $\kappa_h(\theta_K,t)$ de los hazards competitivos. Una agenda de investigación futura incluye la extensión a tipos continuos $\Theta_K\subseteq\mathbb{R}$, la incorporación de comunicación estratégica endógena entre familia y Estado, y la estimación estructural del modelo con datos panel de episodios de secuestro en Colombia.
+En el plano empírico, la cointegración entre modalidades de secuestro y condiciones financieras revela un entorno persistente que condiciona los costos de retención. A nivel microeconómico, los modelos multinomiales y de riesgos competitivos muestran heterogeneidad sistemática por perpetrador, víctima, región, duración y presencia institucional. Estos resultados convierten la evidencia colombiana en priors, intensidades y restricciones directamente utilizables por el mecanismo.
 
-\printbibliography[title={Referencias}]
+La calibración dinámica ilustra su viabilidad operativa. La política óptima combina interdicción financiera, presión operativa y valor informacional para acelerar la concentración posterior sin abandonar las restricciones de incentivos y participación. Las implicaciones de política (Sección~\ref{sec:policy-implications}) son, por tanto, operacionales: $\gamma_t^\ast$ debe calibrarse según las creencias posteriores y la separación estructural entre tipos, mientras que su efecto sobre la duración depende de la sensibilidad neta $\kappa_h(\theta_K,t)$ de los riesgos competitivos.
+
+La agenda futura incluye la extensión a tipos continuos $\Theta_K\subseteq\mathbb{R}$, comunicación estratégica endógena entre familia y Estado, estructuras con múltiples agentes privados y estimación estructural con datos panel de episodios de secuestro. Estas extensiones permitirían trasladar el marco a otros problemas de información asimétrica, como supervisión financiera, selección laboral y vigilancia de organizaciones ilícitas.
+
+\section*{Declaración sobre el uso de inteligencia artificial generativa}
+
+En la preparación de este manuscrito se utilizaron herramientas de inteligencia artificial generativa como apoyo para la revisión bibliográfica y de redacción, la programación y verificación formal en Lean~4, el desarrollo de código cuantitativo en MATLAB, Stata y Python, y la implementación computacional del modelo calibrado. El autor verificó y validó la información, las demostraciones, las estimaciones y los códigos, y asume íntegramente la responsabilidad por el contenido y la integridad académica del documento.
+
+\bibliographystyle{econsoc}
+\bibliography{references}
 
 \end{document}
