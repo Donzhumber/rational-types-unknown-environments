@@ -62,7 +62,7 @@
 \usepackage{float}% por si se usa \texttt{[H]} en figuras u otros entornos; los cuadros numerados del cuerpo usan \texttt{longtable} para salto de página y título APA~7.
 \usepackage{etoolbox}
 \usepackage[round,authoryear,longnamesfirst]{natbib}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
 % Alias para compatibilidad con comandos biblatex usados en el cuerpo
 \providecommand{\textcite}{\citet}
 \providecommand{\parencite}{\citep}
@@ -1478,9 +1478,9 @@ Por el teorema de caracterización de \textcite{Jaynes1957Information,Jaynes1957
 Aquí, $T_t=T_t(\mu_t,t)>0$ representa la \textbf{temperatura del sistema}; mientras sea positiva, la ley \eqref{eq:logit-hybrid} mantiene soporte completo sobre $\mathcal{A}^i$ y evita la degeneración de las verosimilitudes. Para capturar conjuntamente el aprendizaje estratégico y la maduración institucional, se define
 \begin{equation}
 \label{eq:temperatura-piso}
-T_t = T_0 \left[\frac{H(\mu_t)}{H(\mu_0)}\right]\max\{e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\},
+T_t = T_0\max\!\left\{\frac{H(\mu_t)}{H(\mu_0)}\,e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\right\},
 \end{equation}
-\noindent donde $T_0>0$ es la temperatura inicial, $\eta_{\mathrm{cal}}>0$ la tasa de decaimiento calendario, $H(\mu_t)=-\sum_{\theta}\mu_t(\theta)\ln\mu_t(\theta)$ la entropía de Shannon \textcite{Shannon1948} y $\underline{c}\in(0,1]$ el piso de ruido estructural. Cuando la posterior se concentra, $T_t\to 0$ y la ejecución se alinea con el plan racional; el piso $\underline{c}>0$ garantiza $T_t\ge T_0\,\underline{c}>0$, preservando el soporte completo de~\eqref{eq:logit-hybrid} incluso si $H(\mu_t)\to 0$. $T_t$ mide la fricción de implementación del episodio, no la incertidumbre del agente sobre su propio tipo.
+\noindent donde $T_0>0$ es la temperatura inicial, $\eta_{\mathrm{cal}}>0$ la tasa de decaimiento calendario, $H(\mu_t)=-\sum_{\theta}\mu_t(\theta)\ln\mu_t(\theta)$ la entropía de Shannon \textcite{Shannon1948} y $\underline{c}\in[0,1]$ el piso de ruido estructural. Cuando $\underline{c}>0$, incluso si $H(\mu_t)\to 0$ la temperatura satisface $T_t\ge T_0\,\underline{c}>0$, preservando el soporte completo de~\eqref{eq:logit-hybrid}; el caso límite $\underline{c}=0$ permite convergencia completa pero sacrifica ese soporte. $T_t$ mide la fricción de implementación del episodio, no la incertidumbre del agente sobre su propio tipo.
 
 \medskip
 \begin{definition}[Ley del desenlace físico]
@@ -1763,9 +1763,9 @@ Las ecuaciones estructurales para las intensidades de riesgo se fundamentan en u
 
 En esta notación, $j=1$, $j=2$ y $j=3$ corresponden, respectivamente, a los desenlaces terminales de \textbf{pago}, \textbf{muerte} y \textbf{rescate}. Para este bloque, la probabilidad de detección de colusión se incorpora al núcleo de las intensidades mediante el término $\pm\zeta_{d,j}p_{\mathrm{det},t}$ para $j\in\{1,2,3\}$, y se especifica a través de una función de respuesta logística condicionada al vector de instrumentos de política.
 \[
-p_{\mathrm{det},t}
+p_{\mathrm{det},t}(\theta_K)
 =
-\Lambda(\eta_0 + \eta_1\alpha_t^\ast + \eta_2\gamma_t^\ast),
+\Lambda(\eta_0(\theta_K) + \eta_1\alpha_t^\ast + \eta_2\gamma_t^\ast),
 \qquad
 \Lambda(u)=\frac{1}{1+\exp(-u)}.
 \]
@@ -2005,7 +2005,7 @@ donde $\mathcal C_t$ recoge los parámetros del entorno, incluidos los instrumen
 Independientemente del desenlace físico, el Estado puede \emph{detectar} o no colusión y otras irregularidades en el día $t$. Esta segunda fuente de información se modela mediante una señal Bernoulli $d_t\in\{0,1\}$, cuyo parámetro es la probabilidad de detección inducida por los instrumentos ejecutados del periodo.
 \begin{equation}
 \label{eq:Ld-bernoulli}
-\ProbE\bigl(d_t \,\big|\, \alpha_t^\ast,\gamma_t^\ast\bigr)=p_{\mathrm{det},t}^{\,d_t}(1-p_{\mathrm{det},t})^{\,1-d_t}, \qquad p_{\mathrm{det},t}=\ProbE\bigl(d_t=1\mid \alpha_t^\ast,\gamma_t^\ast\bigr),
+\ProbE\bigl(d_t \,\big|\, \theta_K,\alpha_t^\ast,\gamma_t^\ast\bigr)=p_{\mathrm{det},t}(\theta_K)^{\,d_t}\bigl(1-p_{\mathrm{det},t}(\theta_K)\bigr)^{\,1-d_t}, \qquad p_{\mathrm{det},t}(\theta_K)=\ProbE\bigl(d_t=1\mid \theta_K,\alpha_t^\ast,\gamma_t^\ast\bigr),
 \end{equation}
 donde $(\alpha_t^\ast,\gamma_t^\ast)$ representan las palancas efectivamente aplicadas de presión sobre rescate y monitoreo o sanción financiera. Así, $p_{\mathrm{det},t}$ funciona como una \emph{función de producción de información} del Estado, al traducir recursos de fiscalización en probabilidad de observar una bandera de colusión y determinar la intensidad con que la política aplicada acumula evidencia.
 
@@ -2028,7 +2028,7 @@ Condicional a $\theta_K$ y a los instrumentos del periodo, se asume que las acci
 \cdot
 \underbrace{\ProbE(m_t \mid \theta_K,\mathcal C_t)}_{\text{riesgos competitivos}}
 \cdot
-\underbrace{\ProbE(d_t \mid \alpha_t^\ast,\gamma_t^\ast)}_{\text{detección}},
+\underbrace{\ProbE(d_t \mid \theta_K,\alpha_t^\ast,\gamma_t^\ast)}_{\text{detección}},
 \end{equation}
 
 La lectura de esta factorización es directa. Si en un día se observa continuidad del cautiverio y detección positiva, el bloque de riesgos reduce el peso de los tipos con hazards totales altos, que habrían predicho con mayor probabilidad un cierre, mientras que el bloque de detección reduce el peso de los tipos asociados a entornos con baja probabilidad de fiscalización efectiva. Si, por el contrario, se observa un rescate y ausencia de detección, el kernel competitivo favorece tipos con mayor hazard de rescate y la detección favorece tipos compatibles con una baja probabilidad de auditoría. A su vez, $\mathcal{L}_{I,t}$ penaliza tipos para los cuales la tripleta ejecutada era improbable bajo el filtro MDG. En conjunto, el posterior se desplaza hacia los tipos que explican simultáneamente acciones ejecutadas, desenlace físico y señal institucional.
@@ -2076,9 +2076,9 @@ Denotemos $\mathcal{L}_{F,t}(\theta_K)=\mathcal{L}(\tilde A_t,m_t,d_t \mid \thet
 p_{\mathrm{Cont},\,t\mid\theta_K}^{\,\mathbf{1}\{m_t=\mathrm{Cont}\}}
 \prod_{j=1}^{4} h_j(t\mid\theta_K)^{\,\mathbf{1}\{m_t=j\}}
 \right]
-p_{\mathrm{det},t}^{\,d_t}(1-p_{\mathrm{det},t})^{\,1-d_t},
+p_{\mathrm{det},t}(\theta_K)^{\,d_t}\bigl(1-p_{\mathrm{det},t}(\theta_K)\bigr)^{\,1-d_t},
 \end{equation}
-donde $\mathcal{L}_{I,t}$ está definida en~\eqref{eq:LI-atilde}, $\tilde{\lambda}_j(t\mid\theta_K;\alpha_t^\ast,\gamma_t^\ast)$ determina $p_{\mathrm{Cont},t\mid\theta_K}$ y $h_j(t\mid\theta_K)$, y $p_{\mathrm{det},t}=\Lambda(\eta_0+\eta_1\alpha_t^\ast+\eta_2\gamma_t^\ast)$. Al incorporar la comunicación, la \textbf{regla de Bayes unificada} del modelo es
+donde $\mathcal{L}_{I,t}$ está definida en~\eqref{eq:LI-atilde}, $\tilde{\lambda}_j(t\mid\theta_K;\alpha_t^\ast,\gamma_t^\ast)$ determina $p_{\mathrm{Cont},t\mid\theta_K}$ y $h_j(t\mid\theta_K)$, y $p_{\mathrm{det},t}(\theta_K)=\Lambda(\eta_0(\theta_K)+\eta_1\alpha_t^\ast+\eta_2\gamma_t^\ast)$. Al incorporar la comunicación, la \textbf{regla de Bayes unificada} del modelo es
 \begin{equation}
 \label{eq:bayes-unif}
 \mu_{t+1}(\theta_K)
@@ -2147,8 +2147,8 @@ U^K_{kill}(\theta_i, \theta_S)
   &=
     \E_{\tilde A_t\mid \mathcal Q_t^{\mathrm{Cont}}}\!\Bigl[
       \ProbE(m_t=\mathrm{pay}\mid \tilde A_t,X_t',\theta_K=\theta_i)
-    \Bigr] R\, (1 - \alpha_t) \\
-  &\quad - C_t(\gamma_t, \theta_i) \\
+    \Bigr] R\, (1 - \alpha_t^\ast) \\
+  &\quad - C_t(\gamma_t^\ast, \theta_i) \\
   &\quad - \E_{\tilde a_t^S\mid \mathcal Q_t^{\mathrm{Cap}}}\!\Bigl[
       p_{cap}(\tilde a_t^S,\theta_i,\theta_S,\alpha_t^\ast,\gamma_t^\ast)
     \Bigr] F_{\mathrm{cap}}(\theta_i,\theta_S) \\
@@ -2522,30 +2522,30 @@ H(\mu_t)
 :=
 -\sum_{\theta\in\Theta_K}\mu_t(\theta)\log\mu_t(\theta),
 \end{equation}
-con la convención $0\log0=0$. Para cada desenlace físico $m\in\{\mathrm{Cont},\mathrm{rel},\mathrm{res},\mathrm{pay},\mathrm{kill}\}$, el Estado calcula la posterior contrafactual que resultaría de observar $m$ bajo la política candidata:
+con la convención $0\log0=0$. Para cada par de señales públicas $(m,d)$ con $m\in\{\mathrm{Cont},\mathrm{rel},\mathrm{res},\mathrm{pay},\mathrm{kill}\}$ y $d\in\{0,1\}$, el Estado calcula la posterior contrafactual que resultaría de observarlas bajo la política candidata:
 \begin{equation}
 \label{eq:posterior-counterfactual-entropy}
-\mu_{t+1}^{m}(\theta)
+\mu_{t+1}^{m,d}(\theta)
 =
 \frac{
-\mu_t(\theta)\ProbE(m_t=m\mid\theta,\alpha_t,\gamma_t,\mathcal C_t)
+\mu_t(\theta)\ProbE(m_t=m\mid\theta,\alpha_t,\gamma_t,\mathcal C_t)\ProbE(d_t=d\mid\theta,\alpha_t,\gamma_t)
 }{
 \sum_{\theta'\in\Theta_K}
-\mu_t(\theta')\ProbE(m_t=m\mid\theta',\alpha_t,\gamma_t,\mathcal C_t)
+\mu_t(\theta')\ProbE(m_t=m\mid\theta',\alpha_t,\gamma_t,\mathcal C_t)\ProbE(d_t=d\mid\theta',\alpha_t,\gamma_t)
 }.
 \end{equation}
-La ganancia esperada de información es la reducción esperada de entropía:
+La ganancia esperada de información es la reducción esperada de entropía sobre la señal pública conjunta $(m_t,d_t)$:
 \begin{equation}
 \label{eq:expected-information-gain}
 \Delta H_t(\alpha_t,\gamma_t)
 =
 H(\mu_t)
 -
-\sum_m
-\ProbE(m_t=m\mid\mu_t,\alpha_t,\gamma_t,\mathcal C_t)
-H(\mu_{t+1}^{m}),
+\sum_{m}\sum_{d\in\{0,1\}}
+\ProbE(m_t=m,d_t=d\mid\mu_t,\alpha_t,\gamma_t,\mathcal C_t)
+H(\mu_{t+1}^{m,d}),
 \end{equation}
-donde la probabilidad predictiva $\ProbE(m_t=m\mid\mu_t,\alpha_t,\gamma_t,\mathcal C_t)$ es la mezcla bayesiana de los riesgos competitivos~\eqref{eq:xi}. El término $-\psi_H\Delta H_t$ opera como subsidio informacional: si $\psi_H=0$, el Estado es puramente miópico; si $\psi_H>0$, las políticas que compran aprendizaje reciben un descuento en la pérdida. Cuando $\mu_t$ se concentra en el tipo verdadero, $H(\mu_t)$ y $\Delta H_t$ caen, apagando endógenamente el motivo exploratorio.
+donde la probabilidad predictiva conjunta factoriza por independencia condicional dado el tipo: $\ProbE(m,d\mid\mu_t,\alpha_t,\gamma_t,\mathcal C_t)=\sum_{\theta}\mu_t(\theta)\ProbE(m_t=m\mid\theta,\mathcal C_t)\ProbE(d_t=d\mid\theta,\alpha_t,\gamma_t)$. El término $-\psi_H\Delta H_t$ opera como subsidio informacional: si $\psi_H=0$, el Estado es puramente miópico; si $\psi_H>0$, las políticas que compran aprendizaje reciben un descuento en la pérdida. Cuando $\mu_t$ se concentra en el tipo verdadero, $H(\mu_t)$ y $\Delta H_t$ caen, apagando endógenamente el motivo exploratorio.
 
 \paragraph{Regla discreta de decisión y equilibrio.}
 Una vez calculados los dos pisos, el Estado compara:
