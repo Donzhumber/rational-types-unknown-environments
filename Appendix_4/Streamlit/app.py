@@ -242,10 +242,10 @@ THETA_K_MAP = {
 }
 
 _VOZ_RASGO_LABELS = (
-    "Tono medio f₀",
-    "Varianza del tono",
-    "Tasa de pausas",
-    "Formalidad / agresión del discurso",
+    "Mean pitch f₀",
+    "Pitch variance",
+    "Pause rate",
+    "Formality / speech aggression",
 )
 
 
@@ -325,73 +325,73 @@ def _build_cal_voz_extra_df(pi_val: float, omega: float) -> pd.DataFrame:
     rows = [
         {
             "#": 1,
-            "Término": "Probabilidad de llamada / Urgencia",
+            "Término": "Call probability / Urgency",
             "Coeficiente": r"\pi_{\mathrm{call}}(\theta_K)",
             "Valor": round(pi_val, 2),
-            "Origen del valor": "Prior estructural",
+            "Origen del valor": "Structural Prior",
             "Valor_KaTeX": r"\pi_{\mathrm{call}}",
-            "Clase_tab7": "Observado",
+            "Clase_tab7": "Observed",
         },
         {
             "#": 2,
-            "Término": "Peso aprendizaje voz (moderador)",
+            "Término": "Voice learning weight (moderator)",
             "Coeficiente": r"\omega_{\mathrm{voz}}",
             "Valor": round(omega, 2),
-            "Origen del valor": "Calibración",
+            "Origen del valor": "Calibration",
             "Valor_KaTeX": r"\omega_{\mathrm{voz}}",
-            "Clase_tab7": "Observado",
+            "Clase_tab7": "Observed",
         },
     ]
     return pd.DataFrame(rows)
 
 
 def _build_cal_pcap_tabla6_df(prow: dict, delta_a: float, c_S: float) -> pd.DataFrame:
-    """Tabla 6: parámetros de la probabilidad técnica de captura técnica (logit)."""
+    """Table 6: parameters of the technical capture probability (logit)."""
     rows = [
         {
             "#": 1,
-            "Término": "Impacto acción ejecutada",
+            "Término": _ui_text("Impact of executed action", "Impacto acción ejecutada"),
             "Coeficiente": r"\delta_a",
             "Valor": round(delta_a, 2),
-            "Origen del valor": "Estructural (S)",
+            "Origen del valor": _ui_text("Structural (S)", "Estructural (S)"),
             "Valor_KaTeX": r"\delta_a",
-            "Clase_tab7": "Parámetro",
+            "Clase_tab7": _ui_text("Parameter", "Parámetro"),
         },
         {
             "#": 2,
-            "Término": "Heterogeneidad basal tipo",
+            "Término": _ui_text("Baseline type heterogeneity", "Heterogeneidad basal tipo"),
             "Coeficiente": r"c_0(\theta_K)",
             "Valor": round(prow["c0"], 2),
-            "Origen del valor": "Estructural (K)",
+            "Origen del valor": _ui_text("Structural (K)", "Estructural (K)"),
             "Valor_KaTeX": r"c_0",
-            "Clase_tab7": "Parámetro",
+            "Clase_tab7": _ui_text("Parameter", "Parámetro"),
         },
         {
             "#": 3,
-            "Término": "Sensibilidad bloqueo α*",
+            "Término": _ui_text("Blockade sensitivity α*", "Sensibilidad bloqueo α*"),
             "Coeficiente": r"c_\alpha(\theta_K)",
             "Valor": round(prow["c_alpha"], 2),
-            "Origen del valor": "Estructural (K)",
+            "Origen del valor": _ui_text("Structural (K)", "Estructural (K)"),
             "Valor_KaTeX": r"c_\alpha",
-            "Clase_tab7": "Parámetro",
+            "Clase_tab7": _ui_text("Parameter", "Parámetro"),
         },
         {
             "#": 4,
-            "Término": "Sensibilidad presión γ*",
+            "Término": _ui_text("Pressure sensitivity γ*", "Sensibilidad presión γ*"),
             "Coeficiente": r"c_\gamma(\theta_K)",
             "Valor": round(prow["c_gamma"], 2),
-            "Origen del valor": "Estructural (K)",
+            "Origen del valor": _ui_text("Structural (K)", "Estructural (K)"),
             "Valor_KaTeX": r"c_\gamma",
-            "Clase_tab7": "Parámetro",
+            "Clase_tab7": _ui_text("Parameter", "Parámetro"),
         },
         {
             "#": 5,
-            "Término": "Capacidad institucional S",
+            "Término": _ui_text("Institutional capacity S", "Capacidad institucional S"),
             "Coeficiente": r"c_S(\theta_S)",
             "Valor": round(c_S, 2),
-            "Origen del valor": "Estructural (S)",
+            "Origen del valor": _ui_text("Structural (S)", "Estructural (S)"),
             "Valor_KaTeX": r"c_S",
-            "Clase_tab7": "Parámetro",
+            "Clase_tab7": _ui_text("Parameter", "Parámetro"),
         },
     ]
     return pd.DataFrame(rows)
@@ -1477,6 +1477,32 @@ def _inject_page_translator() -> None:
 
 
 _ES_EN_REPLACEMENTS = [
+    # ── Table 1 · full-phrase pairs (must come first to avoid partial mangling) ──
+    ("Riesgo basal (pago)", "Baseline risk (payment)"),
+    ("Riesgo basal (muerte)", "Baseline risk (death)"),
+    ("Riesgo basal (rescate)", "Baseline risk (ransom)"),
+    ("Capacidad de pago alta (θ_F)", "Payment capacity high (θ_F)"),
+    ("Víctima perfil público (θ_V)", "Public profile victim (θ_V)"),
+    ("Estado laxo (θ_S)", "Lax state (θ_S)"),
+    ("Estado rescata (MDG)", "State rescues (MDG)"),
+    ("Tipo secuestrador (θ_K)", "Kidnapper type (θ_K)"),
+    ("Heterogeneidad geográfica", "Geographic heterogeneity"),
+    ("Instrumento α (bloqueo)", "Instrument α (blockade)"),
+    ("Instrumento γ (presión)", "Instrument γ (pressure)"),
+    ("Instrumento α", "Instrument α"),
+    ("Instrumento γ", "Instrument γ"),
+    ("Detección p_det", "Detection p_det"),
+    ("Familia paga (MDG)", "Family pays (MDG)"),
+    ("K continúa (MDG)", "K continues (MDG)"),
+    ("K mata (MDG)", "K kills (MDG)"),
+    # ── Sub-phrase pairs for KaTeX \text{…} blocks (most-specific first) ──────
+    ("Capacidad de pago alta", "Payment capacity high"),
+    ("Víctima perfil público", "Public profile victim"),
+    ("Estado laxo", "Lax state"),
+    ("Tipo secuestrador", "Kidnapper type"),
+    ("Instrumento", "Instrument"),
+    ("Detección", "Detection"),
+    # ─────────────────────────────────────────────────────────────────────────────
     ("Español", "Spanish"),
     ("Sistema de Análisis Dinámico de Mecanismos", "Dynamic Mechanism Analysis System"),
     ("Identificación de tipos racionales", "Identification of Rational Types"),
@@ -1546,6 +1572,19 @@ _ES_EN_REPLACEMENTS = [
     ("Desenlace focal", "Focal Outcome"),
     ("bloqueo financiero", "financial blockade"),
     ("presión operativa", "operational pressure"),
+    ("bloqueo", "blockade"),
+    ("presión", "pressure"),
+    ("calibrado (prior)", "calibrated (prior)"),
+    ("calibrado", "calibrated"),
+    ("Liberar", "Release"),
+    ("Matar", "Kill"),
+    ("Cooperar", "Cooperate"),
+    ("Negociar", "Negotiate"),
+    ("Continuar", "Continue"),
+    ("Rescate", "Rescue"),
+    ("Colusión", "Collusion"),
+    ("incidente", "incident"),
+    ("Intercepto", "Intercept"),
     ("Número de corridas", "Number of Runs"),
     ("Horizonte máximo", "Maximum Horizon"),
     ("Semillas", "Seeds"),
@@ -2493,10 +2532,15 @@ _FOCUS_TERM_KATEX = {
     "Weight of γ* in p_det": (
         r"\text{Weight of }\gamma^\ast\text{ in }p_{\mathrm{det}}"
     ),
-    # Tabla 4 · supervivencia (ec. 37–38 Mechanism.tex)
+    # Tabla 4 · supervivencia (ec. 37–38 Mechanism.tex) — ES y EN
     "α₀ rescate (Prior · ec. 38)": r"\text{Letalidad intrínseca }\alpha_0(\theta_K)",
     "β_R precisión rescate (Prior · ec. 38)": r"\text{Productividad }\beta_R",
     "Precisión modal (ec. 37)": r"\iota_t",
+    # Table 4 · English keys — avoid \_  inside \text{} (KaTeX issue with _ in term strings)
+    "α_leth lethality (Prior · eq. 38)": r"\text{Lethality }\alpha_{\mathrm{leth}}(\theta_K)",
+    "β_R productivity (Prior · eq. 38)": r"\text{Productivity }\beta_R",
+    "Modal precision (eq. 37)": r"\iota_t",
+    "Match indicator (eq. 38)": r"\text{Match }\mathbf{1}\{\hat{\theta}_t=\theta_K\}",
     # Tabla 8 · Propensión Psi_j (Ec. 29)
     "Capacidad operativa (phi_j,gamma)": r"\text{Capacidad operativa }(\phi_{j,\gamma})",
     "Peso: Disciplina Militar (phi_j,1)": r"\text{Peso: Disciplina Militar }(\phi_{j,1})",
@@ -2530,6 +2574,7 @@ for _i5 in range(4):
 _TABLA7_TERM_ETA_CAL = "η_cal · calibrado (prior)"
 
 _TABLA7_MDG_TERM_KATEX: dict[str, str] = {
+    # Spanish keys
     "Prior marginal μ(θ_K) incidente": (
         r"\text{Prior marginal }\mu(\theta_K)\text{ incidente}"
     ),
@@ -2540,6 +2585,13 @@ _TABLA7_MDG_TERM_KATEX: dict[str, str] = {
     _TABLA7_TERM_ETA_CAL: (
         r"\eta_{\mathrm{cal}}\,\cdotp\,\text{calibrado (prior)}"
     ),
+    # English keys (used when _ui_text() returns English term strings)
+    "Prior marginal μ(θ_K) incident": (
+        r"\text{Prior marginal }\mu(\theta_K)\text{ incident}"
+    ),
+    "Base temperature T₀": r"\text{Base temperature } T_0",
+    "Reference entropy H(μ₀)": r"\text{Reference entropy } H(\mu_0)",
+    "Floor c̲ (lower)": r"\text{Floor }\underline{c}\text{ (lower)}",
 }
 
 
@@ -2823,8 +2875,12 @@ def _render_focus_prior_valor_inputs(
     out: dict[str, float] = {}
     if df_prior is None or df_prior.empty:
         st.info(
-            f"No hay filas **# {TAB1_PRIOR_FILA_MIN}–{TAB1_PRIOR_FILA_MAX}** editables en esta causa j "
-            "(las filas 1–4 no se modifican aquí)."
+            _ui_text(
+                f"No editable rows **# {TAB1_PRIOR_FILA_MIN}–{TAB1_PRIOR_FILA_MAX}** for this cause j "
+                "(rows 1–4 are fixed here).",
+                f"No hay filas **# {TAB1_PRIOR_FILA_MIN}–{TAB1_PRIOR_FILA_MAX}** editables en esta causa j "
+                "(las filas 1–4 no se modifican aquí).",
+            )
         )
         return out
     bump = int(st.session_state.get(f"fce_bump_{profile_key}", 0))
@@ -2843,7 +2899,7 @@ def _render_focus_prior_valor_inputs(
         with c_n:
             st.markdown(f"{num}")
         with c_t:
-            st.markdown(f"**{term}**")
+            st.markdown(f"**{_translate_text_to_english(term)}**")
         with c_k:
             st.latex(coef_compact)
         with c_v:
@@ -3313,27 +3369,27 @@ def _build_focus_covariate_table(
 def _build_cal_voz_tabla5_df(vp: dict) -> pd.DataFrame:
     """Tabla 5: parámetros de medición de voz (x̄, σ_L, σ_S) para los 4 rasgos acústicos."""
     rasgo_labels = [
-        ("Tono medio f₀", r"\bar{x}_1", r"\sigma_{L,1}", r"\sigma_{S,1}"),
-        ("Varianza del tono", r"\bar{x}_2", r"\sigma_{L,2}", r"\sigma_{S,2}"),
-        ("Tasa de pausas", r"\bar{x}_3", r"\sigma_{L,3}", r"\sigma_{S,3}"),
-        ("Formalidad / agresión", r"\bar{x}_4", r"\sigma_{L,4}", r"\sigma_{S,4}"),
+        ("Mean pitch f₀", r"\bar{x}_1", r"\sigma_{L,1}", r"\sigma_{S,1}"),
+        ("Pitch variance", r"\bar{x}_2", r"\sigma_{L,2}", r"\sigma_{S,2}"),
+        ("Pause rate", r"\bar{x}_3", r"\sigma_{L,3}", r"\sigma_{S,3}"),
+        ("Formality / aggression", r"\bar{x}_4", r"\sigma_{L,4}", r"\sigma_{S,4}"),
     ]
     rows = []
     n = 0
-    origen_voz = "Calibración de voz (sesión)"
+    origen_voz = "Voice calibration (session)"
     for i, (rasgo, tx, tsl, tss) in enumerate(rasgo_labels):
         n += 1
-        rows.append({"#": n, "Término": f"{rasgo} — media", "Coeficiente": tx,
+        rows.append({"#": n, "Término": f"{rasgo} — mean", "Coeficiente": tx,
                      "Valor": round(float(vp["x"][i]), 2), "Origen del valor": origen_voz,
-                     "Valor_KaTeX": tx, "Clase_tab7": "Observado"})
+                     "Valor_KaTeX": tx, "Clase_tab7": "Observed"})
         n += 1
-        rows.append({"#": n, "Término": f"{rasgo} — desv. largo plazo", "Coeficiente": tsl,
+        rows.append({"#": n, "Término": f"{rasgo} — long-term std.", "Coeficiente": tsl,
                      "Valor": round(float(vp["sigma_L"][i]), 2), "Origen del valor": origen_voz,
-                     "Valor_KaTeX": tsl, "Clase_tab7": "Observado"})
+                     "Valor_KaTeX": tsl, "Clase_tab7": "Observed"})
         n += 1
-        rows.append({"#": n, "Término": f"{rasgo} — desv. corto plazo", "Coeficiente": tss,
+        rows.append({"#": n, "Término": f"{rasgo} — short-term std.", "Coeficiente": tss,
                      "Valor": round(float(vp["sigma_S"][i]), 2), "Origen del valor": origen_voz,
-                     "Valor_KaTeX": tss, "Clase_tab7": "Observado"})
+                     "Valor_KaTeX": tss, "Clase_tab7": "Observed"})
     return pd.DataFrame(rows)
 
 
@@ -3403,7 +3459,7 @@ def _render_focus_covariate_katex_table(
         rd = {
             "n": int(row["#"]),
             "term": _term_display,
-            "term_tex": _focus_term_to_latex(_term_display),
+            "term_tex": _translate_latex_expression(_focus_term_to_latex(str(row["Término"]))),
             "coef_is_latex": _coef_is_latex,
             "coef_display": _coef_for_cell,
             "val": _val_es,
@@ -3512,17 +3568,44 @@ def _render_focus_covariate_katex_table(
 .cov-katex-table-root td.prior-flag.clase-noprior{{opacity:1;font-weight:inherit;}}
 </style>
 <table><thead><tr>
-<th class="num">#</th><th class="term">Término</th><th class="coef">Coeficiente</th>
-<th class="val">Valor</th>{_th_orig}{_th_clase}
+<th class="num">#</th>
+<th class="term">{html.escape(_translate_text_to_english("Término"), quote=False)}</th>
+<th class="coef">{html.escape(_translate_text_to_english("Coeficiente"), quote=False)}</th>
+<th class="val">{html.escape(_translate_text_to_english("Valor"), quote=False)}</th>{_th_orig}{_th_clase}
 </tr></thead><tbody id="{_tb_id}"></tbody></table>
 <script id="{_json_id}" type="application/json">{payload_safe}</script>
 <script>
 (function() {{
+  /* Convierte LaTeX básico a Unicode aproximado cuando KaTeX no está disponible. */
+  function _latexApprox(s) {{
+    if (!s) return s;
+    var greek = {{alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',zeta:'ζ',eta:'η',
+      theta:'θ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',
+      rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',phi:'φ',chi:'χ',psi:'ψ',omega:'ω',
+      varphi:'φ',varepsilon:'ε',vartheta:'ϑ',cdot:'·',ldots:'…'}};
+    var subD={{'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'}};
+    var r = s;
+    r = r.replace(/\\\\(?:mathrm|mathit|mathbf|mathnormal|text|textrm|textit|textbf|hat|tilde|bar|vec)\\{{([^}}]*)\\}}/g, '$1');
+    r = r.replace(/\\\\([a-zA-Z]+)/g, function(m,c){{ return greek[c]||''; }});
+    r = r.replace(/\\\\/g, '');
+    r = r.replace(/\^\\{{([^}}]*)\\}}/g, function(m,c){{ return c; }});
+    r = r.replace(/_\\{{([^}}]*)\\}}/g, function(m,c){{
+      return c.replace(/[0-9]/g, function(d){{ return subD[d]||d; }});
+    }});
+    r = r.replace(/\\{{([^}}]*)\\}}/g,'$1');
+    r = r.replace(/_([0-9]+)/g, function(m,d){{
+      return d.split('').map(function(c){{return subD[c]||c;}}).join('');
+    }});
+    r = r.replace(/_([A-Za-z])/g,'$1');
+    r = r.replace(/[\{{\\}}]/g,'');
+    return r;
+  }}
   const SHOW_ORIGEN = {_js_show_orig};
   const SHOW_CLASE = {_js_show_clase};
   const data = JSON.parse(document.getElementById('{_json_id}').textContent);
   const tb = document.getElementById('{_tb_id}');
   const kopts = {{ displayMode: false, throwOnError: false, strict: false }};
+  const hasKatex = (typeof katex !== 'undefined');
   for (let i = 0; i < data.length; i++) {{
     const r = data[i];
     const tr = document.createElement('tr');
@@ -3543,25 +3626,32 @@ def _render_focus_covariate_katex_table(
       tdCl.className = 'prior-flag';
       const lab = String(r.clase_tab7 || '');
       tdCl.textContent = lab;
-      if (lab === 'Endógena') tdCl.classList.add('clase-endog');
+      if (lab === 'Endógena' || lab === 'Endogenous') tdCl.classList.add('clase-endog');
       else if (lab === 'Prior') tdCl.classList.add('clase-prior');
-      else if (lab === 'Observado') tdCl.classList.add('clase-obs');
+      else if (lab === 'Observado' || lab === 'Observed') tdCl.classList.add('clase-obs');
       else tdCl.classList.add('clase-noprior');
       tr.appendChild(tdCl);
     }}
     tb.appendChild(tr);
-    try {{ katex.render(r.term_tex, spT, kopts); }} catch (e) {{ spT.textContent = r.term; }}
-    if (r.coef_is_latex) {{
-      try {{ katex.render(r.coef_display, spC, kopts); }} catch (e) {{ spC.textContent = r.coef_display; }}
+    if (hasKatex) {{
+      try {{ katex.render(r.term_tex, spT, kopts); }} catch (e) {{ spT.textContent = r.term; }}
+      if (r.coef_is_latex) {{
+        try {{ katex.render(r.coef_display, spC, kopts); }} catch (e) {{ spC.textContent = _latexApprox(r.coef_display); }}
+      }} else {{
+        spC.textContent = r.coef_display;
+      }}
+      if (SHOW_ORIGEN && spO) {{
+        try {{ katex.render(r.orig_tex, spO, kopts); }} catch (e) {{ spO.textContent = r.orig_tex; }}
+      }}
+      if (r.val_tex) {{
+        try {{ katex.render(r.val_tex, spV, kopts); }} catch (e) {{ spV.textContent = r.val; }}
+      }} else {{
+        spV.textContent = r.val;
+      }}
     }} else {{
-      spC.textContent = r.coef_display;
-    }}
-    if (SHOW_ORIGEN && spO) {{
-      try {{ katex.render(r.orig_tex, spO, kopts); }} catch (e) {{ spO.textContent = r.orig_tex; }}
-    }}
-    if (r.val_tex) {{
-      try {{ katex.render(r.val_tex, spV, kopts); }} catch (e) {{ spV.textContent = r.val; }}
-    }} else {{
+      spT.textContent = r.term;
+      spC.textContent = r.coef_is_latex ? _latexApprox(r.coef_display) : r.coef_display;
+      if (spO) spO.textContent = r.orig_tex || '';
       spV.textContent = r.val;
     }}
   }}
@@ -7828,7 +7918,31 @@ with tab_cal:
             unsafe_allow_html=True,
         )
     with _ecRa:
-        st.markdown(r"#### Tabla 1 · Covariables foco $\lambda_j$")
+        _t1_head_txt = _ui_text("Table 1 \\cdot \\text{ Focus Covariates }", "Tabla 1 \\cdot \\text{ Covariables foco }")
+        _t1_katex_expr = _t1_head_txt + "\\lambda_j"
+        _t1_katex_json = json.dumps(_t1_katex_expr)
+        _t1_fallback_json = json.dumps(
+            _ui_text("Table 1 · Focus Covariates λ_j", "Tabla 1 · Covariables foco λ_j")
+        )
+        components.html(
+            '<!DOCTYPE html><html><head><meta charset="utf-8"/>'
+            f'<link rel="stylesheet" href="{_KATEX_BASE}/katex.min.css" crossorigin="anonymous"/>'
+            f'<script src="{_KATEX_BASE}/katex.min.js" crossorigin="anonymous"></script>'
+            '<style>'
+            'html,body{margin:0;padding:0;overflow:hidden;background:transparent;}'
+            '#t1h{font-size:1.1rem;font-weight:600;margin:4px 0 2px 0;padding:0;}'
+            '.katex{font-size:1em;}'
+            '</style>'
+            '</head><body>'
+            '<div id="t1h"></div>'
+            f'<script>'
+            f'try{{katex.render({_t1_katex_json},document.getElementById("t1h"),'
+            '{displayMode:false,throwOnError:false,strict:false});}'
+            f'catch(e){{document.getElementById("t1h").textContent={_t1_fallback_json};}}'
+            '</script>'
+            '</body></html>',
+            height=38,
+        )
         _render_focus_covariate_katex_table(
             _df_cov,
             show_origen=False,
@@ -7838,7 +7952,7 @@ with tab_cal:
             collapse_gap_below=True,
         )
         with st.popover(
-            "Editar valores Prior (Tabla 1)",
+            _ui_text("Edit Prior Values (Table 1)", "Editar valores Prior (Tabla 1)"),
             width="stretch",
         ):
             st.markdown(
@@ -7883,8 +7997,13 @@ with tab_cal:
             _vals_current = _render_focus_prior_valor_inputs(
                 _df_edit_prior, widget_stem=_fce_key, profile_key=_pk_cov
             )
-            _fce_save_lbl = (
-                f"Guardar DC {_FOCUS_OUTCOME_BTN_SHORT.get(_j_mech, str(_j_mech))} · {_th}"
+            _fce_save_lbl = _ui_text(
+                "Save {} · {}".format(
+                    {1: "Payment", 2: "Death", 3: "Ransom"}.get(_j_mech, str(_j_mech)), _th
+                ),
+                "Guardar DC {} · {}".format(
+                    _FOCUS_OUTCOME_BTN_SHORT.get(_j_mech, str(_j_mech)), _th
+                ),
             )
             _btn_save, _btn_reset = st.columns(2)
             with _btn_save:
@@ -7892,44 +8011,53 @@ with tab_cal:
                     _fce_save_lbl,
                     key=f"fce_btn_{_fce_key}",
                     type="primary",
-                    help="Guarda los Prior editados en `user_focus_covariates.json` para este perfil.",
+                    help=_ui_text("Saves the edited Prior values to `user_focus_covariates.json` for this profile.", "Guarda los Prior editados en `user_focus_covariates.json` para este perfil."),
                 ):
                     if st.session_state.get(f"fce_bad_{_pk_cov}"):
                         st.error(
-                            "Revisa los **Valor**: miles con **.** y decimales con **,** "
-                            "(ejemplo: **1.234,56**)."
+                            _ui_text(
+                                "Check the **Value** fields: use **.** for thousands and **,** for decimals "
+                                "(e.g. **1,234.56**).",
+                                "Revisa los **Valor**: miles con **.** y decimales con **,** "
+                                "(ejemplo: **1.234,56**).",
+                            )
                         )
                     else:
                         _vals = dict(_vals_current)
                         st.session_state.focus_cov_store[_pk_cov] = {"valores_por_termino": _vals}
                         _save_focus_cov_store(st.session_state.focus_cov_store)
                         st.success(
-                            "Caso guardado en **`user_focus_covariates.json`** "
-                            f"(perfil `{_pk_cov[:48]}{'…' if len(_pk_cov) > 48 else ''}`: "
-                            f"{len(_vals)} términos **Prior**)."
+                            _ui_text(
+                                f"Saved to **`user_focus_covariates.json`** "
+                                f"(profile `{_pk_cov[:48]}{'…' if len(_pk_cov) > 48 else ''}`: "
+                                f"{len(_vals)} **Prior** terms).",
+                                f"Caso guardado en **`user_focus_covariates.json`** "
+                                f"(perfil `{_pk_cov[:48]}{'…' if len(_pk_cov) > 48 else ''}`: "
+                                f"{len(_vals)} términos **Prior**).",
+                            )
                         )
                         st.rerun()
             with _btn_reset:
                 if st.button(
-                    "Restablecer Prior (este perfil)",
+                    _ui_text("Reset Prior (this profile)", "Restablecer Prior (este perfil)"),
                     key=f"fce_rst_{_fce_key}",
-                    help="Elimina entradas guardadas para este perfil; los Prior vuelven al modelo.",
+                    help=_ui_text("Removes saved entries for this profile; Prior values revert to model defaults.", "Elimina entradas guardadas para este perfil; los Prior vuelven al modelo."),
                 ):
                     st.session_state.focus_cov_store.pop(_pk_cov, None)
                     _save_focus_cov_store(st.session_state.focus_cov_store)
                     st.session_state[f"fce_bump_{_pk_cov}"] = int(
                         st.session_state.get(f"fce_bump_{_pk_cov}", 0)
                     ) + 1
-                    st.info("Overrides **Prior** de este perfil eliminados; se recargan valores del modelo.")
+                    st.info(_ui_text("**Prior** overrides for this profile removed; model default values reloaded.", "Overrides **Prior** de este perfil eliminados; se recargan valores del modelo."))
                     st.rerun()
 
     st.divider()
     st.markdown(
-        "### 2. Intensidades efectivas (ec. 32–35, *Mechanism.tex*)"
+        _ui_text("### 2. Effective Intensities (eq. 32–35, *Mechanism.tex*)", "### 2. Intensidades efectivas (ec. 32–35, *Mechanism.tex*)")
     )
     _simLa, _simRa = st.columns((0.46, 0.54), gap="medium")
     with _simLa:
-        st.caption(f"Desenlace focal en Tabla 1: **j = {_j_mech}** ({_sel_out}).")
+        st.caption(_ui_text(f"Focal outcome in Table 1: **j = {_j_mech}** ({_sel_out}).", f"Desenlace focal en Tabla 1: **j = {_j_mech}** ({_sel_out})."))
         st.latex(
             r"\tilde{\lambda}_j(t)=M(t)\,\lambda_j(t)\ (j=1,2,3),\quad "
             r"\tilde{\lambda}_4(t)=\lambda_4,\quad \Delta t=1."
@@ -7949,14 +8077,14 @@ with tab_cal:
             [
                 {
                     "#": 1,
-                    "Término": "Umbral de maduración (texto)",
+                    "Término": _ui_text("Maturation threshold", "Umbral de maduración (texto)"),
                     "Coeficiente": r"T_{\mathrm{mad}}",
                     "Valor": _Tmv,
                     "Origen del valor": "Prior",
                 },
                 {
                     "#": 2,
-                    "Término": "Canal exógeno (basal)",
+                    "Término": _ui_text("Exogenous channel (baseline)", "Canal exógeno (basal)"),
                     "Coeficiente": r"\lambda_4",
                     "Valor": _L4v,
                     "Origen del valor": "Prior",
@@ -7973,7 +8101,7 @@ with tab_cal:
             collapse_gap_below=True,
         )
         with st.popover(
-            "Editar valores Prior · Tabla 2",
+            _ui_text("Edit Prior Values · Table 2", "Editar valores Prior · Tabla 2"),
             width="stretch",
         ):
             st.markdown(
@@ -8026,7 +8154,7 @@ with tab_cal:
                     format="%.0f",
                     key="cal_T_mad",
                     label_visibility="collapsed",
-                    help="Umbral en $M(t)=\min\{1,(t/T_{\mathrm{mad}})^2\}$ (días).",
+                    help=_ui_text(r"Threshold in $M(t)=\min\{1,(t/T_{\mathrm{mad}})^2\}$ (days).", "Umbral en $M(t)=\min\{1,(t/T_{\mathrm{mad}})^2\}$ (días)."),
                 )
             _c2l2, _c2r2 = st.columns((0.68, 0.32), gap="small")
             with _c2l2:
@@ -8040,30 +8168,30 @@ with tab_cal:
                     format="%.6f",
                     key="cal_lambda_4",
                     label_visibility="collapsed",
-                    help="Intensidad basal del cuarto canal (exógeno), Mechanism.tex.",
+                    help=_ui_text("Baseline intensity of the fourth channel (exogenous), Mechanism.tex.", "Intensidad basal del cuarto canal (exógeno), Mechanism.tex."),
                 )
             st.divider()
             _t2_btn_save, _t2_btn_reset = st.columns(2)
             with _t2_btn_save:
                 if st.button(
-                    "Guardar",
+                    _ui_text("Save", "Guardar"),
                     key="tab2_save_prior",
                     type="primary",
-                    help="Confirma los valores editados para esta sesión.",
+                    help=_ui_text("Confirms the edited values for this session.", "Confirma los valores editados para esta sesión."),
                 ):
-                    st.success("Valores **Prior** de Tabla 2 guardados en la sesión.")
+                    st.success(_ui_text("Table 2 **Prior** values saved to session.", "Valores **Prior** de Tabla 2 guardados en la sesión."))
                     st.rerun()
             with _t2_btn_reset:
                 if st.button(
-                    "Restablecer",
+                    _ui_text("Reset", "Restablecer"),
                     key="tab2_reset_prior",
-                    help="Vuelve a los valores base (T_mad=5, λ4=0,0005).",
+                    help=_ui_text("Reverts to base values (T_mad=5, λ4=0.0005).", "Vuelve a los valores base (T_mad=5, λ4=0,0005)."),
                 ):
                     st.session_state.cal_T_mad = 5.0
                     st.session_state.cal_lambda_4 = 0.0005
                     st.session_state["cal_T_mad_default_version"] = "tmad_5"
                     st.session_state["cal_lambda_4_default_version"] = "lambda4_0p0005"
-                    st.info("Valores **Prior** de Tabla 2 restablecidos.")
+                    st.info(_ui_text("Table 2 **Prior** values reset.", "Valores **Prior** de Tabla 2 restablecidos."))
                     st.rerun()
 
     st.divider()
@@ -8289,21 +8417,21 @@ with tab_cal:
             help=(
                 f"η₀={_eta0_s3:.2f}, η₁={_eta1_s3:.2f}, η₂={_eta2_s3:.2f}  |  "
                 f"α₀={_a0_s3:.2f}, γ₀={_g0_s3:.2f}  |  "
-                f"índice={_idx_s3:.4f}"
+                f"index={_idx_s3:.4f}"
             ),
         )
     with _sc2:
         st.metric(
-            label="$d_0$ actual",
+            label=_ui_text("$d_0$ current", "$d_0$ actual"),
             value=_d0_cur_s3,
-            help="Resultado del último sorteo Bernoulli(p_det,0).",
+            help=_ui_text("Result of last Bernoulli(p_det,0) draw.", "Resultado del último sorteo Bernoulli(p_det,0)."),
         )
     with _sc3:
         if st.button(
-            "Generar d₀",
+            _ui_text("Generate d₀", "Generar d₀"),
             key="btn_gen_d0",
             use_container_width=True,
-            help=r"Sortea d₀ ~ Bernoulli(p_{det,0}) y actualiza todo lo que depende de d₀.",
+            help=_ui_text(r"Draws d₀ ~ Bernoulli(p_{det,0}) and updates everything depending on d₀.", r"Sortea d₀ ~ Bernoulli(p_{det,0}) y actualiza todo lo que depende de d₀."),
         ):
             _u_s3 = float(np.random.uniform(0.0, 1.0))
             _d0_gen = 1 if _u_s3 < _pdet_s3 else 0
@@ -8315,18 +8443,24 @@ with tab_cal:
     if _u_last_s3 is not None:
         _pdet_used_s3 = float(st.session_state.get("h0_d_pdet_used", _pdet_s3))
         st.caption(
-            f"Último sorteo: u = {float(_u_last_s3):.4f} "
-            f"{'<' if float(_u_last_s3) < _pdet_used_s3 else '≥'} "
-            f"p_det,0 = {_pdet_used_s3:.4f} "
-            f"→ **d₀ = {_d0_cur_s3}**"
+            _ui_text(
+                f"Last draw: u = {float(_u_last_s3):.4f} "
+                f"{'<' if float(_u_last_s3) < _pdet_used_s3 else '≥'} "
+                f"p_det,0 = {_pdet_used_s3:.4f} "
+                f"→ **d₀ = {_d0_cur_s3}**",
+                f"Último sorteo: u = {float(_u_last_s3):.4f} "
+                f"{'<' if float(_u_last_s3) < _pdet_used_s3 else '≥'} "
+                f"p_det,0 = {_pdet_used_s3:.4f} "
+                f"→ **d₀ = {_d0_cur_s3}**",
+            )
         )
 
     st.divider()
-    st.markdown("### 4. Probabilidad de supervivencia")
+    st.markdown(_ui_text("### 4. Survival Probability", "### 4. Probabilidad de supervivencia"))
     _sv2La, _sv2Ra = st.columns((0.46, 0.54), gap="medium")
     with _sv2La:
         st.caption(
-            r"**Ec. 37:** Precisión modal · **Ec. 38:** Supervivencia (logit ajustado)."
+            _ui_text(r"**Eq. 37:** Modal precision · **Eq. 38:** Survival (adjusted logit).", r"**Ec. 37:** Precisión modal · **Ec. 38:** Supervivencia (logit ajustado).")
         )
         st.latex(
             r"\iota_t := \max_{\theta\in\Theta_K}\mu_t(\theta),\quad "
@@ -8338,14 +8472,19 @@ with tab_cal:
             r"\Lambda(u)=\frac{1}{1+e^{-u}}."
         )
         st.caption(
-            r"$\iota_t$ y $\hat\theta_t$ se calculan desde **μ**; "
-            r"$\alpha_{\mathrm{leth}}<0$ y $\beta_R$ alto hacen que, si $\iota_t$ no está cerca de 1, "
-            r"la supervivencia modal quede por debajo de 0.5."
+            _ui_text(
+                r"$\iota_t$ and $\hat\theta_t$ are computed from **μ**; "
+                r"$\alpha_{\mathrm{leth}}<0$ and high $\beta_R$ imply that, when $\iota_t$ is not close to 1, "
+                r"modal survival falls below 0.5.",
+                r"$\iota_t$ y $\hat\theta_t$ se calculan desde **μ**; "
+                r"$\alpha_{\mathrm{leth}}<0$ y $\beta_R$ alto hacen que, si $\iota_t$ no está cerca de 1, "
+                r"la supervivencia modal quede por debajo de 0.5.",
+            )
         )
     with _sv2Ra:
         rb_katex_title(r"#### Tabla 4 · $\alpha_0$, $\beta_R$, $\iota_t$")
         st.caption(
-            r"**Prior** para la logit de supervivencia; **Calculado** desde μ₀ y el tipo focal **θ_K** arriba."
+            _ui_text(r"**Prior** for the survival logit; **Computed** from μ₀ and focal type **θ_K** above.", r"**Prior** para la logit de supervivencia; **Calculado** desde μ₀ y el tipo focal **θ_K** arriba.")
         )
         _a0s = float(st.session_state.cal_surv_alpha0[_th])
         _bRs = float(st.session_state.cal_surv_beta_R)
@@ -8353,28 +8492,28 @@ with tab_cal:
             [
                 {
                     "#": 1,
-                    "Término": "α_leth letalidad (Prior · ec. 38)",
+                    "Término": _ui_text("α_leth lethality (Prior · eq. 38)", "α_leth letalidad (Prior · ec. 38)"),
                     "Coeficiente": r"\alpha_{\mathrm{leth}}(\theta_K)",
                     "Valor": _a0s,
                     "Origen del valor": "Prior",
                 },
                 {
                     "#": 2,
-                    "Término": "β_R productividad (Prior · ec. 38)",
+                    "Término": _ui_text("β_R productivity (Prior · eq. 38)", "β_R productividad (Prior · ec. 38)"),
                     "Coeficiente": r"\beta_R",
                     "Valor": _bRs,
                     "Origen del valor": "Prior",
                 },
                 {
                     "#": 3,
-                    "Término": "Precisión modal (ec. 37)",
+                    "Término": _ui_text("Modal precision (eq. 37)", "Precisión modal (ec. 37)"),
                     "Coeficiente": r"\iota_t",
                     "Valor": float(_iota_t),
                     "Origen del valor": "Calculado",
                 },
                 {
                     "#": 4,
-                    "Término": "Indicadora coincidencia (ec. 38)",
+                    "Término": _ui_text("Match indicator (eq. 38)", "Indicadora coincidencia (ec. 38)"),
                     "Coeficiente": r"\mathbf{1}\{\hat\theta_t = \theta_K\}",
                     "Valor": 1.0 if TIPOS_SECUESTRADOR[_mu_vec.index(_iota_t)] == _th else 0.0,
                     "Origen del valor": "Calculado",
@@ -8382,7 +8521,7 @@ with tab_cal:
             ]
         )
         _df_surv["Clase_tab7"] = _df_surv["Origen del valor"].apply(
-            lambda x: "Prior" if x == "Prior" else "Endógena"
+            lambda x: "Prior" if x == "Prior" else "Endogenous"
         )
         _render_focus_covariate_katex_table(
             _df_surv,
@@ -8393,7 +8532,7 @@ with tab_cal:
             collapse_gap_below=True,
         )
         with st.popover(
-            "Editar valores Prior · Tabla 4",
+            _ui_text("Edit Prior Values · Table 4", "Editar valores Prior · Tabla 4"),
             width="stretch",
         ):
             st.markdown(
@@ -8436,7 +8575,7 @@ with tab_cal:
             _s4l1, _s4r1 = st.columns((0.68, 0.32), gap="small")
             with _s4l1:
                 rb_katex_title(r"1. $\alpha_{\mathrm{leth}}(\theta_K)$")
-                st.caption("Letalidad intrínseca (Prior · ec. 38)")
+                st.caption(_ui_text("Intrinsic lethality (Prior · eq. 38)", "Letalidad intrínseca (Prior · ec. 38)"))
             with _s4r1:
                 for _tk in TIPOS_SECUESTRADOR:
                     st.number_input(
@@ -8445,7 +8584,7 @@ with tab_cal:
                         step=0.05,
                         format="%.2f",
                         key=f"cal_surv_alpha0_{_tk}",
-                        help=f"Letalidad intrínseca para {_tk}.",
+                        help=_ui_text(f"Intrinsic lethality for {_tk}.", f"Letalidad intrínseca para {_tk}."),
                     )
                     # Sincronizar con el diccionario
                     st.session_state.cal_surv_alpha0[_tk] = st.session_state[f"cal_surv_alpha0_{_tk}"]
@@ -8460,33 +8599,33 @@ with tab_cal:
                     format="%.2f",
                     key="cal_surv_beta_R",
                     label_visibility="collapsed",
-                    help=r"Peso de $\iota_t$ cuando $\hat\theta_t=\theta_K$ (ec. 38).",
+                    help=_ui_text(r"Weight of $\iota_t$ when $\hat\theta_t=\theta_K$ (eq. 38).", r"Peso de $\iota_t$ cuando $\hat\theta_t=\theta_K$ (ec. 38)."),
                 )
             st.divider()
             _t4_btn_save, _t4_btn_reset = st.columns(2)
             with _t4_btn_save:
                 if st.button(
-                    "Guardar",
+                    _ui_text("Save", "Guardar"),
                     key="tab4_save_prior",
                     type="primary",
-                    help="Confirma los valores editados para esta sesión.",
+                    help=_ui_text("Confirms the edited values for this session.", "Confirma los valores editados para esta sesión."),
                 ):
-                    st.success("Valores **Prior** de Tabla 4 guardados en la sesión.")
+                    st.success(_ui_text("Table 4 **Prior** values saved to session.", "Valores **Prior** de Tabla 4 guardados en la sesión."))
                     st.rerun()
             with _t4_btn_reset:
                 if st.button(
-                    "Restablecer",
+                    _ui_text("Reset", "Restablecer"),
                     key="tab4_reset_prior",
-                    help="Vuelve a los valores sensibles a μ: α_leth negativos y β_R alto.",
+                    help=_ui_text("Reverts to μ-sensitive values: negative α_leth and high β_R.", "Vuelve a los valores sensibles a μ: α_leth negativos y β_R alto."),
                 ):
                     st.session_state.cal_surv_alpha0 = dict(_SURV_ALPHA0_SENSITIVE_DEFAULTS)
                     st.session_state.cal_surv_beta_R = float(_SURV_BETA_R_SENSITIVE_DEFAULT)
                     st.session_state.cal_surv_sensitivity_version = "mu_sensitive_v2"
-                    st.info("Valores **Prior** de Tabla 4 restablecidos.")
+                    st.info(_ui_text("Table 4 **Prior** values reset.", "Valores **Prior** de Tabla 4 restablecidos."))
                     st.rerun()
 
     st.divider()
-    st.markdown("### 5. Medición de voz")
+    st.markdown(_ui_text("### 5. Voice Measurement", "### 5. Medición de voz"))
     _vp = st.session_state.cal_voz_params[_th]
     _sync_cal_voz_from_session_widgets(_th, _vp)
     _vzL, _vzR = st.columns((1.05, 1), gap="small")
@@ -8499,9 +8638,9 @@ with tab_cal:
         st.latex(
             r"\mathcal{L}_{C,t}(\theta_K \mid V_t)=\begin{cases}\bigl[\mathcal{L}_{\mathrm{voz},t}(\theta_K)\pi_{\mathrm{call}}(\theta_K)\bigr]^{\omega_{\mathrm{voz}}}, & V_t=1,\\[0.6em]\bigl[1-\pi_{\mathrm{call}}(\theta_K)\bigr]^{\omega_{\mathrm{voz}}}, & V_t=0.\end{cases}"
         )
-        st.markdown("**Osciloscopio (visor de voz)** · ilustración con el primer rasgo ($i=1$).")
+        st.markdown(_ui_text("**Oscilloscope (voice viewer)** · illustration with first trait ($i=1$).", "**Osciloscopio (visor de voz)** · ilustración con el primer rasgo ($i=1$)."))
         if st.button(
-            "📡 Capturar 10s",
+            _ui_text("📡 Capture 10s", "📡 Capturar 10s"),
             key=f"cal_voz_cap_{_th}",
             use_container_width=True,
         ):
@@ -8511,13 +8650,13 @@ with tab_cal:
         _osc_n1, _osc_n2 = st.columns(2, gap="small")
         with _osc_n1:
             _incl_L = st.checkbox(
-                "Incluir ε_L (largo plazo)",
+                _ui_text("Include ε_L (long-term)", "Incluir ε_L (largo plazo)"),
                 value=True,
                 key=f"cal_voz_incl_L_{_th}",
             )
         with _osc_n2:
             _incl_S = st.checkbox(
-                "Incluir ε_S (corto plazo)",
+                _ui_text("Include ε_S (short-term)", "Incluir ε_S (corto plazo)"),
                 value=True,
                 key=f"cal_voz_incl_S_{_th}",
             )
@@ -8547,7 +8686,7 @@ with tab_cal:
                 go.Scatter(
                     x=_t_audio,
                     y=_pure,
-                    name="Pura",
+                    name=_ui_text("Pure", "Pura"),
                     line=dict(color="#00CC96", width=1.5, dash="dash"),
                 )
             )
@@ -8560,7 +8699,7 @@ with tab_cal:
                 )
             )
             _fig_w.update_layout(
-                title=f"Osciloscopio: {_th}",
+                title=_ui_text(f"Oscilloscope: {_th}", f"Osciloscopio: {_th}"),
                 height=300,
                 template="plotly_dark",
                 margin=dict(t=36, b=8, l=8, r=8),
@@ -8574,11 +8713,11 @@ with tab_cal:
             )
             st.plotly_chart(_fig_w, use_container_width=True)
         else:
-            st.caption("Pulse **Capturar** para generar una señal de ejemplo.")
+            st.caption(_ui_text("Press **Capture** to generate a sample signal.", "Pulse **Capturar** para generar una señal de ejemplo."))
             st.plotly_chart(
                 go.Figure().update_layout(
                     height=220,
-                    title="Osciloscopio (Inactivo)",
+                    title=_ui_text("Oscilloscope (Inactive)", "Osciloscopio (Inactivo)"),
                     template="plotly_dark",
                     margin=dict(t=32, b=8, l=8, r=8),
                 ),
@@ -8611,10 +8750,14 @@ with tab_cal:
             unsafe_allow_html=True,
         )
         st.caption(
-            rf"**Observado** por tipo focal **θ_K = {_th}** · $k=4$ rasgos · "
-            r"**edita** con **Editar valores · Tabla 5**."
+            _ui_text(
+                rf"**Observed** for focal type **θ_K = {_th}** · $k=4$ traits · "
+                r"**edit** with **Edit values · Table 5**.",
+                rf"**Observado** por tipo focal **θ_K = {_th}** · $k=4$ rasgos · "
+                r"**edita** con **Editar valores · Tabla 5**.",
+            )
         )
-        rb_katex_title(r"**Tabla 5. Parámetros Medición de Voz**")
+        rb_katex_title(_ui_text(r"**Table 5. Voice Measurement Parameters**", r"**Tabla 5. Parámetros Medición de Voz**"))
         _render_focus_covariate_katex_table(
             _build_cal_voz_tabla5_df(_vp),
             show_origen=False,
@@ -8633,7 +8776,7 @@ with tab_cal:
             collapse_gap_below=True,
         )
         with st.popover(
-            f"Editar valores · Tabla 5 · {_th}",
+            _ui_text(f"Edit values · Table 5 · {_th}", f"Editar valores · Tabla 5 · {_th}"),
             width="stretch",
         ):
             st.markdown(
@@ -8721,18 +8864,18 @@ with tab_cal:
             _t5_btn_save, _t5_btn_reset = st.columns(2)
             with _t5_btn_save:
                 if st.button(
-                    "Guardar",
+                    _ui_text("Save", "Guardar"),
                     key=f"tab5_save_{_th}",
                     type="primary",
-                    help="Confirma los valores editados para esta sesión.",
+                    help=_ui_text("Confirms the edited values for this session.", "Confirma los valores editados para esta sesión."),
                 ):
-                    st.success("Valores **Observado** de Tabla 5 guardados en la sesión.")
+                    st.success(_ui_text("Table 5 **Observed** values saved to session.", "Valores **Observado** de Tabla 5 guardados en la sesión."))
                     st.rerun()
             with _t5_btn_reset:
                 if st.button(
-                    "Restablecer",
+                    _ui_text("Reset", "Restablecer"),
                     key=f"tab5_reset_{_th}",
-                    help="Vuelve a los valores base del prior para este tipo θ_K.",
+                    help=_ui_text("Reverts to the base prior values for this type θ_K.", "Vuelve a los valores base del prior para este tipo θ_K."),
                 ):
                     _defs = _default_cal_voz_params().get(_th, None)
                     if _defs is not None:
@@ -8741,7 +8884,7 @@ with tab_cal:
                             st.session_state[f"voz_x_{_th}_{_i}"] = float(_defs["x"][_i])
                             st.session_state[f"voz_sL_{_th}_{_i}"] = float(_defs["sigma_L"][_i])
                             st.session_state[f"voz_sS_{_th}_{_i}"] = float(_defs["sigma_S"][_i])
-                    st.info("Valores **Observado** de Tabla 5 restablecidos.")
+                    st.info(_ui_text("Table 5 **Observed** values reset.", "Valores **Observado** de Tabla 5 restablecidos."))
                     st.rerun()
 
         # Nueva sub-sección: Frecuencia de contacto
@@ -8750,7 +8893,7 @@ with tab_cal:
         _omega_val = float(st.session_state.cal_voz_omega)
         
         st.divider()
-        rb_katex_title(r"**Urgencia de comunicación** · $\pi_{\mathrm{call}}$, $\omega_{\mathrm{voz}}$")
+        rb_katex_title(_ui_text(r"**Communication urgency** · $\pi_{\mathrm{call}}$, $\omega_{\mathrm{voz}}$", r"**Urgencia de comunicación** · $\pi_{\mathrm{call}}$, $\omega_{\mathrm{voz}}$"))
         _render_focus_covariate_katex_table(
             _build_cal_voz_extra_df(_pi_val, _omega_val),
             show_origen=False,
@@ -8768,63 +8911,67 @@ with tab_cal:
             iframe_slack_px=0,
             collapse_gap_below=True,
         )
-        with st.popover(f"Editar urgencia y peso · {_th}", width="stretch"):
-            st.markdown("**Modo de frecuencia de voz por tipo**")
+        with st.popover(_ui_text(f"Edit urgency and weight · {_th}", f"Editar urgencia y peso · {_th}"), width="stretch"):
+            st.markdown(_ui_text("**Voice frequency mode by type**", "**Modo de frecuencia de voz por tipo**"))
             _mode_col_hi, _mode_col_lo = st.columns(2)
             with _mode_col_hi:
                 if st.button(
-                    "Frecuencia alta",
+                    _ui_text("High frequency", "Frecuencia alta"),
                     key=f"voz_freq_high_{_th}",
                     use_container_width=True,
-                    help="Aplica DC=0.65, PAR=0.55, ELN=0.45, FARC=0.35.",
+                    help=_ui_text("Sets DC=0.65, PAR=0.55, ELN=0.45, FARC=0.35.", "Aplica DC=0.65, PAR=0.55, ELN=0.45, FARC=0.35."),
                 ):
                     st.session_state.cal_voz_pi_call = dict(_VOICE_PI_FREQ_HIGH)
                     for _th_pi in TIPOS_SECUESTRADOR:
                         st.session_state[f"voz_pi_{_th_pi}"] = float(_VOICE_PI_FREQ_HIGH[_th_pi])
                     _clear_dynamic_cycles_only()
                     st.session_state["voice_frequency_mode"] = "alta"
-                    st.success("Frecuencia alta aplicada. Use Avanzar ciclos para recalcular τ≥1.")
+                    st.success(_ui_text("High frequency applied. Use Advance Cycles to recalculate τ≥1.", "Frecuencia alta aplicada. Use Avanzar ciclos para recalcular τ≥1."))
                     st.rerun()
             with _mode_col_lo:
                 if st.button(
-                    "Frecuencia baja",
+                    _ui_text("Low frequency", "Frecuencia baja"),
                     key=f"voz_freq_low_{_th}",
                     use_container_width=True,
-                    help="Aplica DC=0.13, PAR=0.11, ELN=0.09, FARC=0.07.",
+                    help=_ui_text("Sets DC=0.13, PAR=0.11, ELN=0.09, FARC=0.07.", "Aplica DC=0.13, PAR=0.11, ELN=0.09, FARC=0.07."),
                 ):
                     st.session_state.cal_voz_pi_call = dict(_VOICE_PI_FREQ_LOW)
                     for _th_pi in TIPOS_SECUESTRADOR:
                         st.session_state[f"voz_pi_{_th_pi}"] = float(_VOICE_PI_FREQ_LOW[_th_pi])
                     _clear_dynamic_cycles_only()
                     st.session_state["voice_frequency_mode"] = "baja"
-                    st.success("Frecuencia baja aplicada. Use Avanzar ciclos para recalcular τ≥1.")
+                    st.success(_ui_text("Low frequency applied. Use Advance Cycles to recalculate τ≥1.", "Frecuencia baja aplicada. Use Avanzar ciclos para recalcular τ≥1."))
                     st.rerun()
             st.caption(
-                "Escala aplicada en ambos modos: DC > PAR > ELN > FARC. "
-                "La frecuencia baja es el 20% de la alta."
+                _ui_text(
+                    "Scale applied in both modes: DC > PAR > ELN > FARC. "
+                    "Low frequency is 20% of high.",
+                    "Escala aplicada en ambos modos: DC > PAR > ELN > FARC. "
+                    "La frecuencia baja es el 20% de la alta.",
+                )
             )
             st.divider()
             _pi_col, _om_col = st.columns(2)
             with _pi_col:
                 st.slider(
-                    r"$\pi_{\mathrm{call}}$ (Urgencia)",
+                    _ui_text(r"$\pi_{\mathrm{call}}$ (Urgency)", r"$\pi_{\mathrm{call}}$ (Urgencia)"),
                     0.01, 0.99, _pi_val, 0.01,
                     key=f"voz_pi_{_th}",
-                    help="Probabilidad diaria de emisión de voz."
+                    help=_ui_text("Daily voice emission probability.", "Probabilidad diaria de emisión de voz.")
                 )
             with _om_col:
                 st.slider(
-                    r"$\omega_{\mathrm{voz}}$ (Peso)",
+                    _ui_text(r"$\omega_{\mathrm{voz}}$ (Weight)", r"$\omega_{\mathrm{voz}}$ (Peso)"),
                     0.0, 1.0, _omega_val, 0.05,
                     key="voz_omega",
-                    help="Moderador del aprendizaje por voz (ec. 1138)."
+                    help=_ui_text("Moderator of voice learning (eq. 1138).", "Moderador del aprendizaje por voz (ec. 1138).")
                 )
-            if st.button("Guardar urgencia", key=f"btn_save_pi_{_th}", type="primary"):
-                st.success("Parámetros de urgencia guardados.")
+            if st.button(_ui_text("Save urgency", "Guardar urgencia"), key=f"btn_save_pi_{_th}", type="primary"):
+                st.success(_ui_text("Urgency parameters saved.", "Parámetros de urgencia guardados."))
                 st.rerun()
 
     st.divider()
-    st.markdown("### 6. Probabilidad de captura")
+    st.markdown(_ui_text("### 6. Capture Probability", "### 6. Probabilidad de captura"))
     _pcap_L, _pcap_R = st.columns((1.05, 1), gap="small")
     with _pcap_L:
         st.latex(
@@ -8832,8 +8979,12 @@ with tab_cal:
             r"c_\alpha(\theta_K)\alpha_t^\ast + c_\gamma(\theta_K)\gamma_t^\ast + c_S(\theta_S)\Bigr)"
         )
         st.caption(
-            "Mide la probabilidad técnica de captura dado el entorno y las políticas aplicadas. "
-            "Es fundamental para la verosimilitud de supervivencia del captor."
+            _ui_text(
+                "Measures the technical capture probability given the environment and applied policies. "
+                "It is fundamental for the captive's survival likelihood.",
+                "Mide la probabilidad técnica de captura dado el entorno y las políticas aplicadas. "
+                "Es fundamental para la verosimilitud de supervivencia del captor.",
+            )
         )
     with _pcap_R:
         _prow = st.session_state.cal_pcap_params[_th]
@@ -8841,7 +8992,7 @@ with tab_cal:
         _c_S = float(st.session_state.cal_pcap_c_S)
         _sync_cal_pcap_from_session_widgets(_th, _prow)
         
-        rb_katex_title(r"**Tabla 6. Parámetros de Captura Técnica**")
+        rb_katex_title(_ui_text(r"**Table 6. Technical Capture Parameters**", r"**Tabla 6. Parámetros de Captura Técnica**"))
         _render_focus_covariate_katex_table(
             _build_cal_pcap_tabla6_df(_prow, _delta_a, _c_S),
             show_origen=False,
@@ -8859,25 +9010,30 @@ with tab_cal:
             iframe_slack_px=0,
             collapse_gap_below=True,
         )
-        with st.popover(f"Editar captura · Tabla 6 · {_th}", width="stretch"):
+        with st.popover(_ui_text(f"Edit capture · Table 6 · {_th}", f"Editar captura · Tabla 6 · {_th}"), width="stretch"):
             _pc1, _pc2 = st.columns(2)
             with _pc1:
-                st.number_input("δ_a (Acción)", value=_delta_a, step=0.1, key="pcap_delta_a_widget")
+                rb_katex_title(r"1. $\delta_a$ — " + _ui_text("action impact", "impacto acción"))
+                st.number_input("delta_a", value=_delta_a, step=0.1, key="pcap_delta_a_widget", label_visibility="collapsed")
                 st.session_state.cal_pcap_delta_a = st.session_state.pcap_delta_a_widget
-                st.number_input("c₀ (Base)", value=float(_prow["c0"]), step=0.1, key=f"pcap_c0_{_th}")
+                rb_katex_title(r"2. $c_0(\theta_K)$ — " + _ui_text("baseline heterogeneity", "heterogeneidad basal"))
+                st.number_input("c0", value=float(_prow["c0"]), step=0.1, key=f"pcap_c0_{_th}", label_visibility="collapsed")
             with _pc2:
-                st.number_input("c_S (Estado)", value=_c_S, step=0.1, key="pcap_c_S_widget")
+                rb_katex_title(r"3. $c_S(\theta_S)$ — " + _ui_text("institutional capacity", "capacidad institucional"))
+                st.number_input("c_S", value=_c_S, step=0.1, key="pcap_c_S_widget", label_visibility="collapsed")
                 st.session_state.cal_pcap_c_S = st.session_state.pcap_c_S_widget
-                st.number_input("c_α (Bloqueo)", value=float(_prow["c_alpha"]), step=0.1, key=f"pcap_c_alpha_{_th}")
-            st.number_input("c_γ (Presión)", value=float(_prow["c_gamma"]), step=0.1, key=f"pcap_c_gamma_{_th}")
-            
+                rb_katex_title(r"4. $c_\alpha(\theta_K)$ — " + _ui_text("blockade sensitivity", "sensibilidad bloqueo"))
+                st.number_input("c_alpha", value=float(_prow["c_alpha"]), step=0.1, key=f"pcap_c_alpha_{_th}", label_visibility="collapsed")
+            rb_katex_title(r"5. $c_\gamma(\theta_K)$ — " + _ui_text("pressure sensitivity", "sensibilidad presión"))
+            st.number_input("c_gamma", value=float(_prow["c_gamma"]), step=0.1, key=f"pcap_c_gamma_{_th}", label_visibility="collapsed")
+            st.divider()
             _btn_pc_save, _btn_pc_reset = st.columns(2)
             with _btn_pc_save:
-                if st.button("Guardar captura", key=f"btn_save_pcap_{_th}", type="primary"):
-                    st.success("Parámetros de captura guardados.")
+                if st.button(_ui_text("Save capture", "Guardar captura"), key=f"btn_save_pcap_{_th}", type="primary"):
+                    st.success(_ui_text("Capture parameters saved.", "Parámetros de captura guardados."))
                     st.rerun()
             with _btn_pc_reset:
-                if st.button("Restablecer captura", key=f"btn_reset_pcap_{_th}"):
+                if st.button(_ui_text("Reset capture", "Restablecer captura"), key=f"btn_reset_pcap_{_th}"):
                     _defs = _default_cal_pcap_params().get(_th)
                     st.session_state.cal_pcap_params[_th] = _defs
                     st.session_state.cal_pcap_delta_a = 0.0
@@ -9112,9 +9268,13 @@ with tab_mdg:
             
             _prior_const = float(_mu_mdg_tab.get(tipo_real, 0.25))
             _n_u += 1
-            _rows_mdg_katex.append({"#": _n_u, "Término": "Prior marginal μ(θ_K) incidente", "Coeficiente": r"\mu(\theta_K)", "Valor": _prior_const, "Valor_KaTeX": rf"\text{{{_fmt_es_num(_prior_const, 2)}}}", "Clase_tab7": "Prior"})
-            
-            _tt_specs = [("Temperatura base T₀", "T_0", _T0_w), ("Entropía de referencia H(μ₀)", r"H(\mu_0)", float(_H0_ref_mdg)), ("Piso c̲ (inferior)", r"\underline{c}", _cbar_w)]
+            _rows_mdg_katex.append({"#": _n_u, "Término": _ui_text("Prior marginal μ(θ_K) incident", "Prior marginal μ(θ_K) incidente"), "Coeficiente": r"\mu(\theta_K)", "Valor": _prior_const, "Valor_KaTeX": rf"\text{{{_fmt_es_num(_prior_const, 2)}}}", "Clase_tab7": "Prior"})
+
+            _tt_specs = [
+                (_ui_text("Base temperature T₀", "Temperatura base T₀"), "T_0", _T0_w),
+                (_ui_text("Reference entropy H(μ₀)", "Entropía de referencia H(μ₀)"), r"H(\mu_0)", float(_H0_ref_mdg)),
+                (_ui_text("Floor c̲ (lower)", "Piso c̲ (inferior)"), r"\underline{c}", _cbar_w),
+            ]
             for _term_tt, _coef_tt, _val_tt in _tt_specs:
                 _n_u += 1
                 _rows_mdg_katex.append({"#": _n_u, "Término": _term_tt, "Coeficiente": _coef_tt, "Valor": _val_tt, "Valor_KaTeX": rf"\text{{{_fmt_es_num(_val_tt, 2)}}}", "Clase_tab7": "No prior"})
@@ -9126,14 +9286,15 @@ with tab_mdg:
             
             _c_eq, _c_tbl = st.columns([0.45, 0.55], gap="large")
             with _c_eq:
-                st.markdown("#### Ley de Implementación")
+                st.markdown(_ui_text("#### Implementation Law", "#### Ley de Implementación"))
                 st.latex(rf"\mathbb{{P}}_{{\mathrm{{I}},{_mdg_focal_code}}}(\tilde a=a \mid a^\ast, X_t) = \frac{{\exp(\mathbf{{1}}\{{a=a^\ast\}}/T_t)}}{{\sum_{{a'\in\mathcal{{A}}^{{{_mdg_focal_code}}}}}\exp(\mathbf{{1}}\{{a'=a^\ast\}}/T_t)}}")
-                st.markdown("#### Dinámica de Temperatura")
+                st.markdown(_ui_text("#### Temperature Dynamics", "#### Dinámica de Temperatura"))
                 st.latex(r"T_t = T_0 \max\!\left\{\frac{H(\mu_t)}{H(\mu_0)}e^{-\eta_{\mathrm{cal}}t},\,\underline{c}\right\}")
                 st.latex(rf"H(\mu_t) = -\sum_{{\theta \in \Theta_K}} \mu_t(\theta) \ln \mu_t(\theta) = \text{{{_fmt_es_num(_H_mu_mdg, 2)}}}")
-            
+
             with _c_tbl:
-                st.markdown(f'<h4 class="mdg-tabla7-title">Tabla 7 · Implementación ({_mdg_focal_code})</h4>', unsafe_allow_html=True)
+                _t7_title = _ui_text(f"Table 7 · Implementation ({_mdg_focal_code})", f"Tabla 7 · Implementación ({_mdg_focal_code})")
+                st.markdown(f'<h4 class="mdg-tabla7-title">{_t7_title}</h4>', unsafe_allow_html=True)
                 _render_focus_covariate_katex_table(
                     df_tab7,
                     show_origen=False,
@@ -9142,29 +9303,29 @@ with tab_mdg:
                     iframe_slack_px=36,
                     collapse_gap_below=True,
                 )
-                with st.popover(f"Editar valores · Tabla 7 ({_mdg_focal_code})", use_container_width=True):
+                with st.popover(_ui_text(f"Edit values · Table 7 ({_mdg_focal_code})", f"Editar valores · Tabla 7 ({_mdg_focal_code})"), use_container_width=True):
                     for _i_ed, _ac_ed in enumerate(_actions_mdg):
                         _pl, _pr = st.columns((0.58, 0.42), gap="small", vertical_alignment="center")
-                        with _pl: st.markdown(f"**#{_i_ed+1}** · {_ac_ed}")
+                        with _pl: st.markdown(f"**#{_i_ed+1}** · {_translate_text_to_english(_ac_ed)}")
                         with _pr: st.number_input(" ", min_value=0.0, max_value=1.0, value=float(_p_map[_ac_ed]), step=0.0001, format="%.2f", key=f"mdg7_p_{_mdg_focal_code}_{_i_ed}", label_visibility="collapsed")
-                    
+
                     _pl4, _pr4 = st.columns((0.58, 0.42), gap="small", vertical_alignment="center")
-                    with _pl4: st.markdown(f"**#4** · $\\underline{{c}}$ (piso de ruido)")
+                    with _pl4: st.markdown(_ui_text(f"**#4** · $\\underline{{c}}$ (noise floor)", f"**#4** · $\\underline{{c}}$ (piso de ruido)"))
                     with _pr4: st.number_input(" ", min_value=0.0, max_value=1.0, value=_cbar_w, step=0.01, format="%.2f", key=_key_cbar, label_visibility="collapsed")
-                    
+
                     _pl5, _pr5 = st.columns((0.58, 0.42), gap="small", vertical_alignment="center")
-                    with _pl5: st.markdown(f"**#5** · $T_0$ (temperatura base)")
+                    with _pl5: st.markdown(_ui_text("**#5** · $T_0$ (base temperature)", "**#5** · $T_0$ (temperatura base)"))
                     with _pr5: st.number_input(" ", min_value=1e-12, value=_T0_w, step=0.01, format="%.2f", key=_key_T0, label_visibility="collapsed")
-                    
+
                     _pl6, _pr6 = st.columns((0.58, 0.42), gap="small", vertical_alignment="center")
-                    with _pl6: st.markdown(f"**#6** · $\eta_{{\mathrm{{cal}}}}$ · decaimiento")
+                    with _pl6: st.markdown(_ui_text(f"**#6** · $\\eta_{{\\mathrm{{cal}}}}$ · decay", f"**#6** · $\\eta_{{\\mathrm{{cal}}}}$ · decaimiento"))
                     with _pr6:
                         _eta_ed_k = f"mdg_t7_eta_ed_{_mdg_focal_code}"
                         st.number_input(" ", min_value=0.0, value=_eta_w, step=0.0001, format="%.4f", key=_eta_ed_k, label_visibility="collapsed")
                         st.session_state.cal_mdg_eta_cal_by_i[_mdg_focal_code] = float(st.session_state[_eta_ed_k])
-                    
+
                     st.divider()
-                    if st.button("Resetear al modelo teórico", key=f"mdg7_reset_{_mdg_focal_code}", use_container_width=True):
+                    if st.button(_ui_text("Reset to theoretical model", "Resetear al modelo teórico"), key=f"mdg7_reset_{_mdg_focal_code}", use_container_width=True):
                         for _i_ed in range(len(_actions_mdg)):
                             _pk = f"mdg7_p_{_mdg_focal_code}_{_i_ed}"
                             if _pk in st.session_state: del st.session_state[_pk]
