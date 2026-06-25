@@ -110,7 +110,7 @@
 \end{aug}
 
 \begin{funding}
-$^*$ Economist, professor of the economics program at the Universidad Colegio Mayor de Cundinamarca and Ph.D. in economics from the Universidad de los Andes, Colombia. E-mail: \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}. The author expresses sincere gratitude to Prof.\ Oscar Orlando Mart\'inez Ladino and Prof.\ Diana Maritza \'Alvarez Ovalle, whose enriching conversations facilitated an understanding of the behavior of rational agents under pressure in unknown environments and were fundamental to the formulation of this theorem. All research is the sole responsibility of the author, received no funding, and was developed as an independent initiative.
+$^*$ Economist, professor of the economics program at the Universidad Colegio Mayor de Cundinamarca and Ph.D. in economics from the Universidad de los Andes, Colombia. E-mail: \href{mailto:hbernal@uniandes.edu.co}{hbernal@uniandes.edu.co}. ORCID: \href{https://orcid.org/0000-0002-4864-1726}{0000-0002-4864-1726}. The author expresses sincere gratitude to Prof.\ Oscar Orlando Mart\'inez Ladino and Prof.\ Diana Maritza \'Alvarez Ovalle, whose enriching conversations facilitated an understanding of the behavior of rational agents under pressure in unknown environments and were fundamental to the formulation of this theorem. All research is the sole responsibility of the author, received no funding, and was developed as an independent initiative.
 \end{funding}
 
 \begin{abstract}
@@ -1212,7 +1212,7 @@ with the sign varying across types through the structural parameters $\beta_{K,j
 \end{proposition}
 \section{Calibration of the mechanism and simulations}\label{sec:calibracion}
 \normalfont\normalsize
-This section calibrates the dynamic mechanism of Section~\ref{sec:model} in two simulated episodes of finite horizon. The exercise combines macro and microeconometric priors and diagnostics to study four objects: the evolution of beliefs $\mu_\tau(\theta)$, the signals observed by the state, the response of the instruments $(\alpha_t,\gamma_t)$, and compliance with the IR and IC constraints. \emph{Scenario~I} corresponds to ELN, with $\theta_K^\ast=\mathrm{ELN}$, lax state, low-wealth family, public victim, and Caribbean location; \emph{Scenario~II} corresponds to PAR, with $\theta_K^\ast=\mathrm{PAR}$, lax state, high-wealth family, private victim, and East--Jungle location. Both are simulated over a fixed horizon $\bar{T}=150$ periods---a calibration parameter distinct from the endogenous stopping time $\tau$ defined in~\eqref{eq:stopping-time}---and optimal policy is computed from the state's minimization of social cost. In the order $(\mathrm{DC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC})$, the initial priors are $\mu_0^{\mathrm{ELN}}=(0.25,0.35,0.05,0.35)$ and $\mu_0^{\mathrm{PAR}}=(0.55,0.05,0.35,0.05)$. In the figures, the gray bar marks the realized stopping time $\tau$ (the first period with $m_\tau\in\mathcal{M}_{\mathrm{term}}$); the trajectory after that bar is a counterfactual extension under an absorbing state---the mechanism law conditioned on non-absorption---that illustrates learning and identification dynamics independently of the closure moment, without constituting a real episode trajectory.
+This section calibrates the dynamic mechanism of Section~\ref{sec:model} in two simulated episodes of finite horizon. The exercise combines macro and microeconometric priors and diagnostics to study four objects: the evolution of beliefs $\mu_\tau(\theta)$, the signals observed by the state, the response of the instruments $(\alpha_t,\gamma_t)$, and compliance with the IR and IC constraints. \emph{Scenario~I} corresponds to ELN, with $\theta_K^\ast=\mathrm{ELN}$, lax state, low-wealth family, public victim, and Caribbean location; \emph{Scenario~II} corresponds to PAR, with $\theta_K^\ast=\mathrm{PAR}$, lax state, high-wealth family, private victim, and East--Jungle location. Both are simulated over a fixed horizon $\bar{T}=150$ periods (a calibration parameter distinct from the endogenous stopping time $\tau$ defined in~\eqref{eq:stopping-time}), and optimal policy is computed from the state's minimization of social cost. In the order $(\mathrm{DC},\mathrm{PAR},\mathrm{ELN},\mathrm{FARC})$, the initial priors are $\mu_0^{\mathrm{ELN}}=(0.25,0.35,0.05,0.35)$ and $\mu_0^{\mathrm{PAR}}=(0.55,0.05,0.35,0.05)$. In the figures, the gray bar marks the realized stopping time $\tau$ (the first period with $m_\tau\in\mathcal{M}_{\mathrm{term}}$); the trajectory after that bar is a counterfactual extension under an absorbing state (the mechanism law conditioned on non-absorption) that illustrates learning and identification dynamics independently of the closure moment, without constituting a real episode trajectory.
 
 \begin{figure}[H]
 \centering
@@ -1352,12 +1352,12 @@ In both scenarios and for all types, $\kappa_h(\theta_K^\ast,t)>0$ in 100\,\% of
 \centering
 \begin{subfigure}[t]{0.48\linewidth}
   \centering
-  \panelgraphic{\calplotheight}{Fig_18a.pdf}
+  \panelgraphic{\calseriesheight}{Fig_18a.pdf}
   \caption{Scenario I: ELN}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.48\linewidth}
   \centering
-  \panelgraphic{\calplotheight}{Fig_18b.pdf}
+  \panelgraphic{\calseriesheight}{Fig_18b.pdf}
   \caption{Scenario II: PAR}
 \end{subfigure}
 \caption{Net sensitivity $\kappa_h(\theta_K^\ast,t)$ of expected captivity duration with respect to $\gamma_t^\ast$ (ELN: $\tau\leq 150$; PAR: $\tau\leq 150$).}
@@ -1390,15 +1390,15 @@ This section integrates the empirical and theoretical findings of the manuscript
 
 \subsection{Policy recommendations}
 
-Based on the results of macroeconomic cointegration, the microeconometric hazards of competing risks, and the calibration of the strategic mechanism of Bayesian dual control, the following guidelines for public policy are proposed:
+The macroeconomic cointegration results, the competing-risks microeconometric hazards, and the calibrated Bayesian dual-control mechanism jointly support the following guidelines for public policy.
 
-Integration of macro-financial alerts into operational security planning.\quad
+\textbf{Integration of macro-financial alerts into operational security planning.}\quad
 The VEC analysis shows that the commercial lending interest rate and persistent coercive capacity affect the retention and financing costs of criminal organizations. In phases of monetary contraction and credit restriction, the higher cost of capital may push illegal actors toward extraction modalities with faster returns, such as short captivities or accelerated negotiations. It is recommended to integrate indicators of liquidity, formal and informal credit, and regional financial pressure into the early warning systems of GAULA units. This would allow anticipating changes in the criminal portfolio and adjusting operational pressure preventively before macro-financial conditions translate into rebounds in kidnapping for ransom.
 
-Adaptive and coordinated implementation of the financial block to avoid collusion.\quad
+\textbf{Adaptive and coordinated implementation of the financial block to avoid collusion.}\quad
 The simulations show that the financial block $\alpha_t^\ast$ has strategic value when it disciplines the captor's participation and reduces the space for clandestine collusion between the family and the captor. However, its indiscriminate use may penalize family assets without providing additional information once the posterior concentrates. It is recommended that the Ministry of Defense, the UIAF, and GAULA units coordinate an adaptive protocol that modulates the severity of interdiction according to the inferred type, the victim's profile, and family wealth. When Bayesian learning identifies the captor with precision and reduces the marginal value of experimentation, the block should be gradually softened without abandoning financial traceability or deterrence capacity.
 
-Transition to a police intelligence protocol based on Bayesian dual control.\quad
+\textbf{Transition to a police intelligence protocol based on Bayesian dual control.}\quad
 The identification theorem and dynamic calibration show that a purely myopic policy, focused only on immediate physical pressure, can preserve uncertainty about the type and waste early signals. It is recommended to formalize the informational motive in military and police intelligence protocols, so that operational pressure $\gamma_t^\ast$ seeks not only to close the episode but also to separate likelihoods across organizations. The systematic combination of detection signals, acoustic evidence, captivity duration, and competing risk patterns would allow classifying the captor in early phases, improving the allocation of tactical resources, and reducing the human risk of operations.
 
 \subsection{Conclusions}

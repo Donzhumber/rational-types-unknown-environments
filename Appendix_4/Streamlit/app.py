@@ -1502,6 +1502,13 @@ _ES_EN_REPLACEMENTS = [
     ("Tipo secuestrador", "Kidnapper type"),
     ("Instrumento", "Instrument"),
     ("Detección", "Detection"),
+    # Table 8 · theta-K labels and operativa phrase (before word-level pairs)
+    ("Disciplina Militar", "Military Discipline"),
+    ("Logística / Suministros", "Logistics / Supplies"),
+    ("Impaciencia Financiera", "Financial Impatience"),
+    ("Letalidad / Agresividad", "Lethality / Aggressiveness"),
+    ("Capacidad operativa", "Operational capacity"),
+    ("Precisión", "Precision"),
     # ─────────────────────────────────────────────────────────────────────────────
     ("Español", "Spanish"),
     ("Sistema de Análisis Dinámico de Mecanismos", "Dynamic Mechanism Analysis System"),
@@ -1579,6 +1586,9 @@ _ES_EN_REPLACEMENTS = [
     ("Liberar", "Release"),
     ("Matar", "Kill"),
     ("Cooperar", "Cooperate"),
+    ("No Rescatar", "Not Rescue"),
+    ("Rescatar", "Rescue"),
+    ("Coludir", "Collude"),
     ("Negociar", "Negotiate"),
     ("Continuar", "Continue"),
     ("Rescate", "Rescue"),
@@ -2542,6 +2552,10 @@ _FOCUS_TERM_KATEX = {
     "Modal precision (eq. 37)": r"\iota_t",
     "Match indicator (eq. 38)": r"\text{Match }\mathbf{1}\{\hat{\theta}_t=\theta_K\}",
     # Tabla 8 · Propensión Psi_j (Ec. 29)
+    "Intercepto delta_j": r"\text{Intercepto }\delta_j",
+    "Peso Acción K (gamma_j,K)": r"\text{Peso Acción K }(\gamma_{j,K})",
+    "Peso Acción S (gamma_j,S)": r"\text{Peso Acción S }(\gamma_{j,S})",
+    "Peso Acción F (gamma_j,F)": r"\text{Peso Acción F }(\gamma_{j,F})",
     "Capacidad operativa (phi_j,gamma)": r"\text{Capacidad operativa }(\phi_{j,\gamma})",
     "Peso: Disciplina Militar (phi_j,1)": r"\text{Peso: Disciplina Militar }(\phi_{j,1})",
     "Peso: Logística / Suministros (phi_j,2)": r"\text{Peso: Logística / Suministros }(\phi_{j,2})",
@@ -4651,7 +4665,7 @@ def render_tabla11_family_calibrated_katex(df_cal: pd.DataFrame) -> None:
         ltx = _tabla11_par_calibrados_latex(p_raw)
         v = row.get("Valor", "")
         try:
-            v_str = f"{float(v):.3f}"
+            v_str = _fmt_es_num(float(v), 3)
         except (TypeError, ValueError):
             v_str = html.escape(str(v))
         n_raw = str(row.get("Nivel", ""))
@@ -9331,7 +9345,7 @@ with tab_mdg:
                             if _pk in st.session_state: del st.session_state[_pk]
                         st.rerun()
 
-    st.markdown("### Ecuaciones (28) y (29)")
+    st.markdown(_ui_text("### Equations (28) and (29)", "### Ecuaciones (28) y (29)"))
     _psi8_mom = _cmh_outcome_moments_for_mdg()
     if (
         "cal_psi_params" not in st.session_state
@@ -9344,20 +9358,11 @@ with tab_mdg:
         key=lambda kv: float(kv[1]),
         reverse=True,
     )
-    st.caption(
-        "Diagnóstico Data_CMH.csv, por caso único: "
-        + "; ".join(
-            f"{_lbl}: {_psi8_mom['counts_terminal'][_lbl]} ({100.0 * _pr:.2f}%)"
-            for _lbl, _pr in _psi8_order
-        )
-        + ". La ley activa de m_t ya no usa la logística Ψ_j; usa los hazards competitivos "
-        + "de Mechanism.tex con α*, γ*, M(t), p_det y λ4."
-    )
     
     _j8_sel = st.selectbox(
-        "Desenlace físico a calibrar (j en Eq. 28-29)",
+        _ui_text("Physical outcome to calibrate (j in Eq. 28-29)", "Desenlace físico a calibrar (j en Eq. 28-29)"),
         options=[1, 2, 3, 4, 5],
-        format_func=lambda x: f"j={x} · {_MDG_OUTCOME_LABELS[x]}",
+        format_func=lambda x: f"j={x} · {_translate_text_to_english(_MDG_OUTCOME_LABELS[x])}",
         key="mdg_j8_sel"
     )
     _p8 = st.session_state.cal_psi_params[_j8_sel]
@@ -9372,7 +9377,7 @@ with tab_mdg:
         {"#": 7, "Término": f"Peso: {_THETA_K_LABELS[1]} (phi_j,2)", "Coeficiente": r"\phi_{j,2}", "Valor": _p8["phi_theta"][1], "Clase_tab7": "Prior"},
         {"#": 8, "Término": f"Peso: {_THETA_K_LABELS[2]} (phi_j,3)", "Coeficiente": r"\phi_{j,3}", "Valor": _p8["phi_theta"][2], "Clase_tab7": "Prior"},
         {"#": 9, "Término": f"Peso: {_THETA_K_LABELS[3]} (phi_j,4)", "Coeficiente": r"\phi_{j,4}", "Valor": _p8["phi_theta"][3], "Clase_tab7": "Prior"},
-        {"#": 10, "Término": "Precisión kappa_j", "Coeficiente": r"\kappa_j", "Valor": _p8["kappa"], "Clase_tab7": "Endógena"},
+        {"#": 10, "Término": "Precisión kappa_j", "Coeficiente": r"\kappa_j", "Valor": _p8["kappa"], "Clase_tab7": _ui_text("Endogenous", "Endógena")},
     ]
     for _r in _rows_psi:
         _r["Valor_KaTeX"] = rf"\text{{{_fmt_es_num(_r['Valor'], 2)}}}"
@@ -9381,11 +9386,14 @@ with tab_mdg:
 
     _ec8L, _ec8R = st.columns((0.4, 0.6), gap="small")
     with _ec8L:
-        st.markdown(
+        st.markdown(_ui_text(
+            r"**Physical outcome $m_t$ (competing hazards).** "
+            r"Conditional on the executed triple $\tilde A_t$ and state $\mathcal C_t$, "
+            r"the continuation probability and terminal masses are determined by the tilde lambdas.",
             r"**Desenlace físico $m_t$ (hazards competitivos).** "
             r"Condicionado a la tripleta ejecutada $\tilde A_t$ y al estado $\mathcal C_t$, "
             r"la probabilidad de continuar y las masas terminales salen de las lambdas tilda."
-        )
+        ))
         st.latex(
             r"p_{\mathrm{Cont},t\mid\theta_K}"
             r"=\exp\!\left[-\sum_{j=1}^{4}\tilde{\lambda}_j(t\mid\theta_K,\mathcal C_t)\Delta t\right]"
@@ -9401,7 +9409,10 @@ with tab_mdg:
             r"\qquad \mathbb P_E(m_t=j\mid\theta_K,\mathcal C_t)=h_j(t\mid\theta_K,\mathcal C_t)"
         )
     with _ec8R:
-        st.markdown(f"#### Tabla 8 · Propensión $\Psi_{{j={_j8_sel}}}$ (referencia archivada)")
+        st.markdown(_ui_text(
+            f"#### Table 8 · Propensity $\Psi_{{j={_j8_sel}}}$ (archived reference)",
+            f"#### Tabla 8 · Propensión $\Psi_{{j={_j8_sel}}}$ (referencia archivada)"
+        ))
         _render_focus_covariate_katex_table(
             _df_psi,
             show_origen=False,
@@ -9411,7 +9422,7 @@ with tab_mdg:
             collapse_gap_below=True,
         )
         with st.popover(
-            f"Editar valores · Tabla 8 (j={_j8_sel})",
+            _ui_text(f"Edit values · Table 8 (j={_j8_sel})", f"Editar valores · Tabla 8 (j={_j8_sel})"),
             width="stretch",
         ):
             # Reutilizamos el estilo de la Tabla 7 popover
@@ -9426,18 +9437,21 @@ with tab_mdg:
             )
             
             _fields = [
-                ("delta", r"\delta_j", "Intercepto"),
-                ("gamma_K", r"\gamma_{j,K}", "Acción K"),
-                ("gamma_S", r"\gamma_{j,S}", "Acción S"),
-                ("gamma_F", r"\gamma_{j,F}", "Acción F"),
-                ("phi_gamma", r"\phi_{j,\gamma}", "Capacidad operativa"),
-                ("kappa", r"\kappa_j", "Precisión"),
+                ("delta", r"\delta_j", _ui_text("Intercept", "Intercepto")),
+                ("gamma_K", r"\gamma_{j,K}", _ui_text("Action K", "Acción K")),
+                ("gamma_S", r"\gamma_{j,S}", _ui_text("Action S", "Acción S")),
+                ("gamma_F", r"\gamma_{j,F}", _ui_text("Action F", "Acción F")),
+                ("phi_gamma", r"\phi_{j,\gamma}", _ui_text("Operational capacity", "Capacidad operativa")),
+                ("kappa", r"\kappa_j", _ui_text("Precision", "Precisión")),
             ]
-            st.markdown("**Pesos del vector de tecnología** $\\vec{\\phi}_{j,\\theta}$:")
+            st.markdown(_ui_text(
+                "**Technology vector weights** $\\vec{\\phi}_{j,\\theta}$:",
+                "**Pesos del vector de tecnología** $\\vec{\\phi}_{j,\\theta}$:"
+            ))
             _v_th = THETA_K_MAP.get(tipo_real, [0.0]*4)
             for _idx, _lbl in enumerate(_THETA_K_LABELS):
                 _plw, _prw = st.columns((0.58, 0.42), gap="small", vertical_alignment="center")
-                with _plw: st.markdown(f"**#T{_idx+1}** · {_lbl} ({_v_th[_idx]})")
+                with _plw: st.markdown(f"**#T{_idx+1}** · {_translate_text_to_english(_lbl)} ({_v_th[_idx]})")
                 with _prw:
                     _val_phi_v = st.number_input(
                         f" ",
@@ -9463,8 +9477,11 @@ with tab_mdg:
                     )
                     st.session_state.cal_psi_params[_j8_sel][_f_key] = float(_new_v)
     st.divider()
-    st.markdown("### Materialización (Transformada Inversa)")
-    st.caption("Arquitectura estocástica del **DGP** (Mechanism.tex, sección 6.2.2). Transforma la **intención estratégica** en **realizaciones observables**.")
+    st.markdown(_ui_text("### Materialization (Inverse Transform)", "### Materialización (Transformada Inversa)"))
+    st.caption(_ui_text(
+        "Stochastic architecture of the **DGP** (Mechanism.tex, Section 6.2.2). Transforms **strategic intention** into **observable realizations**.",
+        "Arquitectura estocástica del **DGP** (Mechanism.tex, sección 6.2.2). Transforma la **intención estratégica** en **realizaciones observables**."
+    ))
 
     # 1. Recuperar Intenciones (a*) de la Pestaña 4 si existen, o usar defaults
     _a_k_star = "Continuar"
@@ -9475,7 +9492,7 @@ with tab_mdg:
     if "dgp_seed" not in st.session_state:
         st.session_state.dgp_seed = 42
 
-    if st.button("🎰 Girar ruleta del DGP (Generar trayectorias)", type="primary", use_container_width=True, key="btn_dgp_tab3"):
+    if st.button(_ui_text("🎰 Spin DGP roulette (Generate trajectories)", "🎰 Girar ruleta del DGP (Generar trayectorias)"), type="primary", use_container_width=True, key="btn_dgp_tab3"):
         st.session_state.dgp_seed = np.random.randint(0, 100000)
         st.rerun()
 
@@ -9483,7 +9500,7 @@ with tab_mdg:
     
     # --- PRESENTACIÓN POR JUGADOR (Fase 1) ---
     # --- PRESENTACIÓN POR JUGADOR (Fase 1) ---
-    st.markdown("#### Fase 1: Implementación de la Intención ($\mathcal{H}_t^i$)")
+    st.markdown(_ui_text("#### Phase 1: Intention Implementation ($\\mathcal{H}_t^i$)", "#### Fase 1: Implementación de la Intención ($\\mathcal{H}_t^i$)"))
     st.latex(r"\tilde{a}_t^i = a_k \iff \sum_{j=1}^{k-1} \mathbb{P}^I_i(a_j \mid a_t^{i\ast}, X_t) \le u_{t,i} < \sum_{j=1}^{k} \mathbb{P}^I_i(a_j \mid a_t^{i\ast}, X_t)")
     
     # Precision iota (calculada de la mu actual en el tab) y vector theta focal
@@ -9497,9 +9514,9 @@ with tab_mdg:
 
     _c1, _c2, _c3 = st.columns(3)
     _players = [
-        ("Secuestrador (K)", "K", _a_k_star, _u_vals[0], r"a_{t}^{K,\ast}", r"\tilde{a}_t^K"),
-        ("Estado (S)", "S", _a_s_star, _u_vals[1], r"a_{t}^{S,\ast}", r"\tilde{a}_t^S"),
-        ("Familia (F)", "F", _a_f_star, _u_vals[2], r"a_{t}^{F,\ast}", r"\tilde{a}_t^F"),
+        (_ui_text("Kidnapper (K)", "Secuestrador (K)"), "K", _a_k_star, _u_vals[0], r"a_{t}^{K,\ast}", r"\tilde{a}_t^K"),
+        (_ui_text("State (S)", "Estado (S)"), "S", _a_s_star, _u_vals[1], r"a_{t}^{S,\ast}", r"\tilde{a}_t^S"),
+        (_ui_text("Family (F)", "Familia (F)"), "F", _a_f_star, _u_vals[2], r"a_{t}^{F,\ast}", r"\tilde{a}_t^F"),
     ]
 
     _exec_actions = []
@@ -9570,12 +9587,12 @@ with tab_mdg:
                 
                 _prefix = "🎯 " if _is_hit else "▫️ "
                 if _is_hit:
-                    st.markdown(f"{_prefix}**{_range} → {_act}**")
+                    st.markdown(f"{_prefix}**{_range} → {_translate_text_to_english(_act)}**")
                 else:
-                    st.caption(f"{_prefix}{_range} → {_act}")
+                    st.caption(f"{_prefix}{_range} → {_translate_text_to_english(_act)}")
 
             _exec_actions.append(_exec)
-            st.latex(_tex_tilde + r" \to \text{" + _exec + "}")
+            st.latex(_tex_tilde + r" \to \text{" + _translate_text_to_english(_exec) + "}")
 
     st.session_state.tab3_materialization_action_probs = _tab3_action_probs
 
@@ -9618,7 +9635,7 @@ with tab_mdg:
     }
     
     # --- PRESENTACIÓN DESENLACE (Fase 2) ---
-    st.markdown("#### Fase 2: Materialización del Desenlace ($\mathcal{G}_t$)")
+    st.markdown(_ui_text("#### Phase 2: Outcome Materialization ($\\mathcal{G}_t$)", "#### Fase 2: Materialización del Desenlace ($\\mathcal{G}_t$)"))
     st.latex(r"m_t = r \iff \sum_{\ell < r} \mathbb{P}^E(m_t = \ell \mid \theta_K,\mathcal C_t) \le v_t < \sum_{\ell \le r} \mathbb{P}^E(m_t = \ell \mid \theta_K,\mathcal C_t)")
     
     _cc1, _cc2 = st.columns((0.6, 0.4))
@@ -9654,9 +9671,9 @@ with tab_mdg:
             _prefix = "🎯 " if _is_hit else "▫️ "
             _prob_text = f"($p={_p:.2f}$)"
             if _is_hit:
-                st.markdown(f"{_prefix}**{_range} → {_act}** {_prob_text}")
+                st.markdown(f"{_prefix}**{_range} → {_translate_text_to_english(_act)}** {_prob_text}")
             else:
-                st.caption(f"{_prefix}{_range} → {_act} {_prob_text}")
+                st.caption(f"{_prefix}{_range} → {_translate_text_to_english(_act)} {_prob_text}")
 
         st.session_state.tab3_materialization_exec_actions = {
             "K": _exec_actions[0],
@@ -9666,11 +9683,14 @@ with tab_mdg:
         st.session_state.tab3_materialization_outcome = _m_res_text
 
     with _cc2:
-        st.markdown(f"**Resultado materializado:**")
-        st.title(_m_res_text)
+        st.markdown(_ui_text("**Materialized outcome:**", "**Resultado materializado:**"))
+        st.title(_translate_text_to_english(_m_res_text))
 
     st.divider()
-    st.caption("Nota: los intervalos se construyen con la ley física activa de Mechanism.tex: lambdas tilda, p_cont y h_j. Los corchetes en negrita indican la caída del sorteo.")
+    st.caption(_ui_text(
+        "Note: intervals are constructed from the active physical law of Mechanism.tex: tilde lambdas, p_cont, and h_j. Bold brackets indicate where the draw falls.",
+        "Nota: los intervalos se construyen con la ley física activa de Mechanism.tex: lambdas tilda, p_cont y h_j. Los corchetes en negrita indican la caída del sorteo."
+    ))
 
     # ── Ciclo τ=1 · Implementación MDG ──────────────────────────────────────
     _c1_diag_mdg = st.session_state.get("first_cycle_diag52") or {}
@@ -9681,7 +9701,7 @@ with tab_mdg:
         and isinstance(_c1_tau1_mdg, dict)
     )
     if _has_c1_mdg:
-        with st.expander("Ciclo τ = 1 · Implementación MDG (resultado de Avanzar ciclos)", expanded=True):
+        with st.expander(_ui_text("Cycle τ = 1 · MDG Implementation (result of Advance Cycles)", "Ciclo τ = 1 · Implementación MDG (resultado de Avanzar ciclos)"), expanded=True):
             _mu1_mdg   = {th: float(_c1_tau1_mdg.get(f"μ({th})", 0.0)) for th in TIPOS_SECUESTRADOR}
             _iota1_mdg = float(_c1_diag_mdg.get("iota_prior", 0.0))
             _thetah1   = str(_c1_diag_mdg.get("theta_prior", "—"))
@@ -9702,8 +9722,8 @@ with tab_mdg:
                 f"μ({th})={float(_mu1_mdg.get(th, 0.0)):.3f}" for th in TIPOS_SECUESTRADOR
             )
             st.caption(
-                f"**Señales:** V₁={_V1_mdg}, d₁={_d1_mdg}  ·  "
-                f"**Creencia prior μ₁:** {_mu1_str}  ·  "
+                f"**{_ui_text('Signals', 'Señales')}:** V₁={_V1_mdg}, d₁={_d1_mdg}  ·  "
+                f"**{_ui_text('Prior belief μ₁', 'Creencia prior μ₁')}:** {_mu1_str}  ·  "
                 f"ι₁={_iota1_mdg:.4f}, θ̂₁={_thetah1}  ·  "
                 f"α₁*={_alpha1_mdg}, γ₁*={_gamma1_mdg}"
             )
@@ -9714,10 +9734,10 @@ with tab_mdg:
                 for _act1, _pval1 in sorted(_pdict1.items(), key=lambda kv: -float(kv[1])):
                     _marker = "★" if str(_act1) == str(_exec1) else ""
                     _mdg1_rows.append({
-                        "Agente": _ag1,
-                        "Acción ã": f"{_marker}{_act1}",
+                        _ui_text("Agent", "Agente"): _ag1,
+                        _ui_text("Action ã", "Acción ã"): f"{_marker}{_translate_text_to_english(str(_act1))}",
                         "P_I(ã|a*)": f"{float(_pval1):.4f}",
-                        "Sorteada": "✓" if str(_act1) == str(_exec1) else "",
+                        _ui_text("Drawn", "Sorteada"): "✓" if str(_act1) == str(_exec1) else "",
                     })
             if _mdg1_rows:
                 st.dataframe(
@@ -9726,10 +9746,12 @@ with tab_mdg:
                     hide_index=True,
                     height=min(38 * len(_mdg1_rows) + 38, 320),
                 )
-            st.caption(
+            st.caption(_ui_text(
+                f"Drawn outcome m₁: **{_translate_text_to_english(_m1_mdg)}**  "
+                f"(★ = action drawn by MDG; P_I computed with μ₁ and ι₁={_iota1_mdg:.4f})",
                 f"Desenlace m₁ sorteado: **{_m1_mdg}**  "
                 f"(★ = acción sorteada por MDG; P_I calculada con μ₁ e ι₁={_iota1_mdg:.4f})"
-            )
+            ))
 
     st.divider()
 
@@ -11087,10 +11109,10 @@ with tab_rb:
         _a_f_opt_p3 = "Cooperar" if _ir_f_p3 else "Coludir"
         st.markdown(
             f"**IR^F**: "
-            f"$\\mathcal{{U}}_{{\\mathrm{{coop}}}}$ = **{_u_coop_p3:.2f}** "
+            f"$\\mathcal{{U}}_{{\\mathrm{{coop}}}}$ = **{_fmt_es_num(_u_coop_p3, 2)}** "
             f"{'≥' if _ir_f_p3 else '<'} "
-            f"$\\mathcal{{U}}_{{\\mathrm{{col}}}}$ = **{_u_col_p3:.2f}** {_ir_f_icon} "
-            f"→ **decisión óptima: {_a_f_opt_p3}**"
+            f"$\\mathcal{{U}}_{{\\mathrm{{col}}}}$ = **{_fmt_es_num(_u_col_p3, 2)}** {_ir_f_icon} "
+            f"→ **{_ui_text('optimal decision', 'decisión óptima')}: {_ui_text(_translate_text_to_english(_a_f_opt_p3), _a_f_opt_p3)}**"
         )
         if not _ir_f_p3:
             st.warning(
@@ -13039,10 +13061,12 @@ with tab_mech_sol:
                         header_nowrap=True,
                     )
             # ── Tabla 5.2 — τ por columna, variables por fila ────────────
-            st.markdown(
+            st.markdown(_ui_text(
+                "**Table 5.2 · Equilibrium by τ: optimal actions, MDG implementation and outcome** "
+                "· tab 4 (a*) → tab 3 (ã, m)",
                 "**Tabla 5.2 · Equilibrio por τ: acciones óptimas, implementación MDG y desenlace** "
                 "· pestaña 4 (a*) → pestaña 3 (ã, m)"
-            )
+            ))
             _val15_52   = st.session_state.get("tab15_last_validation") or {}
             _psi_52     = st.session_state.get("cal_psi_params") or {}
             _ir_f_52    = float(_u_coop_p3) >= float(_u_col_p3)
@@ -13299,7 +13323,7 @@ with tab_mech_sol:
                 "F", _af52_star, _pf52,
                 _atf52, _atf52_argmax,
                 _iota_52, _eu_f52, _u52_f,
-                f"(U_coop={float(_u_coop_p3):.4f}, U_col={float(_u_col_p3):.4f})",
+                f"(U_coop={_fmt_es_num(float(_u_coop_p3), 4)}, U_col={_fmt_es_num(float(_u_col_p3), 4)})",
             )
             _t52_tips0["ã_F"] = _t52_tips["ã_F"]
 
@@ -13564,7 +13588,7 @@ with tab_mech_sol:
                 _pf52_tau0.get("Cooperar", 0.0) * float(_u_coop_p3)
                 + _pf52_tau0.get("Coludir", 0.0) * float(_u_col_p3),
                 _u52_f,
-                f"(U_coop={float(_u_coop_p3):.4f}, U_col={float(_u_col_p3):.4f})",
+                f"(U_coop={_fmt_es_num(float(_u_coop_p3), 4)}, U_col={_fmt_es_num(float(_u_col_p3), 4)})",
             )
             _t52_tips0[f"ã_K ({tipo_real})"] = _t52_tip_html(
                 f"K({tipo_real})", _ak52_tau0_star, _pk52_tau0,
@@ -13906,7 +13930,7 @@ with tab_mech_sol:
                 "F", _af52_star, _pf52,
                 _atf52, _atf52_argmax,
                 _iota_52, _eu_f52, _u52_f,
-                f"(U_coop={float(_u_coop_p3):.4f}, U_col={float(_u_col_p3):.4f})",
+                f"(U_coop={_fmt_es_num(float(_u_coop_p3), 4)}, U_col={_fmt_es_num(float(_u_col_p3), 4)})",
             )
             _pk52_real = _t52_p1(_ak52_intent, "K", _iota_52, _mu0_52, _mu1_52, tau=1)
             _atk52_argmax = max(_pk52_real, key=_pk52_real.get)
@@ -15318,9 +15342,9 @@ with tab_mech_sol:
                 _t52_short_tip(
                     "a_F* en τ=0",
                     rf'\(a_F^*=\mathrm{{{html.escape(str(_af52_star))}}}\) porque '
-                    rf'\(U_{{coop}}={float(_u_coop_p3):.2f}\) '
+                    rf'\(U_{{coop}}={_fmt_es_num(float(_u_coop_p3), 2)}\) '
                     rf'{_ir_f_symbol52} '
-                    rf'\(U_{{col}}={float(_u_col_p3):.2f}\).',
+                    rf'\(U_{{col}}={_fmt_es_num(float(_u_col_p3), 2)}\).',
                     "Fuente: pestaña 4 · Familia (F) — Maximización IR^F.",
                 ),
             )
@@ -16330,7 +16354,7 @@ with tab_mech_sol:
                         float(_diag.get("iota_prior", 0.0)),
                         float(_eu_dyn_f),
                         float(_diag.get("u_f", 0.0)),
-                        f"(U_coop={float(_diag.get('U_coop', 0.0)):.4f}, U_col={float(_diag.get('U_col', 0.0)):.4f})",
+                        f"(U_coop={_fmt_es_num(float(_diag.get('U_coop', 0.0)), 4)}, U_col={_fmt_es_num(float(_diag.get('U_col', 0.0)), 4)})",
                     )
                 if str(var_v).startswith("ã_K") and isinstance(_diag.get("pk_probs"), dict):
                     _eu_dyn_k = (
@@ -16517,8 +16541,8 @@ with tab_mech_sol:
                     _source = "óptimo de familia"
                     _formula = rf'\(a_F^\ast=\arg\max\{{U_{{{int(tau_v)}}}^F(a_{{coop}}),U_{{{int(tau_v)}}}^F(a_{{col}})\}}\)'
                     _detail = (
-                        rf'\(U_{{coop}}={float(_diag.get("U_coop", 0.0)):.4f}\), '
-                        rf'\(U_{{col}}={float(_diag.get("U_col", 0.0)):.4f}\).'
+                        rf'\(U_{{coop}}={_fmt_es_num(float(_diag.get("U_coop", 0.0)), 4)}\), '
+                        rf'\(U_{{col}}={_fmt_es_num(float(_diag.get("U_col", 0.0)), 4)}\).'
                     )
                 elif var_v.startswith("a_K*"):
                     _source = "óptimo del secuestrador"
