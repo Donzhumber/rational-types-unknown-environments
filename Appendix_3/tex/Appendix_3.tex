@@ -580,6 +580,29 @@ $\ProbC{\theta}$ and under $\ProbC{\theta_K^\ast}$ are
 \textbf{mutually singular}.
 \end{lemma}
 
+\begin{remark}[Informational Slicing and Conditional Independence]\label{rem:info-slicing}
+A crucial conceptual distinction must be maintained between the adaptive
+equilibrium path of the active dual control policy and the measure-theoretic
+construction required by Lemma~\ref{lem:hazard-separation}
+\citep{Kakutani1948, BlackwellDubins1962}. In the live perfect Bayesian
+equilibrium, the planner updates beliefs sequentially, causing the realized
+instruments $(\alpha_t^*, \gamma_t^*)$ to be non-trivially coupled with the
+historical filtration $\{\mathcal{F}_t^{\mathrm{pub}}\}$
+\citep{AghionBoltonHarrisJullien1991, EasleyKiefer1988}. However, the
+probability measures $\ProbC{\theta}$ invoked in
+Definition~\ref{def:asymptotic-id} and Lemma~\ref{lem:hazard-separation}
+operate on a frozen deterministic policy path $(\chi_s)_{s \ge 0}$ evaluated
+ex-ante at $t=0$ \citep{BlackwellDubins1962}. Within this sliced
+counterfactual regime, the strategic intentions of the private agents are
+uniquely pinned down by sequential rationality, rendering the daily innovations
+of the physical-institutional block $Y_t = (m_t, d_t)$ conditionally
+independent across periods \citep{Kakutani1948}. This conditional factorization
+satisfies the orthogonal product-measure structure
+$\bigl(\bigotimes_{t \ge 0} p_{\theta}^{(t)}\bigr)$ required to validly
+operationalize the singularity criterion of \citet{Kakutani1948} without
+violating the temporal feedback loop of the dynamic game.
+\end{remark}
+
 \begin{proof}
 The proof identifies the causal mechanism within the day, translates it to a
 statistical bound in total variation, and couples the repeated experiment to
@@ -606,10 +629,12 @@ in total variation, verifying~\eqref{eq:TV-separation}.
 
 \smallskip
 \noindent\textbf{3. Repetition with uniform margin and Kakutani criterion.}
-Conditional on the fixed policy and on $\mathcal{T}$, the law of the sequence is
-a product of daily experiments
+Conditional on the fixed policy path and on $\mathcal{T}$---under the
+informational slicing regime clarified in Remark~\ref{rem:info-slicing}---the
+law of the sequence factors exactly as a product of daily independent experiments
 $\bigotimes_{t\ge 0}p_\theta^{(t)}$ versus
-$\bigotimes_{t\ge 0}p_{\theta_K^\ast}^{(t)}$. Part~(ii) then follows from
+$\bigotimes_{t\ge 0}p_{\theta_K^\ast}^{(t)}$
+\citep{Kakutani1948}. Part~(ii) then follows directly from
 Lemma~\ref{lem:general-id-appendix} (Section~\ref{sec:id-abstracta}): recurrent
 uniform total-variation separation on an infinite set forces the Bhattacharyya
 product affinity to zero and, by the criterion of \citet{Kakutani1948}, mutual
